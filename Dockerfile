@@ -42,8 +42,11 @@ COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 # Copy application source code
 COPY . .
 
-# Create non-root user for security
-RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+# Pre-create writable directories for SQLite, static files, and uploads
+RUN mkdir -p /app/instance /app/django_backend/staticfiles /app/uploads && \
+    useradd --create-home --shell /bin/bash app && \
+    chown -R app:app /app
+
 USER app
 
 WORKDIR /app/django_backend
@@ -55,4 +58,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV PYTHONPATH="/app:/app/django_backend"
 
-CMD ["sh", "-c", "python manage.py migrate --noinput 2>/dev/null || true && gunicorn --bind 0.0.0.0:${PORT} --workers 4 --timeout 120 bulllogic.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate --noinput 2>/dev/null || true && exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4 --timeout 120 bulllogic.wsgi:application"]

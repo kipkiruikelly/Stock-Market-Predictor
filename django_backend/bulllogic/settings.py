@@ -75,6 +75,10 @@ if DATABASE_URL and dj_database_url:
     except Exception:
         parsed_db = None
 
+# Ensure instance directory exists for SQLite
+DB_DIR = BASE_DIR.parent / 'instance'
+DB_DIR.mkdir(parents=True, exist_ok=True)
+
 if parsed_db:
     DATABASES = {'default': parsed_db}
 elif os.getenv("DATABASE_TYPE") == "postgres":
@@ -92,7 +96,7 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR.parent / 'instance' / 'bulllogic_django.db',
+            'NAME': DB_DIR / 'bulllogic_django.db',
         }
     }
 
@@ -146,14 +150,14 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8002',
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in dev
+CORS_ALLOW_ALL_ORIGINS = True
 
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False    # React reads it
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
@@ -166,6 +170,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:5001',
     'http://localhost:8002',
     'http://127.0.0.1:8002',
+    'https://*.run.app',
+    'https://*.europe-west1.run.app',
+    'https://triple-fusion-engine-git-914042770430.europe-west1.run.app',
 ]
 
 # Email
