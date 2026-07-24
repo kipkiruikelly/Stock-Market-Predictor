@@ -4,7 +4,16 @@
 [![Django](https://img.shields.io/badge/Django-4.2-green.svg)](https://www.djangoproject.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-teal.svg)](https://fastapi.tiangolo.com/)
 [![React](https://img.shields.io/badge/React-18.0-61dafb.svg)](https://reactjs.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+
+---
+
+## 📜 License & Intellectual Property Protection
+**Proprietary and Closed-Source. All Rights Reserved.**
+
+Copyright © 2026 Kipkirui Kelly & Triple Fusion Engine.
+
+This codebase, software, algorithms, machine learning models, and proprietary indicators are strictly closed-source and confidential. Unauthorized copying, distribution, modification, reverse engineering, or public deployment of any part of this software is strictly prohibited without prior written consent. See [LICENSE](file:///c:/Users/Kipkirui/Projects/Stock-Market-Predictor/LICENSE) for full legal terms.
 
 An enterprise-grade, full-stack quantitative trading intelligence platform and MLOps engine powered by the **Triple Fusion Prediction Engine** (ICT Market Structure + Machine Learning Ensembles + Technical Analysis).
 
@@ -169,5 +178,7 @@ npm run dev
 
 ---
 
-## 📜 License
-Distributed under the MIT License. See `LICENSE` for more information.
+## 📜 License & Intellectual Property Protection
+**Proprietary and Closed-Source. All Rights Reserved.**
+
+Copyright © 2026 Kipkirui Kelly & Triple Fusion Engine. See [LICENSE](file:///c:/Users/Kipkirui/Projects/Stock-Market-Predictor/LICENSE) for full legal terms.
