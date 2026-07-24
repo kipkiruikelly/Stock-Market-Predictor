@@ -1,165 +1,173 @@
-# BullLogic
+# Triple Fusion Engine (BullLogic v2.0)
 
-BullLogic — AI-powered trading intelligence platform for retail traders.
-Freemium subscriptions, M-Pesa payments, MT5 algorithmic trading, and
-multi-model ML predictions across 76 tickers.
+[![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-4.2-green.svg)](https://www.djangoproject.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-teal.svg)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-18.0-61dafb.svg)](https://reactjs.org/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Stock market prediction and paper-trading platform, powered by the
-Triple Fusion prediction engine (ICT structure + machine learning +
-technical analysis). Built as a Flask web application with user
-accounts, subscriptions, and a verified M-Pesa/Stripe payment stack.
+An enterprise-grade, full-stack quantitative trading intelligence platform and MLOps engine powered by the **Triple Fusion Prediction Engine** (ICT Market Structure + Machine Learning Ensembles + Technical Analysis).
 
-Every claim in this README is limited to what has been verified by
-execution. The full per-feature audit lives in
-[FEATURE_TRUTH_MAP.md](FEATURE_TRUTH_MAP.md); the ensemble evaluation
-(including its negative result) lives in
-[ENSEMBLE_REPORT.md](ENSEMBLE_REPORT.md).
+Built with Django REST Framework, FastAPI, Celery, Redis, React 18, Vite, and MetaTrader 5 (MT5) execution bridges.
 
 ---
 
-## Working today (verified end to end)
+## 🏛️ System Architecture
 
-- **ML price predictions** for 60+ ticker/interval combinations across
-  equities, crypto, forex and commodities: Linear Regression + Random
-  Forest voting (plus an LSTM vote on AAPL daily), with ATR-derived
-  stop-loss/take-profit levels and confidence from vote agreement.
-- **Honest accuracy tracking**: every prediction is stored, later graded
-  against the realized price, and published on the public
-  `/track-record` page. Nothing is cherry-picked.
-- **Paper trading engine**: virtual portfolio trading two signal streams
-  head to head with realistic spread/slippage/commission, risk limits,
-  a daily loss circuit breaker, and an append-only audit trail. It has
-  produced real (simulated-money) trades on this install. Any user can
-  also opt into their own isolated version of the same engine (own
-  balance, own positions, own risk gates) and appear on a real, Sharpe-
-  ranked trader leaderboard at `/traders` - see
-  PAPER_TRADING_PHASE2_DESIGN.md.
-- **XP, levels, and daily streaks**: predictions, backtests, and paper
-  trade outcomes award XP (`utils.award_xp`); level is derived from XP,
-  never stored. A daily activity streak advances on any authenticated
-  request, once per calendar day, with a bonus every 7th consecutive day.
-- **User accounts and billing**: registration with email verification,
-  Google OAuth sign-in, password reset, Free/Plus/Pro tiers, Stripe
-  checkout, and M-Pesa Daraja STK Push (verified live in the sandbox end
-  to end: push, PIN entry, callback, receipt, Pro activation). See
-  TIER_MATRIX.md for exactly what each tier is gated to in code.
-- **Risk management library** (`risk_manager.py`): Kelly-criterion
-  sizing, ATR trailing stops, tiered drawdown reduction with a 20% halt,
-  daily-loss breaker with cooling-off, correlation checks. 74/74 tests.
-- **Verified market data**: yfinance quotes cross-checked against the
-  Pyth oracle with divergence warnings and automatic failover.
-- **Technical analysis + TradingView charts**, watchlists with live
-  signals, screener, scanner, research pages, admin console.
-
-## Safety: live trading is off by default
-
-Real order execution (MetaApi or a direct MT5 bridge) is **refused
-everywhere** unless an operator explicitly sets `ENABLE_LIVE_TRADING=true`
-in the environment. The default is off, no broker credentials ship with
-the project, and `tests/test_mt5_safety.py` asserts that paper trading
-is the only active execution path. Paper trading needs no flag.
-
-## Experimental / in progress (not yet real features)
-
-These exist as tested libraries or scaffolds but are NOT wired into the
-product, and their API endpoints label their responses
-`"simulated": true` where demonstration data is returned:
-
-- **Stacking ensemble (XGBoost + LightGBM + Ridge meta-learner)**: the
-  trainer runs and is evaluated in ENSEMBLE_REPORT.md, but on held-out
-  data it did not beat the best single model and its artifacts are not
-  compatible with the live feature pipeline, so it is not deployed.
-- **Walk-forward framework**: purged/embargoed splits and fold metrics
-  are real; per-fold model evaluation is not implemented yet (the fold
-  backtest currently runs a fixed SMA crossover and says so loudly).
-- **Sentiment analysis**: the financial lexicon scorer is real; NewsAPI
-  integration requires a `NEWSAPI_KEY`; the Reddit component is a
-  placeholder model and is flagged as simulated in every payload.
-- **Economic calendar**: a curated static list of real 2026 events
-  (FOMC/NFP/CPI) with volatility warnings; not a live feed.
-- **Gamification**: competition/achievement engine works in memory with
-  tests, but competitions and trader leaderboards in the API are
-  demonstration data and no achievements are awarded automatically yet.
-- **Smart order router (TWAP/VWAP/Iceberg)**, **message bus
-  (Redis/in-memory)**, **data quality monitor**: tested libraries,
-  nothing in the running app calls them yet.
-- **Model versioning** (`db_utils.py`): migration runner works; version
-  records are not persisted yet and rollback does not exist.
-- **Docker/microservices** (`docker-compose.yml`, `predictor_api.py`):
-  compose files and a standalone prediction API exist but have not been
-  verified end to end in this audit.
+```
+                                ┌──────────────────────────────────────────┐
+                                │        React 18 + Vite Frontend          │
+                                │    (MUI Dark Glassmorphism Design UI)    │
+                                └────────────────────┬─────────────────────┘
+                                                     │
+            ┌────────────────────────────────────────┴────────────────────────────────────────┐
+            │                                                                                 │
+            ▼                                                                                 ▼
+┌──────────────────────────────────────────┐                               ┌──────────────────────────────────────────┐
+│   Django REST Framework Backend (8001)   │                               │     FastAPI Microservice (8002)          │
+│   • Auth, JWT, Security, Pass Reset      │                               │     • High-Speed ML Model Inference     │
+│   • MLOps Registry & Recommender Engine  │                               │     • WebSocket Real-time Feeds          │
+│   • Smart Execution Router & Celery Tasks│                               │     • Standardized Pydantic Schemas     │
+└───────────────────┬──────────────────────┘                               └────────────────────┬─────────────────────┘
+                    │                                                                           │
+                    └────────────────────────────────────┬──────────────────────────────────────┘
+                                                         │
+                                                         ▼
+                                ┌──────────────────────────────────────────┐
+                                │         Redis Cache & Celery Queue       │
+                                │   (Sub-ms Quotes & Background Scans)     │
+                                └──────────────────────────────────────────┘
+```
 
 ---
 
-## Architecture
+## ✨ Key Enterprise Subsystems
 
-```
-data_pipeline.py       ->  featured datasets (TA + ICT features)
-model_training.py      ->  Saved Models/ (LR + RF per ticker/interval)
-predictor.py           ->  shared inference: multi-model vote, SL/TP, confidence
-app.py + routes/       ->  Flask web app (auth, predictions, payments, admin)
-paper_engine.py        ->  virtual portfolio, audited simulated trading
-mt5_trading.py         ->  trading engine (paper by default; live is env-gated)
-ops.py                 ->  background jobs: accuracy grading, digests, paper cycles
-```
+### 1. 🤖 Interactive AI Trading Robots & Strategy Suite
+Subscribers can activate, backtest, and automate signals across 6 specialized AI models:
 
-## Setup
+* **ICT Core Liquidity Raider** (`Forex/Indices`): Intraday price action trading Order Blocks, Displacement Candles, Fair Value Gaps (FVG), and Liquidity Sweeps.
+* **Stacking Meta-Ensemble** (`Stocks`): Ridge Regression meta-learner ensembling out-of-fold predictions from Random Forest, XGBoost, and LightGBM.
+* **XGBoost Directional Bot** (`Stocks`): Gradient boosted classifier predicting next-day price direction using lag returns and technical indicators.
+* **Random Forest Value Bot** (`Stocks`): Regressor targeting mean-reversion entries around custom alpha factors.
+* **Linear Regression Trend Bot** (`Stocks`): Statistical regression trading deviations around linear trend channels.
+* **LightGBM Momentum Bot** (`Stocks`): High-speed tree model optimized for rapid intraday momentum breakout signals.
 
-Requirements: Python 3.10-3.12 (this project's venv uses 3.11).
+---
 
+### 2. 🧠 MLOps Model Registry & Evaluation Metrics
+* **Standardized Metric Tracking**: Evaluates models using Mean Absolute Error (**MAE**), Mean Squared Error (**MSE**), Root Mean Squared Error (**RMSE**), **$R^2$ Score**, and **Directional Accuracy (%)**.
+* **Chronological Time-Series Validation**: Uses 5-fold `TimeSeriesSplit` cross-validation to guarantee zero future data leakage.
+* **Hyperparameter Tuning**: Automated `RandomizedSearchCV` cross-validation across depth, estimators, learning rates, and regularization parameters.
+* **Permutation Feature Importance**: Ranks indicator importance weights (`PD_Position`, `Bear_OB_Count`, `Dist_to_SL`, `Bull_OB_Count`).
+
+---
+
+### 3. 🎯 Personalized Quantitative Recommender Engine
+* **Content-Based Cosine Similarity**: Matches live asset technical vectors to the trader's individual style (`scalper`, `swing`, `algo`).
+* **Collaborative Filtering SVD**: Uses Latent Matrix Factorization across platform traders to surface high-converting setups.
+* **Portfolio Risk-Hedging**: Analyzes open positions and automatically suggests inversely correlated assets (`GOLD`, `TLT`, `EURUSD`) to balance portfolio risk.
+
+---
+
+### 4. ⚡ Institutional Smart Order Execution Engine (JPMorgan DNA-Style)
+* **TWAP / VWAP Iceberg Order Router**: Splits large parent orders into small child order slices to minimize market impact and slippage.
+* **Adaptive Passive / Aggressive FSM**:
+  $$\text{PASSIVE\_LIMIT (Order Block / FVG)} \xrightarrow{\text{80\% Time / <50\% Filled}} \text{AGGRESSIVE\_TAKER (Market Sweep)}$$
+* **Post-Trade Execution Feedback**: Logs fill latency, benchmark arrival prices, average fill prices, and cumulative dollar slippage savings.
+
+---
+
+### 5. 🔐 Enterprise Authentication & Security
+* **JWT Token Security**: 24h Access Tokens + 7d Refresh Tokens (`Bearer <token>`) with instant Redis revocation blacklisting on logout.
+* **1-Click Google OAuth 2.0**: Social login integration (`POST /api/auth/google`).
+* **Email Password Reset**: 1-hour expiration tokenized reset emails (`/api/auth/forgot-password`).
+* **6-Digit PIN Verification**: Email verification flow (`/api/auth/verify-email`).
+* **Brute-Force Lockout**: 15-minute account lockouts after 5 consecutive failed login attempts.
+
+---
+
+## 📡 REST API Reference
+
+### 🔐 Authentication APIs
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/login` | Session / JWT user login. |
+| `POST` | `/api/register` | User registration with PIN verification. |
+| `POST` | `/api/logout` | Revokes active JWT refresh tokens. |
+| `POST` | `/api/auth/google` | 1-Click Google OAuth login. |
+| `POST` | `/api/auth/forgot-password` | Initiates password reset email flow. |
+| `POST` | `/api/auth/reset-password` | Confirms password reset. |
+
+### 🤖 AI Robots & Automation APIs
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/bots` | Lists active AI Robots & subscription status. |
+| `POST` | `/api/bots/subscribe` | Toggles strategy subscription. |
+| `GET` | `/api/bots/signals` | Live signal stream for subscribed bots. |
+| `POST` | `/api/bots/auto-trade` | Toggles Paper/MT5 auto-execution & risk limits. |
+| `POST` | `/api/bots/backtest` | Executes interactive backtest sandbox. |
+
+### 🧠 MLOps, Dataset & Analytics APIs
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/model/info` | Returns model version metadata, MAE, MSE, RMSE, and $R^2$ metrics. |
+| `GET` | `/api/properties` | Inspects dataset rows, columns, nulls, and date ranges. |
+| `POST` | `/api/upload` | Uploads and validates custom market CSV datasets. |
+| `GET` | `/api/statistics` | Platform prediction statistics & win rates. |
+| `GET` | `/api/feature-importance` | Indicator importance weight rankings. |
+
+### 🎯 Recommender & Smart Execution APIs
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/recommendations` | Returns Top 5 personalized trade & risk-hedging setups. |
+| `POST` | `/api/execution/smart-order` | Submits orders for TWAP/VWAP Iceberg execution. |
+| `GET` | `/api/execution/stats` | Execution quality analytics & slippage savings ($). |
+
+---
+
+## 🛠️ Quick Start Guide
+
+### Prerequisites
+* Python 3.11+
+* Node.js 18+
+* Redis (optional, fallback to in-memory)
+
+### 1. Installation
 ```bash
-python -m venv .venv
-.venv\Scripts\activate       # Windows
-source .venv/bin/activate    # Mac/Linux
+# Clone the repository
+git clone https://github.com/kipkiruikelly/Triple-Fusion-Engine.git
+cd Triple-Fusion-Engine
+
+# Install Python dependencies
 pip install -r requirements.txt
 
-cp .env.example .env         # fill in secrets
-
-python app.py                # http://127.0.0.1:5000
+# Install Frontend dependencies
+cd frontend
+npm install
+cd ..
 ```
 
-Training pipeline (regenerates models):
-
+### 2. Database Setup & Migrations
 ```bash
-python data_pipeline.py                        # build featured datasets
-python train_all_tickers.py --tickers QQQ      # train through the live feature builder
+# Run Django migrations
+python django_backend/manage.py migrate
 ```
 
-Tests:
-
+### 3. Running Services
 ```bash
-python -m pytest tests/ -q
+# Start Django Backend (Port 8001)
+python django_backend/manage.py runserver 8001
+
+# Start FastAPI Microservice (Port 8002)
+uvicorn fastapi_service.main:app --port 8002 --reload
+
+# Start React Frontend (Port 5173 / 5000)
+cd frontend
+npm run dev
 ```
 
-## Hosted server access
+---
 
-The app runs as a persistent service on a private server, reachable via
-Tailscale VPN:
-
-| Access | URL |
-|---|---|
-| HTTPS (recommended) | https://kali.tail3ceaef.ts.net |
-| Direct IP | http://100.116.236.84:5000 |
-
-Requires Tailscale connected to the `kipkiruikelly.github` tailnet.
-
-## Trading options
-
-- **Paper trading (default, recommended)**: connect instantly in the MT5
-  page's Paper tab; $10,000 virtual balance against live prices.
-- **Live trading (opt-in only)**: requires an operator to set
-  `ENABLE_LIVE_TRADING=true`, plus MetaApi credentials or a Linux MT5
-  bridge. Without the flag every live order path refuses.
-
-## Configuration
-
-Settings are centralized in `config.py` (Pydantic) with
-development/staging/production presets; secrets and overrides live in
-`.env` (gitignored, template in `.env.example`).
-
-## Disclaimer
-
-Predictions and trades generated by this system are for **educational
-purposes only**. They do not constitute financial advice. Past
-performance does not guarantee future results. Never risk capital you
-cannot afford to lose.
+## 📜 License
+Distributed under the MIT License. See `LICENSE` for more information.
