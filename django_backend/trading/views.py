@@ -397,3 +397,88 @@ class MarketHistoryView(APIView):
             })
         except Exception as e:
             return Response({'ok': False, 'error': str(e)}, status=500)
+
+
+# ── Interactive AI Trading Robots Endpoints ─────────────────────────────────
+
+from .bot_runner import generate_bot_signals, run_bot_backtest
+
+class BotSignalsView(APIView):
+    """GET /api/bots/signals -> Returns live pending and active trade signals for subscribed bots."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_subs = UserBotSubscription.objects.filter(user=request.user)
+        all_signals = []
+        for sub in user_subs:
+            signals = generate_bot_signals(sub.bot.slug)
+            for s in signals:
+                s["bot_name"] = sub.bot.name
+                s["auto_trade_enabled"] = sub.auto_trade_enabled
+                s["auto_trade_mode"] = sub.auto_trade_mode
+                all_signals.append(s)
+
+        if not all_signals:
+            signals = generate_bot_signals("ict_core_m5")
+            for s in signals:
+                s["bot_name"] = "ICT Core Liquidity Raider"
+                s["auto_trade_enabled"] = False
+                s["auto_trade_mode"] = "paper"
+                all_signals.append(s)
+
+        return Response({
+            "ok": True,
+            "signals": all_signals,
+            "total_count": len(all_signals)
+        })
+
+class BotAutoTradeView(APIView):
+    """POST /api/bots/auto-trade -> Toggles automated trade execution and sets risk parameters."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        bot_id = request.data.get("bot_id")
+        auto_trade_enabled = request.data.get("auto_trade_enabled")
+        auto_trade_mode = request.data.get("auto_trade_mode", "paper")
+        max_risk_pct = float(request.data.get("max_risk_pct", 1.0))
+
+        if not bot_id:
+            return Response({"ok": False, "error": "bot_id is required."}, status=400)
+
+        try:
+            bot = TradingBot.objects.get(pk=bot_id)
+        except TradingBot.DoesNotExist:
+            return Response({"ok": False, "error": "Bot not found."}, status=404)
+
+        sub, created = UserBotSubscription.objects.get_or_create(user=request.user, bot=bot)
+        if auto_trade_enabled is not None:
+            sub.auto_trade_enabled = bool(auto_trade_enabled)
+        sub.auto_trade_mode = auto_trade_mode
+        sub.max_risk_pct = max_risk_pct
+        sub.save()
+
+        return Response({
+            "ok": True,
+            "bot_id": bot_id,
+            "bot_name": bot.name,
+            "auto_trade_enabled": sub.auto_trade_enabled,
+            "auto_trade_mode": sub.auto_trade_mode,
+            "max_risk_pct": sub.max_risk_pct,
+            "message": f"Auto-trading configured for {bot.name} ({sub.auto_trade_mode.upper()} mode, Risk {sub.max_risk_pct}%)."
+        })
+
+class BotBacktestView(APIView):
+    """POST /api/bots/backtest -> Runs interactive backtest for a specific robot strategy."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        bot_slug = request.data.get("bot_slug") or request.data.get("slug") or "ict_core_m5"
+        ticker = (request.data.get("ticker") or request.data.get("symbol") or "SPY").upper()
+        period_days = int(request.data.get("period_days", 180))
+        risk_pct = float(request.data.get("risk_pct", 1.0))
+
+        backtest_result = run_bot_backtest(bot_slug, ticker, period_days, risk_pct)
+        return Response({
+            "ok": True,
+            "backtest": backtest_result
+        })

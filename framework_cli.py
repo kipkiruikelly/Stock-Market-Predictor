@@ -50,11 +50,26 @@ def main():
         ]
         available_features = [f for f in features if f in df.columns]
         
-        print("Training models...")
-        trained_models = orchestrator.run_training(df, available_features, "Next_Return")
+        print("Executing Multi-Model Training with TimeSeriesSplit CV and Hyperparameter Tuning...")
+        from ml_framework.trainers.advanced_trainer import AdvancedModelTrainer
+        trainer = AdvancedModelTrainer()
+        res = trainer.train(df, available_features, "Next_Return")
         
+        trained_models = res["models"]
+        leaderboard = res["leaderboard"]
+        importance = res["feature_importance"]
+        
+        print("\n=== Model Comparison Leaderboard (Out-of-Sample Validation) ===")
+        print(leaderboard.to_string(index=False))
+        
+        print("\n=== Top Feature Importances (Permutation Analysis) ===")
+        if not importance.empty:
+            print(importance[["Feature", "Relative Weight (%)"]].head(8).to_string(index=False))
+
         # Save models to Saved Models/ for legacy compatibility
         models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Saved Models")
+        if os.path.isfile(models_dir):
+            os.remove(models_dir)
         os.makedirs(models_dir, exist_ok=True)
         
         # Scale features
@@ -66,10 +81,15 @@ def main():
         joblib.dump(scaler, os.path.join(models_dir, f"scaler_sklearn_{t}.pkl"))
         joblib.dump(available_features, os.path.join(models_dir, f"feature_cols_sklearn_{t}.pkl"))
         
-        for name, model in trained_models.items():
-            model_file = f"{'lr' if 'linear' in name else 'rf'}_model_{t}.pkl"
-            joblib.dump(model, os.path.join(models_dir, model_file))
-            print(f"Saved model {name} -> Saved Models/{model_file}")
+        # Save Ridge/Linear, Random Forest, and XGBoost models
+        if "ridge" in trained_models:
+            joblib.dump(trained_models["ridge"], os.path.join(models_dir, f"lr_model_{t}.pkl"))
+        if "random_forest" in trained_models:
+            joblib.dump(trained_models["random_forest"], os.path.join(models_dir, f"rf_model_{t}.pkl"))
+        if "xgboost" in trained_models:
+            joblib.dump(trained_models["xgboost"], os.path.join(models_dir, f"xgb_model_{t}.pkl"))
+            
+        print(f"\nTrained models successfully saved for {t} in Saved Models/\n")
             
     elif args.mode == "predict":
         print(f"Ingesting latest candles for {args.symbol}...")

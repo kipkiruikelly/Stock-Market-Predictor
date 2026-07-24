@@ -62,7 +62,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     current_streak          = models.IntegerField(default=0)
     longest_streak          = models.IntegerField(default=0)
     last_active_date        = models.DateField(null=True, blank=True)
-    paper_trading_opted_in  = models.BooleanField(default=False)
+    paper_trading_opted_in  = models.BooleanField(default=True)
+
+    # Extended Trader Profile Fields
+    avatar                  = models.CharField(max_length=500, null=True, blank=True)
+    bio                     = models.TextField(null=True, blank=True)
+    trading_style           = models.CharField(max_length=30, default='algo_trader')
+    twitter_handle          = models.CharField(max_length=50, null=True, blank=True)
+    discord_handle          = models.CharField(max_length=50, null=True, blank=True)
+    is_profile_public       = models.BooleanField(default=False)
+
+    # Security & Verification Fields
+    email_verification_pin  = models.CharField(max_length=6, null=True, blank=True)
+    failed_login_attempts   = models.IntegerField(default=0)
+    lockout_until           = models.DateTimeField(null=True, blank=True)
 
     # Django admin / auth requirements
     is_staff                = models.BooleanField(default=False)
@@ -238,6 +251,43 @@ class PasswordResetToken(models.Model):
 
     class Meta:
         db_table = 'password_reset_token'
+
+
+# ── MLOps & Model Registry Architecture ──────────────────────────────────────
+
+class UploadedDataset(models.Model):
+    user        = models.ForeignKey('users.User', on_delete=models.CASCADE, db_column='user_id')
+    filename    = models.CharField(max_length=255)
+    file_path   = models.CharField(max_length=500)
+    uploaded_at = models.DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        db_table = 'uploaded_datasets'
+
+class DatasetProperty(models.Model):
+    dataset     = models.ForeignKey(UploadedDataset, on_delete=models.SET_NULL, null=True, blank=True)
+    ticker      = models.CharField(max_length=20)
+    interval    = models.CharField(max_length=10, default='5m')
+    total_rows  = models.IntegerField(default=0)
+    total_cols  = models.IntegerField(default=0)
+    date_start  = models.DateTimeField(null=True, blank=True)
+    date_end    = models.DateTimeField(null=True, blank=True)
+    null_count  = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'dataset_properties'
+
+class ModelEvaluation(models.Model):
+    model_version            = models.ForeignKey('users.ModelVersion', on_delete=models.CASCADE, related_name='evaluations')
+    mae                      = models.FloatField(default=0.0) # Mean Absolute Error
+    mse                      = models.FloatField(default=0.0) # Mean Squared Error
+    rmse                     = models.FloatField(default=0.0) # Root Mean Squared Error
+    r2_score                 = models.FloatField(default=0.0) # R^2 Score
+    directional_accuracy_pct = models.FloatField(default=0.0)
+    evaluated_at             = models.DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        db_table = 'model_evaluations'
 
 
 # ── Telegram Config ───────────────────────────────────────────────────────────
@@ -709,9 +759,12 @@ class TradingBot(models.Model):
 # ── User Bot Subscription ─────────────────────────────────────────────────────
 
 class UserBotSubscription(models.Model):
-    user       = models.ForeignKey('users.User', on_delete=models.CASCADE, db_column='user_id')
-    bot        = models.ForeignKey(TradingBot, on_delete=models.CASCADE, db_column='bot_id')
-    created_at = models.DateTimeField(default=datetime.utcnow)
+    user               = models.ForeignKey('users.User', on_delete=models.CASCADE, db_column='user_id')
+    bot                = models.ForeignKey(TradingBot, on_delete=models.CASCADE, db_column='bot_id')
+    auto_trade_enabled = models.BooleanField(default=False)
+    auto_trade_mode    = models.CharField(max_length=20, default='paper')
+    max_risk_pct       = models.FloatField(default=1.0)
+    created_at         = models.DateTimeField(default=datetime.utcnow)
 
     class Meta:
         db_table = 'user_bot_subscription'
@@ -767,5 +820,23 @@ class UserPaperPosition(models.Model):
     opened_at     = models.DateTimeField(default=datetime.utcnow)
     closed_at     = models.DateTimeField(null=True, blank=True)
 
+
+# ── Institutional Smart Order Execution (JPMorgan DNA Architecture) ───────────
+
+class SmartOrderExecution(models.Model):
+    user               = models.ForeignKey('users.User', on_delete=models.CASCADE, db_column='user_id')
+    ticker             = models.CharField(max_length=20)
+    side               = models.CharField(max_length=10) # BUY or SELL
+    total_quantity     = models.FloatField()
+    executed_quantity  = models.FloatField(default=0.0)
+    execution_style    = models.CharField(max_length=20, default='twap') # twap, vwap, iceberg
+    execution_mode     = models.CharField(max_length=20, default='PASSIVE_LIMIT') # PASSIVE_LIMIT or AGGRESSIVE_TAKER
+    benchmark_price    = models.FloatField() # Arrival price
+    avg_fill_price     = models.FloatField(default=0.0)
+    slippage_saved_usd = models.FloatField(default=0.0)
+    status             = models.CharField(max_length=20, default='executing') # executing, completed, cancelled
+    created_at         = models.DateTimeField(default=datetime.utcnow)
+    completed_at       = models.DateTimeField(null=True, blank=True)
+
     class Meta:
-        db_table = 'user_paper_position'
+        db_table = 'smart_order_executions'

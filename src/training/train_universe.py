@@ -41,7 +41,7 @@ import train_all_tickers as T
 MANIFEST_PATH = os.path.join(T.MODELS_DIR, "training_manifest.json")
 
 PRIORITY_ORDER = ["1d", "1h", "4h", "1w", "30m", "15m", "5m", "1m"]
-DEFAULT_TFS    = [tf for tf in PRIORITY_ORDER if tf != "1m"]   # 1m is opt-in
+DEFAULT_TFS    = list(PRIORITY_ORDER)   # Include all timeframes including 1m
 
 
 def _load_manifest() -> dict:

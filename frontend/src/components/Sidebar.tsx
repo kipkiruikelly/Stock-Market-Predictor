@@ -25,7 +25,8 @@ export const Sidebar: React.FC = () => {
     { name: 'Research', path: '/research', icon: <Search size={20} /> },
     { name: 'Screener', path: '/screener', icon: <Activity size={20} /> },
     { name: 'AI Robots', path: '/bots', icon: <Cpu size={20} /> },
-    { name: 'Strategy Tools', path: '/tools', icon: <Layers size={20} /> },
+    { name: 'AI Workflows', path: '/pipeline', icon: <Layers size={20} /> },
+    { name: 'Strategy Tools', path: '/tools', icon: <Zap size={20} /> },
     { name: 'Settings', path: '/settings', icon: <Settings size={20} /> },
   ];
 

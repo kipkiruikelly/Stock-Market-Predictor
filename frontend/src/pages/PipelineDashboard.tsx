@@ -3,6 +3,7 @@ import { Box, Typography, Grid, Card, CardContent, CircularProgress, Button, For
 import { apiFetch } from '../utils/api';
 import toast from 'react-hot-toast';
 import { ShieldCheck, Play, Save, RefreshCw, BarChart2, Terminal } from 'lucide-react';
+import { AutonomousWorkflowWidget } from '../components/AutonomousWorkflowWidget';
 
 export const PipelineDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -148,6 +149,9 @@ export const PipelineDashboard: React.FC = () => {
           Configure, train, and query modular DASE pipeline engines and custom plugins dynamically.
         </Typography>
       </Box>
+
+      {/* Autonomous 15-Minute Market Scanner & Workflow Widget */}
+      <AutonomousWorkflowWidget />
 
       <Grid container spacing={4}>
         {/* Left Side: Pipeline Config Panel */}

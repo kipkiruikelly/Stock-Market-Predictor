@@ -59,14 +59,15 @@ class PipelineRunView(APIView):
         if mode not in ["ingest", "train", "predict"]:
             return Response({"ok": False, "error": f"Invalid mode: {mode}"}, status=400)
             
+        timeout_sec = 120 if mode in ["train", "ingest"] else 30
         try:
             cmd = [PYTHON_EXE, CLI_PATH, "--mode", mode, "--symbol", symbol, "--interval", interval]
-            # Run command synchronously with a 15-second timeout and capture logs
+            # Run command synchronously with mode-appropriate timeout
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=15,
+                timeout=timeout_sec,
                 cwd=os.path.dirname(CLI_PATH)
             )
             
@@ -99,6 +100,33 @@ class PipelineRunView(APIView):
                 "prediction": prediction_data
             })
         except subprocess.TimeoutExpired:
-            return Response({"ok": False, "error": "Execution timeout expired (15s limit)", "logs": "Timeout expired while executing subprocess pipeline."})
+            return Response({"ok": False, "error": f"Execution timeout expired ({timeout_sec}s limit)", "logs": "Timeout expired while executing subprocess pipeline."})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CronRetrainView(APIView):
+    """HTTP trigger for Cloud Scheduler / Cron to execute midnight universe retraining."""
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        auth_token = request.headers.get("X-CRON-KEY") or request.query_params.get("token")
+        expected_token = os.environ.get("ADMIN_CRON_TOKEN", "bull-logic-midnight-cron-secret")
+        
+        if auth_token != expected_token and os.environ.get("ENV") == "production":
+            return Response({"ok": False, "error": "Unauthorized cron token"}, status=403)
+
+        from trading.scheduler import run_universe_retraining
+        import threading
+        
+        # Run asynchronously in background thread so HTTP call doesn't time out
+        t = threading.Thread(target=run_universe_retraining, daemon=True)
+        t.start()
+
+        return Response({
+            "ok": True,
+            "message": "Automated universe retraining job dispatched successfully for midnight execution."
+        })
+

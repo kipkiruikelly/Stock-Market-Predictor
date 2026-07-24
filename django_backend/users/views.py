@@ -184,17 +184,19 @@ class ProfileView(APIView):
         return Response(_user_response(request, request.user))
 
     def post(self, request):
-        """Update display-name-safe profile fields."""
+        """Update profile fields."""
         user = request.user
-        allowed = ['email']
+        allowed = ['email', 'avatar', 'bio', 'trading_style', 'twitter_handle', 'discord_handle', 'is_profile_public']
         updated = []
 
         for field in allowed:
             if field in request.data:
-                new_val = request.data[field].strip().lower()
-                if field == 'email' and User.objects.filter(email=new_val).exclude(pk=user.pk).exists():
-                    return Response({'ok': False, 'error': 'Email already in use.'}, status=409)
-                setattr(user, field, new_val)
+                val = request.data[field]
+                if field == 'email':
+                    val = str(val).strip().lower()
+                    if User.objects.filter(email=val).exclude(pk=user.pk).exists():
+                        return Response({'ok': False, 'error': 'Email already in use.'}, status=409)
+                setattr(user, field, val)
                 updated.append(field)
 
         if updated:

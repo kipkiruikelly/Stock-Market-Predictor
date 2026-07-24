@@ -20,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             'xp_into_level', 'current_streak', 'longest_streak',
             'paper_trading_opted_in', 'is_pro', 'is_plus',
             'predictions_remaining', 'predictions_today', 'total_predictions',
+            'avatar', 'bio', 'trading_style', 'twitter_handle', 'discord_handle', 'is_profile_public',
         ]
         read_only_fields = fields
 

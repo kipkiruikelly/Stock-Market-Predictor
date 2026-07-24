@@ -238,6 +238,8 @@ INTRADAY_EXTRA_COLS = list(ict_features.INTRADAY_ICT_COLS)
 
 # ── Data fetching ──────────────────────────────────────────────────────────────
 
+DATA_DIR = os.path.join(os.path.dirname(BASE_DIR), "Data")
+
 def fetch_data(ticker: str, interval: str = "1d") -> pd.DataFrame:
     if interval not in INTERVAL_CONFIG:
         raise ValueError(f"Unsupported interval: {interval}")
@@ -246,10 +248,36 @@ def fetch_data(ticker: str, interval: str = "1d") -> pd.DataFrame:
     cfg = INTERVAL_CONFIG[interval]
     period = cfg["yf_period"]
 
-    df = yf.download(yf_ticker, period=period, interval=cfg["yf_interval"],
-                     auto_adjust=True, progress=False)
-    if isinstance(df.columns, pd.MultiIndex):
-        df.columns = df.columns.get_level_values(0)
+    # 1. Fetch newest available OHLCV data
+    new_df = yf.download(yf_ticker, period=period, interval=cfg["yf_interval"],
+                         auto_adjust=True, progress=False)
+    if isinstance(new_df.columns, pd.MultiIndex):
+        new_df.columns = new_df.columns.get_level_values(0)
+
+    # 2. Incremental dataset update: merge with existing OHLCV history so new days are added
+    os.makedirs(DATA_DIR, exist_ok=True)
+    cache_file = os.path.join(DATA_DIR, f"history_{ticker}_{interval}.csv")
+
+    if os.path.exists(cache_file):
+        try:
+            existing_df = pd.read_csv(cache_file, index_col=0, parse_dates=True)
+            if not existing_df.empty and new_df is not None and not new_df.empty:
+                combined = pd.concat([existing_df, new_df])
+                combined = combined[~combined.index.duplicated(keep="last")].sort_index()
+                df = combined
+            else:
+                df = new_df if (new_df is not None and not new_df.empty) else existing_df
+        except Exception:
+            df = new_df
+    else:
+        df = new_df
+
+    # Save updated cumulative history
+    if df is not None and not df.empty:
+        try:
+            df.to_csv(cache_file)
+        except Exception:
+            pass
 
     if cfg["resample_to"] == "4h" and df is not None and not df.empty:
         df = df.resample("4h", label="left", closed="left").agg({
@@ -498,8 +526,18 @@ def train_ticker(ticker: str, interval: str = "1d",
     lr_mae  = mean_absolute_error(y_px_test, lr_pred)
     lr_r2   = r2_score(y_px_test, lr_pred)
 
-    rf = RandomForestRegressor(n_estimators=rf_trees, max_depth=rf_depth,
-                               n_jobs=2, random_state=42)
+    # Check for existing models to enable incremental warm-start retraining
+    rf_path = os.path.join(MODELS_DIR, f"rf_model_{ticker}{suffix}.pkl")
+    if os.path.exists(rf_path):
+        try:
+            rf = joblib.load(rf_path)
+            rf.warm_start = True
+            rf.n_estimators = max(rf.n_estimators + 10, rf_trees)
+        except Exception:
+            rf = RandomForestRegressor(n_estimators=rf_trees, max_depth=rf_depth, n_jobs=2, random_state=42)
+    else:
+        rf = RandomForestRegressor(n_estimators=rf_trees, max_depth=rf_depth, n_jobs=2, random_state=42)
+
     rf.fit(X_train, y_ret_train)
     rf_price_pred = close_test * (1 + rf.predict(X_test) / 100)
     rf_mae = mean_absolute_error(y_px_test, rf_price_pred)
@@ -512,8 +550,6 @@ def train_ticker(ticker: str, interval: str = "1d",
         y_dir = (df["Next_Return"].values > 0).astype(int)
 
         # 5-fold walk-forward CV on training portion (no data leakage).
-        # Purge: drop the last bars of each training fold whose forward
-        # looking labels overlap the validation window.
         _PURGE = 5
         X_cv  = X_raw[:split1]
         y_cv  = y_dir[:split1]
@@ -532,11 +568,20 @@ def train_ticker(ticker: str, interval: str = "1d",
             fold_accs.append(accuracy_score(y_cv[val_idx], m.predict(Xvl)))
         xgb_cv_acc = float(np.mean(fold_accs))
 
-        # Final model trained on full training split
+        # Final model trained incrementally on updated dataset
+        xgb_path = os.path.join(MODELS_DIR, f"xgb_model_{ticker}{suffix}.pkl")
         xgb = XGBClassifier(n_estimators=200, max_depth=4, learning_rate=0.05,
                              subsample=0.8, colsample_bytree=0.8,
                              random_state=42, eval_metric="logloss", verbosity=0)
-        xgb.fit(X_train, y_dir[:split1])      # X_train already scaled by scaler
+        
+        if os.path.exists(xgb_path):
+            try:
+                prev_xgb = joblib.load(xgb_path)
+                xgb.fit(X_train, y_dir[:split1], xgb_model=prev_xgb.get_booster())
+            except Exception:
+                xgb.fit(X_train, y_dir[:split1])
+        else:
+            xgb.fit(X_train, y_dir[:split1])
         y_dir_test = y_dir[split2:]
         xgb_preds  = xgb.predict(X_test)
         xgb_proba  = xgb.predict_proba(X_test)[:, 1]

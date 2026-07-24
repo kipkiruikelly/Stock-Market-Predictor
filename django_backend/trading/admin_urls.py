@@ -1,5 +1,6 @@
 from django.urls import path
 from . import admin_views
+from . import pipeline_views
 
 urlpatterns = [
     path('overview', admin_views.AdminOverviewView.as_view(), name='admin-api-overview'),
@@ -20,5 +21,6 @@ urlpatterns = [
     path('gift-codes/generate', admin_views.AdminGiftCodesApiView.as_view(), name='admin-api-gift-codes-generate'),
     path('pillars/data', admin_views.AdminPillarsDataView.as_view(), name='admin-api-pillars-data'),
     path('pillars/action', admin_views.AdminPillarsActionView.as_view(), name='admin-api-pillars-action'),
+    path('pipeline/cron-retrain', pipeline_views.CronRetrainView.as_view(), name='admin-api-cron-retrain'),
 ]
 

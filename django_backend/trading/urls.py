@@ -9,11 +9,35 @@ from . import tools_views
 from . import macro_views
 from . import mt5_views
 from . import pipeline_views
+from . import workflow_views
+from . import analytics_views
+from . import recommender_views
+from . import execution_views
 
 urlpatterns = [
-    # ── Bots ─────────────────────────────────────────────────────
+    # ── Institutional Smart Execution Engine ─────────────────────
+    path('execution/smart-order', execution_views.SmartOrderView.as_view(), name='api-execution-smart-order'),
+    path('execution/stats', execution_views.ExecutionStatsView.as_view(), name='api-execution-stats'),
+
+    # ── Recommender System ───────────────────────────────────────
+    path('recommendations', recommender_views.RecommendationsView.as_view(), name='api-recommendations'),
+
+    # ── Standard ML, Dataset & Analytics Endpoints ───────────────
+    path('model/info', analytics_views.ModelInfoView.as_view(), name='api-model-info'),
+    path('properties', analytics_views.DatasetPropertiesView.as_view(), name='api-properties'),
+    path('upload', analytics_views.DatasetUploadView.as_view(), name='api-upload'),
+    path('statistics', analytics_views.StatisticsView.as_view(), name='api-statistics'),
+    path('feature-importance', analytics_views.FeatureImportanceApiView.as_view(), name='api-feature-importance-query'),
+    # ── Autonomous Workflows & FSM Engine ────────────────────────
+    path('workflow/status', workflow_views.WorkflowStatusView.as_view(), name='api-workflow-status'),
+    path('workflow/toggle-scanner', workflow_views.WorkflowToggleScannerView.as_view(), name='api-workflow-toggle-scanner'),
+    path('workflow/trigger-scan', workflow_views.WorkflowTriggerScanView.as_view(), name='api-workflow-trigger-scan'),
+    # ── AI Robots & Automation ───────────────────────────────────
     path('bots', views.BotsView.as_view(), name='api-bots'),
     path('bots/subscribe', views.BotSubscribeView.as_view(), name='api-bots-subscribe'),
+    path('bots/signals', views.BotSignalsView.as_view(), name='api-bots-signals'),
+    path('bots/auto-trade', views.BotAutoTradeView.as_view(), name='api-bots-auto-trade'),
+    path('bots/backtest', views.BotBacktestView.as_view(), name='api-bots-backtest'),
 
     # ── Market ────────────────────────────────────────────────────
     path('market/movers', views.MarketMoversView.as_view(), name='api-market-movers'),

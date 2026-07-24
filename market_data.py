@@ -233,6 +233,21 @@ def get_history(symbol, period="1y", interval="1d"):
     import yfinance as yf
     import pandas as pd
 
+    # Auto-adjust period for intraday intervals to match Yahoo Finance API constraints
+    intraday_limits = {
+        "1m": "7d",
+        "2m": "60d",
+        "5m": "60d",
+        "15m": "60d",
+        "30m": "60d",
+        "60m": "730d",
+        "1h": "730d",
+        "4h": "730d",
+    }
+    if interval in intraday_limits:
+        if period in ["1y", "18mo", "2y", "5y", "10y", "max", "ytd"]:
+            period = intraday_limits[interval]
+
     key = (symbol.upper(), period, interval)
     ttl = _HIST_TTL.get(interval, 1800)
     now = time.time()

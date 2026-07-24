@@ -1,7 +1,22 @@
 from django.urls import path
 from . import views
+from . import auth_views
+from . import reset_views
 
 urlpatterns = [
+    # ── JWT & OAuth Authentication ────────────────────────────────
+    path('auth/jwt/login', auth_views.JwtLoginView.as_view(), name='api-jwt-login'),
+    path('auth/jwt/refresh', auth_views.JwtRefreshView.as_view(), name='api-jwt-refresh'),
+    path('auth/jwt/logout', auth_views.JwtLogoutView.as_view(), name='api-jwt-logout'),
+    path('auth/google', auth_views.GoogleOAuthView.as_view(), name='api-google-oauth'),
+
+    # ── Password Reset & Email Verification ───────────────────────
+    path('auth/forgot-password', reset_views.ForgotPasswordView.as_view(), name='api-forgot-password'),
+    path('auth/reset-password', reset_views.ResetPasswordView.as_view(), name='api-reset-password'),
+    path('auth/verify-email', reset_views.VerifyEmailView.as_view(), name='api-verify-email'),
+    path('auth/resend-verification', reset_views.ResendVerificationView.as_view(), name='api-resend-verification'),
+
+    # ── Session Authentication ───────────────────────────────────
     path('login', views.LoginView.as_view(), name='api-login'),
     path('register', views.RegisterView.as_view(), name='api-register'),
     path('logout', views.LogoutView.as_view(), name='api-logout'),

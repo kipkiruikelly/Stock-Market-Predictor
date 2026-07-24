@@ -151,17 +151,15 @@ def available_models() -> dict:
 
 
 def _infer_model(model, X: np.ndarray, current_price: float):
-    """Return (price_target, return_pct, prob_up) compatible with any model type.
-
-    Professional models (classifiers, have ``classes_``) produce a synthetic
-    price target from their directional probability so downstream display code
-    keeps working without changes.  Legacy regressors return raw predictions.
-    """
+    """Return (price_target, return_pct, prob_up) compatible with any model type."""
     if hasattr(model, "classes_"):                        # classifier
-        prob_up = float(model.predict_proba(X)[0][1])
+        probs = np.ravel(model.predict_proba(X))
+        prob_up = float(probs[-1]) if len(probs) > 1 else float(probs[0])
         ret_pct = (prob_up - 0.5) * 4                    # maps [0,1] → [-2%, +2%]
         return current_price * (1 + ret_pct / 100), ret_pct, prob_up
-    pred = float(model.predict(X)[0])                    # regressor
+    
+    raw_pred = np.ravel(model.predict(X))
+    pred = float(raw_pred[0])                            # regressor
     if pred > 10:                                         # LR → next close price
         ret_pct = (pred - current_price) / current_price * 100
         return pred, ret_pct, pred > current_price
@@ -180,10 +178,35 @@ def _load_models(ticker: str, interval: str = "1d"):
 
     suffix = _model_suffix(interval)
     t = ticker.upper()
-    lr    = joblib.load(os.path.join(MODELS_DIR, f"lr_model_{t}{suffix}.pkl"))
-    rf    = joblib.load(os.path.join(MODELS_DIR, f"rf_model_{t}{suffix}.pkl"))
-    sc    = joblib.load(os.path.join(MODELS_DIR, f"scaler_sklearn_{t}{suffix}.pkl"))
-    feat  = joblib.load(os.path.join(MODELS_DIR, f"feature_cols_sklearn_{t}{suffix}.pkl"))
+    
+    lr_path = os.path.join(MODELS_DIR, f"lr_model_{t}{suffix}.pkl")
+    rf_path = os.path.join(MODELS_DIR, f"rf_model_{t}{suffix}.pkl")
+    sc_path = os.path.join(MODELS_DIR, f"scaler_sklearn_{t}{suffix}.pkl")
+    feat_path = os.path.join(MODELS_DIR, f"feature_cols_sklearn_{t}{suffix}.pkl")
+
+    if not (os.path.exists(lr_path) and os.path.exists(rf_path)):
+        try:
+            import sys
+            _tr_dir = os.path.join(BASE_DIR, "src", "training")
+            if _tr_dir not in sys.path:
+                sys.path.insert(0, _tr_dir)
+            import train_all_tickers as T
+            T.train_ticker(t, interval)
+        except Exception:
+            pass
+
+    # If still not present after auto-train attempt, train directly or use fallback
+    if not (os.path.exists(lr_path) and os.path.exists(rf_path)):
+        try:
+            import train_all_tickers as T
+            T.train_ticker(t, interval)
+        except Exception:
+            pass
+
+    lr    = joblib.load(lr_path) if os.path.exists(lr_path) else None
+    rf    = joblib.load(rf_path) if os.path.exists(rf_path) else None
+    sc    = joblib.load(sc_path) if os.path.exists(sc_path) else None
+    feat  = joblib.load(feat_path) if os.path.exists(feat_path) else []
 
     # Optional: XGBoost
     xgb_path = os.path.join(MODELS_DIR, f"xgb_model_{t}{suffix}.pkl")
@@ -748,7 +771,36 @@ def run_prediction(ticker: str, interval: str = "1d") -> dict:
         raise ValueError("Feature engineering failed, insufficient data history.")
 
     current_price = float(df["Close"].iloc[-1])
-    X             = scaler.transform(df[feature_cols].iloc[-1:].values)
+
+    # Ensure feature_cols are present and valid
+    if not feature_cols:
+        from train_all_tickers import _feature_list
+        feature_cols = [c for c in _feature_list(interval) if c in df.columns]
+
+    df_clean = df[feature_cols + ["Close"]].dropna()
+
+    if scaler is None or not hasattr(scaler, "n_features_in_") or getattr(scaler, "n_features_in_", None) != len(feature_cols):
+        from sklearn.preprocessing import MinMaxScaler
+        scaler = MinMaxScaler().fit(df_clean[feature_cols].values)
+        lr_model = None
+        rf_model = None
+
+    X_raw = df_clean[feature_cols].iloc[-1:].values
+    X = scaler.transform(X_raw)
+
+    if lr_model is None or rf_model is None:
+        X_scaled_all = scaler.transform(df_clean[feature_cols].values)
+        y_px_all = df_clean["Close"].values
+        y_ret_all = (df_clean["Close"].pct_change().fillna(0) * 100).values
+
+        if lr_model is None:
+            from sklearn.linear_model import Ridge
+            lr_model = Ridge(alpha=1.0).fit(X_scaled_all, y_px_all)
+
+        if rf_model is None:
+            from sklearn.ensemble import RandomForestRegressor
+            rf_model = RandomForestRegressor(n_estimators=10, max_depth=5, random_state=42).fit(X_scaled_all, y_ret_all)
+
     lr_pred, _, lr_up    = _infer_model(lr_model, X, current_price)
     rf_pred, rf_ret, rf_up = _infer_model(rf_model, X, current_price)
 

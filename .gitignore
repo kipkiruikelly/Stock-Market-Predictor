@@ -42,7 +42,9 @@ tools/caddy.exe
 # Django collected static files
 django_backend/staticfiles/
 tools/ngrok.exe
-tools/*.log
-logs/
-caddy/data/
-caddy/logs/
+# Local temporary files
+cookies.txt
+.vs/
+scratch/
+uploads/
+*.sql
