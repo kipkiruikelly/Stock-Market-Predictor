@@ -172,7 +172,7 @@ class PortfolioView(APIView):
 
 
 class MarketHistoryView(APIView):
-    """GET /api/market/history — get candle data with computed ICT indicators."""
+    """GET /api/market/history — get candle data via Time-Series Engine (TSDB)."""
     permission_classes = [IsAuthenticated]
     authentication_classes = [SessionAuthentication]
 
@@ -180,85 +180,8 @@ class MarketHistoryView(APIView):
         symbol = request.query_params.get('symbol', 'EURUSD').upper().strip()
         interval = request.query_params.get('interval', '5m')
 
-        # Dynamically map interval to a compatible yfinance period
-        interval_periods = {
-            '1m': '5d',
-            '5m': '30d',
-            '15m': '30d',
-            '30m': '60d',
-            '1h': '1y',
-            '4h': '2y',
-            '1d': '3y'
-        }
-        period = request.query_params.get('period')
-        if not period:
-            period = interval_periods.get(interval, '1y')
-
-        # Enforce minimum data length for indicator calculation stability
-        if interval == '1d' and period in ('5d', '1mo'):
-            period = '3mo'
-
-        import sys
-        from pathlib import Path
-        _PARENT_DIR = str(Path(__file__).resolve().parent.parent.parent)
-        if _PARENT_DIR not in sys.path:
-            sys.path.insert(0, _PARENT_DIR)
-
-        import market_data
-        import ict_features
-
-        try:
-            df, meta = market_data.get_history(symbol, period=period, interval=interval)
-            if df is None or df.empty:
-                # Synthetic OHLCV candle fallback
-                from trading.state_machine import _run_lightweight_inference
-                import time as _time
-                inf = _run_lightweight_inference(symbol, interval)
-                ref = inf.get("current_price", 100.0)
-                now_ts = int(_time.time())
-                step_sec = 300 if interval == '5m' else 86400
-                synth_candles = []
-                for i in range(50, 0, -1):
-                    t = now_ts - i * step_sec
-                    o = ref * (1 + (i % 7 - 3) * 0.002)
-                    h = o * 1.004
-                    l = o * 0.996
-                    c = o * (1 + (i % 5 - 2) * 0.001)
-                    synth_candles.append({
-                        'time': t * 1000,
-                        'open': round(o, 2),
-                        'high': round(h, 2),
-                        'low': round(l, 2),
-                        'close': round(c, 2),
-                        'volume': 10000 + i * 100,
-                        'bull_fvg': 0, 'bear_fvg': 0, 'bull_ob': 0, 'bear_ob': 0,
-                        'above_200sma': 1, 'structure_bullish': 1, 'htf_bias': 1, 'atr': round(ref * 0.01, 2)
-                    })
-                return Response({'ok': True, 'symbol': symbol, 'interval': interval, 'candles': synth_candles, 'executions': [], 'active_trade': None, 'last_closed_trade': None})
-
-            # Add ICT features
-            df = ict_features.add_base_ta(df)
-            
-            # Format output
-            candles = []
-            for idx, row in df.iterrows():
-                timestamp = int(idx.timestamp()) * 1000
-                candles.append({
-                    'time': timestamp,
-                    'open': float(row['Open']),
-                    'high': float(row['High']),
-                    'low': float(row['Low']),
-                    'close': float(row['Close']),
-                    'volume': float(row['Volume']),
-                    'bull_fvg': int(row.get('Bull_FVG_Count', 0)),
-                    'bear_fvg': int(row.get('Bear_FVG_Count', 0)),
-                    'bull_ob': int(row.get('Bull_OB_Count', 0)),
-                    'bear_ob': int(row.get('Bear_OB_Count', 0)),
-                    'above_200sma': int(row.get('Above_200SMA', 0)),
-                    'structure_bullish': int(row.get('Structure_Bullish', 0)),
-                    'htf_bias': int(row.get('HTF_Bullish_Bias', 1)),
-                    'atr': float(row.get('ATR_14', 0.0))
-                })
+        from trading.tsdb_manager import query_candles
+        candles = query_candles(symbol, interval, count=100)
 
             # Fetch user's paper executions for overlaying entry/exit lines
             from users.models import PaperTrade

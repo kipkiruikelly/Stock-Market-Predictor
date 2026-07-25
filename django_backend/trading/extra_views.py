@@ -37,16 +37,22 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 # ── Screener Endpoint ─────────────────────────────────────────────────────────
 
 class ScreenerView(APIView):
-    """GET /api/screener — return a list of real ML-derived stock screener results."""
+    """GET /api/screener — return stock screener results via Search Engine."""
     permission_classes = [IsAuthenticated]
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
         interval = request.query_params.get("interval", "1d")
+        q = request.query_params.get("q", "")
         if interval not in ("1d", "1h", "5m", "15m", "4h"):
             interval = "1d"
 
-        tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
+        from trading.search_engine import search_instruments
+        if q:
+            catalog = search_instruments(q, limit=15)
+            tickers = [inst["ticker"] for inst in catalog]
+        else:
+            tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
 
         def _scan(ticker):
             try:
