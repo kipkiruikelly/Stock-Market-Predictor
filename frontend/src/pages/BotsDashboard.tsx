@@ -644,7 +644,7 @@ export const BotsDashboard: React.FC = () => {
 
           <TextField
             label="Risk per Trade (%)" type="number" value={backtestRisk} size="small"
-            inputProps={{ min: 0.1, max: 10, step: 0.1 }}
+            slotProps={{ htmlInput: { min: 0.1, max: 10, step: 0.1 } }}
             onChange={e => setBacktestRisk(Number(e.target.value))}
             fullWidth
           />
