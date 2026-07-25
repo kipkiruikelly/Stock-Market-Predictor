@@ -273,73 +273,73 @@ class MarketHistoryView(APIView):
                     'time': int(prev_pred.predicted_at.timestamp()) * 1000
                 }
 
-            # Get last closed trade
-            last_closed = PaperTrade.objects.filter(
-                user=request.user,
-                ticker__icontains=base_ticker,
-                status='closed'
-            ).order_by('-exit_time').first()
-            
-            last_closed_data = None
-            if last_closed:
-                last_closed_data = {
-                    'id': last_closed.id,
-                    'side': last_closed.side,
-                    'entry_price': last_closed.entry_price,
-                    'exit_price': last_closed.exit_price,
-                    'pnl': last_closed.pnl,
-                    'time': int(last_closed.exit_time.timestamp()) * 1000 if last_closed.exit_time else None
-                }
+        # Get last closed trade
+        last_closed = PaperTrade.objects.filter(
+            user=request.user,
+            ticker__icontains=base_ticker,
+            status='closed'
+        ).order_by('-exit_time').first()
+        
+        last_closed_data = None
+        if last_closed:
+            last_closed_data = {
+                'id': last_closed.id,
+                'side': last_closed.side,
+                'entry_price': last_closed.entry_price,
+                'exit_price': last_closed.exit_price,
+                'pnl': last_closed.pnl,
+                'time': int(last_closed.exit_time.timestamp()) * 1000 if last_closed.exit_time else None
+            }
 
-            # Fetch the latest prediction (regardless of execution)
-            from users.models import PredictionHistory
-            pred = PredictionHistory.objects.filter(
-                user=request.user,
-                ticker__icontains=base_ticker
-            ).order_by('-predicted_at').first()
+        # Fetch the latest prediction (regardless of execution)
+        from users.models import PredictionHistory
+        pred = PredictionHistory.objects.filter(
+            user=request.user,
+            ticker__icontains=base_ticker
+        ).order_by('-predicted_at').first()
+        
+        current_prediction_data = None
+        if pred:
+            latest_atr = candles[-1]['atr'] if candles else 1.0
+            if latest_atr == 0.0:
+                latest_atr = 1.0
             
-            current_prediction_data = None
-            if pred:
-                latest_atr = candles[-1]['atr'] if candles else 1.0
-                if latest_atr == 0.0:
-                    latest_atr = 1.0
-                
-                entry = pred.current_price
-                direction_upper = pred.direction.upper()
-                
-                if any(x in direction_upper for x in ('BUY', 'LONG', 'UP')):
-                    side = 'LONG'
-                    sl = entry - 1.5 * latest_atr
-                    tp = entry + 3.0 * latest_atr
-                elif any(x in direction_upper for x in ('SELL', 'SHORT', 'DOWN')):
-                    side = 'SHORT'
-                    sl = entry + 1.5 * latest_atr
-                    tp = entry - 3.0 * latest_atr
-                else:
-                    side = 'HOLD'
-                    sl = entry
-                    tp = entry
-                
-                current_prediction_data = {
-                    'id': pred.id,
-                    'side': side,
-                    'entry_price': entry,
-                    'stop_price': sl,
-                    'target_price': tp,
-                    'confidence': pred.confidence,
-                    'time': int(pred.predicted_at.timestamp()) * 1000
-                }
+            entry = pred.current_price
+            direction_upper = pred.direction.upper()
             
-            return Response({
-                'ok': True, 
-                'symbol': symbol, 
-                'interval': interval, 
-                'candles': candles,
-                'executions': executions,
-                'active_trade': active_trade_data,
-                'last_closed_trade': last_closed_data,
-                'current_prediction': current_prediction_data
-            })
+            if any(x in direction_upper for x in ('BUY', 'LONG', 'UP')):
+                side = 'LONG'
+                sl = entry - 1.5 * latest_atr
+                tp = entry + 3.0 * latest_atr
+            elif any(x in direction_upper for x in ('SELL', 'SHORT', 'DOWN')):
+                side = 'SHORT'
+                sl = entry + 1.5 * latest_atr
+                tp = entry - 3.0 * latest_atr
+            else:
+                side = 'HOLD'
+                sl = entry
+                tp = entry
+            
+            current_prediction_data = {
+                'id': pred.id,
+                'side': side,
+                'entry_price': entry,
+                'stop_price': sl,
+                'target_price': tp,
+                'confidence': pred.confidence,
+                'time': int(pred.predicted_at.timestamp()) * 1000
+            }
+        
+        return Response({
+            'ok': True, 
+            'symbol': symbol, 
+            'interval': interval, 
+            'candles': candles,
+            'executions': executions,
+            'active_trade': active_trade_data,
+            'last_closed_trade': last_closed_data,
+            'current_prediction': current_prediction_data
+        })
         except Exception as e:
             return Response({'ok': False, 'error': str(e)}, status=500)
 
