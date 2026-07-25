@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Box, Button, ButtonGroup, Typography, CircularProgress, FormControlLabel, Checkbox, useTheme } from '@mui/material';
 import { Maximize2, Minimize2, ShieldAlert } from 'lucide-react';
 import { createChart, CandlestickSeries, createSeriesMarkers, LineStyle } from 'lightweight-charts';
+import { apiFetch } from '../utils/api';
 
 export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
   const muiTheme = useTheme();
@@ -43,11 +44,10 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
       setErrorMsg('');
       try {
         const cleanSymbol = symbol.split(':').pop() || symbol;
-        const res = await fetch(`/api/market/history?symbol=${cleanSymbol}&interval=${timeframe}`);
-        const json = await res.json();
+        const json = await apiFetch(`/api/market/history?symbol=${cleanSymbol}&interval=${timeframe}`);
         
-        if (!json.ok || !json.candles) {
-          throw new Error(json.error || 'Failed to load historical data');
+        if (!json || !json.ok || !json.candles) {
+          throw new Error(json?.error || 'Failed to load historical data');
         }
 
         dataCache.current = json;

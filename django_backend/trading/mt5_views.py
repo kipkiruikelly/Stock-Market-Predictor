@@ -149,23 +149,28 @@ class MT5CloseAllView(APIView):
 
 
 class LiveSummaryView(APIView):
-    """GET /api/live/summary — return statistics summary of live portfolio."""
+    """GET /api/live/summary — return statistics summary of live/paper portfolio."""
     permission_classes    = [IsAuthenticated]
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import UserPaperAccount, PortfolioPosition, PaperTrade
         connected = False
-        equity = 10000.0
-        balance = 10000.0
-        open_positions = 0
+        
+        # Load user paper account from database
+        user_acct, _ = UserPaperAccount.objects.get_or_create(user=request.user)
+        balance = user_acct.balance
+        equity = user_acct.equity
+        open_positions = PortfolioPosition.objects.filter(user=request.user, status='open').count() + PaperTrade.objects.filter(user=request.user, status='open').count()
         
         if MT5_AVAILABLE and _mt5 and hasattr(_mt5, 'trader'):
             status = _mt5.trader.get_status()
             connected = status.get("connected", False)
-            acc = status.get("account") or {}
-            balance = acc.get("balance", 10000.0)
-            equity = acc.get("equity", balance)
-            open_positions = len(status.get("positions") or [])
+            if connected:
+                acc = status.get("account") or {}
+                balance = acc.get("balance", balance)
+                equity = acc.get("equity", equity)
+                open_positions = len(status.get("positions") or [])
             
         return Response({
             "ok": True,

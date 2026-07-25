@@ -776,9 +776,13 @@ class MT5Trader:
             if account > 0:
                 self._log("INFO", f"Attempting auto-connect to live MT5 account {account}...")
                 res = self.connect(account, password, server, host, port)
-                return res.get("ok", False)
+                if res.get("ok"):
+                    self._log("INFO", f"Auto-connect succeeded for MT5 account {account}.")
+                    return True
+                else:
+                    self._log("WARN", f"Auto-connect failed for account {account}: {res.get('error')}")
         except Exception as e:
-            self._log("ERROR", f"Auto-connect error: {e}")
+            self._log("ERROR", f"Auto-connect exception: {e}")
         return False
 
     def disconnect(self):

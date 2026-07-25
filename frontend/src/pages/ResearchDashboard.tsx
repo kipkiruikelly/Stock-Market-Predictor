@@ -145,16 +145,17 @@ export const ResearchDashboard: React.FC = () => {
 
   const fetchResearch = useCallback(async (t: string) => {
     if (!t) return;
+    const upperT = t.trim().toUpperCase();
+    setActiveTicker(upperT);
     setLoading(true);
     setAiAnalysis(''); // Clear AI commentary when switching tickers
     try {
-      const json = await apiFetch(`/api/research/${t}`);
+      const json = await apiFetch(`/api/research/${upperT}`);
       if (json.ok && json.data) {
         setPriceData(json.data.price || {});
         setInfoData(json.data.info || {});
         setNewsList(json.data.news || []);
         setPrediction(json.data.prediction || {});
-        setActiveTicker(t);
       } else {
         toast.error(json.error || 'Failed to load research analytics');
       }
