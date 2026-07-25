@@ -6,6 +6,9 @@ try:
 except ImportError:
     dj_database_url = None
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR.parent / '.env')
 
@@ -62,17 +65,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bulllogic.wsgi.application'
 
-# ── Database Configuration (Google Cloud SQL / Postgres / SQLite) ─────────────
+# ── Database Configuration (Google Cloud SQL / Postgres / SQLite) -------------
 DATABASE_URL = os.getenv('DATABASE_URL')
 parsed_db = None
 if DATABASE_URL and dj_database_url:
     try:
-        # Standardize postgresql scheme
+        # Standardize postgresql and mysql+pymysql schemes
         url = DATABASE_URL
         if url.startswith('postgres://'):
             url = url.replace('postgres://', 'postgresql://', 1)
+        
+        is_mysql = False
+        if url.startswith('mysql://') or url.startswith('mysql+pymysql://'):
+            is_mysql = True
+            url = url.replace('mysql+pymysql://', 'mysql://', 1)
+            
         parsed_db = dj_database_url.parse(url, conn_max_age=600, conn_health_checks=True)
-    except Exception:
+        
+        if is_mysql and parsed_db:
+            import urllib.parse as urlparse
+            parsed_url = urlparse.urlparse(DATABASE_URL)
+            query_params = urlparse.parse_qs(parsed_url.query)
+            if 'unix_socket' in query_params:
+                socket_path = query_params['unix_socket'][0]
+                # Django MySQL backend connects via unix socket if HOST starts with '/'
+                parsed_db['HOST'] = socket_path
+                parsed_db['PORT'] = ''
+                parsed_db['ENGINE'] = 'django.db.backends.mysql'
+    except Exception as e:
+        print("DATABASE_URL parsing error:", e)
         parsed_db = None
 
 # Ensure instance directory exists for SQLite
