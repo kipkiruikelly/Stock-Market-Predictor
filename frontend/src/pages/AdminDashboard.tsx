@@ -55,7 +55,7 @@ interface BroadcastItem {
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const adminTab = (searchParams.get('tab') || 'overview') as 'overview' | 'client-management' | 'trade-management' | 'risk-management' | 'finance-accounting' | 'system-admin';
+  const adminTab = (searchParams.get('tab') || 'overview') as 'overview' | 'client-management' | 'trade-management' | 'risk-management' | 'finance-accounting' | 'system-admin' | 'gift-codes';
   
   // Pillars Sub-tabs states
   const [clientSubTab, setClientSubTab] = useState<'users' | 'kyc' | 'ib'>('users');
@@ -1243,6 +1243,136 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </HorizonCard>
             )}
+          </div>
+        )}
+
+        {adminTab === 'gift-codes' && (
+          <div className="flex flex-col gap-6 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+              {/* Generate Gift Code */}
+              <HorizonCard extra="p-6 bg-nexus-sf border border-white/5 h-fit">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                  <Plus className="text-nexus-pur animate-pulse" /> Generate Gift Codes
+                </h3>
+                <form onSubmit={handleGenerateGiftCodes} className="flex flex-col gap-4">
+                  <div>
+                    <label className="text-xs text-gray-400 font-bold block mb-1">Access Duration (Days)</label>
+                    <input
+                      type="number"
+                      value={giftDays}
+                      onChange={(e) => setGiftDays(parseInt(e.target.value) || 30)}
+                      min={1}
+                      max={365}
+                      required
+                      className="w-full bg-nexus-bg border border-white/10 text-white rounded-lg p-2 text-xs focus:outline-none focus:border-nexus-pur"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 font-bold block mb-1">Quantity</label>
+                    <input
+                      type="number"
+                      value={giftCount}
+                      onChange={(e) => setGiftCount(parseInt(e.target.value) || 1)}
+                      min={1}
+                      max={20}
+                      required
+                      className="w-full bg-nexus-bg border border-white/10 text-white rounded-lg p-2 text-xs focus:outline-none focus:border-nexus-pur"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-gray-400 font-bold block mb-1">Administrative Note</label>
+                    <input
+                      type="text"
+                      value={giftNote}
+                      onChange={(e) => setGiftNote(e.target.value)}
+                      placeholder="e.g. Promo campaign, Support compensation"
+                      className="w-full bg-nexus-bg border border-white/10 text-white rounded-lg p-2 text-xs focus:outline-none focus:border-nexus-pur"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={generatingGift}
+                    className="w-full py-2.5 bg-gradient-to-r from-nexus-pur to-nexus-blu text-white font-bold text-xs rounded-xl hover:shadow-lg transition cursor-pointer"
+                  >
+                    {generatingGift ? 'Generating...' : 'Generate Codes'}
+                  </button>
+                </form>
+
+                {giftCodesGenerated.length > 0 && (
+                  <div className="mt-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <div className="text-xs font-bold text-green-400 mb-2">Generated Codes:</div>
+                    <div className="flex flex-col gap-1">
+                      {giftCodesGenerated.map((code) => (
+                        <div key={code} className="flex justify-between items-center text-xs">
+                          <code className="text-white font-mono bg-black/30 px-2 py-0.5 rounded select-all">{code}</code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(code);
+                              toast.success('Copied code!');
+                            }}
+                            className="text-[10px] text-nexus-blu font-bold hover:underline"
+                          >
+                            Copy
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </HorizonCard>
+
+              {/* Gift Codes List */}
+              <HorizonCard extra="lg:col-span-2 p-6 bg-nexus-sf border border-white/5">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                  <Database className="text-nexus-pur" /> Gift Codes Inventory
+                </h3>
+                <div className="overflow-x-auto w-full">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-white/5 text-gray-400 font-bold">
+                        <th className="py-2.5">Code</th>
+                        <th className="py-2.5">Duration</th>
+                        <th className="py-2.5">Status</th>
+                        <th className="py-2.5">Redeemed By</th>
+                        <th className="py-2.5">Note</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {giftCodesList.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-gray-500">No gift codes found.</td>
+                        </tr>
+                      ) : (
+                        giftCodesList.map((item) => (
+                          <tr key={item.id} className="border-b border-white/5 hover:bg-white/2 transition">
+                            <td className="py-3 font-mono font-bold text-white">{item.code}</td>
+                            <td className="py-3 text-gray-300">{item.days} Days</td>
+                            <td className="py-3">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                item.used ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'
+                              }`}>
+                                {item.used ? 'Redeemed' : 'Active'}
+                              </span>
+                            </td>
+                            <td className="py-3">
+                              {item.used ? (
+                                <div className="flex flex-col">
+                                  <span className="text-white font-bold">{item.used_by}</span>
+                                  <span className="text-[10px] text-gray-500">{item.used_at?.slice(0, 16)}</span>
+                                </div>
+                              ) : '-'}
+                            </td>
+                            <td className="py-3 text-gray-400 italic max-w-[150px] truncate" title={item.note || ''}>
+                              {item.note || '-'}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </HorizonCard>
+            </div>
           </div>
         )}
 

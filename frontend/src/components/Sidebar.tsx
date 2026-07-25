@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Activity, Briefcase, BarChart2, BookOpen, Settings, Cpu, Zap, Search, Layers, 
-  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign
+  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,6 +16,7 @@ export const Sidebar: React.FC = () => {
     { name: 'TOMS/OMS Control', path: '/admin?tab=trade-management', icon: <Sliders size={20} /> },
     { name: 'Risk & Exposure', path: '/admin?tab=risk-management', icon: <ShieldAlert size={20} /> },
     { name: 'Finance & Ledgers', path: '/admin?tab=finance-accounting', icon: <DollarSign size={20} /> },
+    { name: 'Promo & Gift Codes', path: '/admin?tab=gift-codes', icon: <Ticket size={20} /> },
     { name: 'System Admin & Settings', path: '/admin?tab=system-admin', icon: <Settings size={20} /> },
   ] : [
     { name: 'Portfolio', path: '/portfolio', icon: <Briefcase size={20} /> },
