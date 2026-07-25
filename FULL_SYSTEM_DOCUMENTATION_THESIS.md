@@ -1,25 +1,28 @@
 # TRIPLE FUSION ENGINE (BULLLOGIC v2.0): AN ENTERPRISE QUANTITATIVE TRADING INTELLIGENCE AND MLOPS PLATFORM
 
 **SYSTEM DOCUMENTATION AND TECHNICAL THESIS REPORT**  
-*Submitted in partial fulfillment of the requirements for the Degree of Bachelor of Science in Software Engineering / Computer Science*
+*Submitted in partial fulfillment of the requirements for the award of*  
+**DIPLOMA IN ARTIFICIAL INTELLIGENCE AND CLOUD TECHNOLOGIES (DAC)**  
+*Year 3 Semester 1 | SEMESTER 3 2025/2026 (MAY-AUG 2026)*
 
-**Prepared by:** KELVIN KIPKIRUI (Reg No: DAC-01-0010/2025)  
-**Supervised by:** DEPARTMENT OF SOFTWARE ENGINEERING  
-**Date:** JULY 2026  
+**Prepared by:** KIPKIRUI KELVIN (Reg No: DAC-01-0010/2025)  
+**Supervised by:** DEPARTMENT OF COMPUTER SCIENCE & CLOUD TECHNOLOGIES  
+**Date:** AUGUST 2026  
 
 ---
 
 ## DECLARATION AND APPROVAL
 I declare that this thesis report and the underlying software system entitled **"Triple Fusion Engine (BullLogic v2.0)"** are my original work and have not been submitted to any other institution for academic degree awards.
 
-**Student Signature:** _______________________      **Date:** July 25, 2026  
-Kelvin Kipkirui (DAC-01-0010/2025)  
+**Student Signature:** _______________________      **Date:** August 2026  
+Kipkirui Kelvin (DAC-01-0010/2025)  
+Diploma in Artificial Intelligence and Cloud Technologies (Year 3 Sem 1)  
 
 **Approval by Academic Supervisor:**  
 This report has been submitted for examination with my approval as university supervisor.
 
-**Supervisor Signature:** ____________________      **Date:** July 25, 2026  
-Department of Software Engineering  
+**Supervisor Signature:** ____________________      **Date:** August 2026  
+Department of Computer Science & Cloud Technologies  
 
 ---
 
