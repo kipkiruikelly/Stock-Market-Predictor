@@ -3,13 +3,14 @@ django_backend/core/redis_client.py
 Thread-Safe Polyglot Redis Manager for Sub-1ms Caching & PubSub.
 
 Provides low-latency in-memory state caching, atomic cache invalidation,
-and write-behind synchronization between Redis and the primary RDBMS.
+explicit key expiry / warming, and atomic write-behind synchronization.
 """
 
 import os
 import json
 import logging
 from typing import Any, Optional
+from django.db import transaction
 
 logger = logging.getLogger("redis_client")
 
@@ -18,6 +19,8 @@ _MEMORY_CACHE = {}
 
 _redis_instance = None
 _redis_checked = False
+
+ACCOUNT_CACHE_TTL = 86400  # 24 Hours: inactive user state naturally expires
 
 
 def _get_redis():
@@ -88,26 +91,50 @@ def cache_delete(key: str) -> bool:
     return True
 
 
-def sync_account_state_to_db(user, new_balance: float, new_equity: float):
+def warm_user_account_cache(user) -> dict:
     """
-    Write-Through / Write-Behind Synchronization Engine.
-    Ensures Redis cached account states write back to RDBMS UserPaperAccount
-    upon order execution so source-of-truth remains perfectly reconciled.
+    Cache Warming Engine.
+    Pre-loads user balance and equity into Redis upon user authentication or login,
+    ensuring sub-1ms risk evaluation is immediately warm.
     """
     try:
         from users.models import UserPaperAccount
         acct, _ = UserPaperAccount.objects.get_or_create(user=user)
-        acct.balance = round(new_balance, 2)
-        acct.equity = round(new_equity, 2)
-        acct.save()
-
-        # Update Redis cache atomically
         user_id = user.id if hasattr(user, 'id') else "anon"
-        cache_set(f"user:{user_id}:account_balance", acct.balance, ttl_seconds=300)
-        cache_set(f"user:{user_id}:account_equity", acct.equity, ttl_seconds=300)
 
-        logger.info("Write-Behind Sync: Account state reconciled to DB for user %s (Balance: $%s, Equity: $%s)", user_id, acct.balance, acct.equity)
+        cache_set(f"user:{user_id}:account_balance", round(acct.balance, 2), ttl_seconds=ACCOUNT_CACHE_TTL)
+        cache_set(f"user:{user_id}:account_equity", round(acct.equity, 2), ttl_seconds=ACCOUNT_CACHE_TTL)
+
+        logger.info("Cache Warming: Pre-loaded account state for user %s (Balance: $%s)", user_id, acct.balance)
+        return {"balance": acct.balance, "equity": acct.equity}
+    except Exception as exc:
+        logger.warning("Cache warming failed for user: %s", exc)
+        return {"balance": 10000.0, "equity": 10000.0}
+
+
+def sync_account_state_to_db(user, new_balance: float, new_equity: float):
+    """
+    Atomic Write-Behind Batch Synchronization Engine.
+    Uses transaction.atomic() & row locking to prevent RDBMS deadlocks during high volatility.
+    Updates Redis keys with explicit 24-hour TTL.
+    """
+    try:
+        from users.models import UserPaperAccount
+
+        # Atomic RDBMS transaction with select_for_update row lock
+        with transaction.atomic():
+            acct, _ = UserPaperAccount.objects.select_for_update().get_or_create(user=user)
+            acct.balance = round(new_balance, 2)
+            acct.equity = round(new_equity, 2)
+            acct.save()
+
+        # Update Redis cache with 24h explicit TTL
+        user_id = user.id if hasattr(user, 'id') else "anon"
+        cache_set(f"user:{user_id}:account_balance", acct.balance, ttl_seconds=ACCOUNT_CACHE_TTL)
+        cache_set(f"user:{user_id}:account_equity", acct.equity, ttl_seconds=ACCOUNT_CACHE_TTL)
+
+        logger.info("Atomic Sync: Reconciled account state to DB for user %s (Balance: $%s, Equity: $%s)", user_id, acct.balance, acct.equity)
         return True
     except Exception as exc:
-        logger.error("Failed to sync account state to DB: %s", exc)
+        logger.error("Failed atomic account state sync: %s", exc)
         return False
