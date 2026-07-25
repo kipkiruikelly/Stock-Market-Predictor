@@ -1,13 +1,21 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
-export const getAppTheme = (mode: 'light' | 'dark') => {
-  const isDark = mode === 'dark';
+export const getAppTheme = (mode: string) => {
+  let resolvedMode: 'light' | 'dark' = 'dark';
+  if (mode === 'light' || mode === 'dark') {
+    resolvedMode = mode;
+  } else if (mode === 'system') {
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    resolvedMode = prefersDark ? 'dark' : 'light';
+  }
+
+  const isDark = resolvedMode === 'dark';
   const glassBg = isDark ? alpha('#16181d', 0.7) : alpha('#ffffff', 0.85);
   const glassBorder = `1px solid ${isDark ? alpha('#ffffff', 0.05) : alpha('#6347f6', 0.15)}`;
 
   return createTheme({
     palette: {
-      mode,
+      mode: resolvedMode,
       primary: {
         main: '#8b5cf6', // Gold/orange
       },
