@@ -164,7 +164,7 @@ class TradingWorkflow:
             # ── 2. RISK_EVALUATION ────────────────────────────────────────
             self._transition_to(
                 WorkflowState.RISK_EVALUATION,
-                f"Evaluating portfolio risk & position sizing | {direction} {self.ticker} @ {prediction['current_price']}"
+                f"Evaluating sub-1ms portfolio risk & position sizing | {direction} {self.ticker} @ {prediction['current_price']}"
             )
 
             current_price = prediction["current_price"]
@@ -174,14 +174,26 @@ class TradingWorkflow:
                 self._transition_to(WorkflowState.FAILED, "Invalid zero/negative current price.")
                 return self.context
 
+            # Sub-1ms Redis Risk Check & Balance Cache
+            from core.redis_client import cache_get, cache_set
+            user_id = self.user.id if self.user else "anon"
+            cache_key = f"user:{user_id}:account_balance"
+
+            cached_bal = cache_get(cache_key)
+            if cached_bal is not None:
+                effective_balance = float(cached_bal)
+            else:
+                effective_balance = self.account_balance
+                cache_set(cache_key, effective_balance, ttl_seconds=60)
+
             # 1% portfolio risk gate
             RISK_PCT       = 0.01
-            max_risk_amt   = self.account_balance * RISK_PCT
+            max_risk_amt   = effective_balance * RISK_PCT
             risk_per_share = max(abs(current_price - stop_loss), current_price * 0.005)
             position_shares = round(max_risk_amt / risk_per_share, 4)
 
             self.context["position_shares"] = position_shares
-            self.context["max_risk_amount"] = max_risk_amt
+            self.context["max_risk_amount"] = round(max_risk_amt, 2)
             self.context["risk_per_share"]  = round(risk_per_share, 4)
 
             # ── 3. APPROVED ───────────────────────────────────────────────
