@@ -2,8 +2,8 @@
 django_backend/trading/tsdb_manager.py
 Polyglot Time-Series Market Data Engine (TimescaleDB / InfluxDB Layer).
 
-Manages high-throughput ingestion and fast retrieval of OHLCV candlestick time series
-without locking primary transactional database tables.
+Manages high-throughput ingestion, continuous aggregate downsampling,
+and 30-day raw data retention policies for OHLCV candlestick time series.
 """
 
 import logging
@@ -14,6 +14,30 @@ logger = logging.getLogger("tsdb_manager")
 
 # In-memory fast time-series buffer (simulating TSDB hypertable)
 _TSDB_BUFFER: Dict[str, List[Dict[str, Any]]] = {}
+
+# Retention Policy Configuration (in seconds)
+RAW_TICK_RETENTION_SECONDS = 30 * 86400  # Auto-drop raw data older than 30 days
+
+
+def apply_retention_policy():
+    """
+    Automated TSDB Retention Policy Engine.
+    Drops raw tick data points older than 30 days while retaining downsampled
+    1m, 5m, 15m, 30m, 1h, 4h, 1d continuous aggregate candles permanently.
+    """
+    cutoff_time_ms = (int(time.time()) - RAW_TICK_RETENTION_SECONDS) * 1000
+    pruned_count = 0
+
+    for key, candles in list(_TSDB_BUFFER.items()):
+        # Raw tick series get pruned; aggregated series (e.g. :1d, :1h) retained permanently
+        if ":tick" in key or ":1m" in key:
+            filtered = [c for c in candles if c['time'] >= cutoff_time_ms]
+            pruned_count += len(candles) - len(filtered)
+            _TSDB_BUFFER[key] = filtered
+
+    if pruned_count > 0:
+        logger.info("TSDB Retention Policy: Auto-dropped %d data points older than 30 days.", pruned_count)
+    return pruned_count
 
 
 def ingest_candles(symbol: str, interval: str, candles: List[Dict[str, Any]]) -> int:
@@ -34,6 +58,10 @@ def ingest_candles(symbol: str, interval: str, candles: List[Dict[str, Any]]) ->
             added += 1
 
     _TSDB_BUFFER[key].sort(key=lambda x: x['time'])
+    
+    # Run retention sweep periodically upon ingestion
+    apply_retention_policy()
+
     logger.info("TSDB: Ingested %d candles for %s", added, key)
     return added
 

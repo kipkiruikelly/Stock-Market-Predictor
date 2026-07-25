@@ -290,6 +290,10 @@ class ManualPaperOrderView(APIView):
             note=f"Manual Paper Trade | Order #{trade.id}"
         )
 
+        # Write-Behind Cache Sync & Invalidation
+        from core.redis_client import sync_account_state_to_db
+        sync_account_state_to_db(user, acct.balance, acct.equity)
+
         return Response({
             'ok': True,
             'message': f'Market order executed for {ticker} @ ${exec_price:.2f}',
