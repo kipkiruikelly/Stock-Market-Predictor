@@ -88,10 +88,13 @@ if DATABASE_URL and dj_database_url:
             query_params = urlparse.parse_qs(parsed_url.query)
             if 'unix_socket' in query_params:
                 socket_path = query_params['unix_socket'][0]
-                # Django MySQL backend connects via unix socket if HOST starts with '/'
-                parsed_db['HOST'] = socket_path
+                # Django's MySQL backend uses OPTIONS['unix_socket'] for socket connections.
+                # HOST must be 'localhost' (not the socket path) so PyMySQL uses the socket.
+                parsed_db['HOST'] = 'localhost'
                 parsed_db['PORT'] = ''
                 parsed_db['ENGINE'] = 'django.db.backends.mysql'
+                parsed_db.setdefault('OPTIONS', {})
+                parsed_db['OPTIONS']['unix_socket'] = socket_path
     except Exception as e:
         print("DATABASE_URL parsing error:", e)
         parsed_db = None
