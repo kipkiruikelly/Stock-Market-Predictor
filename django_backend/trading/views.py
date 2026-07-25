@@ -404,33 +404,55 @@ class MarketHistoryView(APIView):
 from .bot_runner import generate_bot_signals, run_bot_backtest
 
 class BotSignalsView(APIView):
-    """GET /api/bots/signals -> Returns live pending and active trade signals for subscribed bots."""
+    """GET /api/bots/signals -> Returns live signals for subscribed bots.
+    
+    Query params (all optional):
+      - ticker:       e.g. EURUSD, BTC, GOLD (default: SPY)
+      - timeframe:    1m|5m|15m|30m|1h|4h|1d  (default: 1h)
+      - asset_class:  Stocks|Forex|Crypto|Commodities|Indices (default: Stocks)
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        ticker      = (request.query_params.get('ticker') or 'SPY').upper()
+        timeframe   = request.query_params.get('timeframe') or '1h'
+        asset_class = request.query_params.get('asset_class') or 'Stocks'
+
         user_subs = UserBotSubscription.objects.filter(user=request.user)
         all_signals = []
         for sub in user_subs:
-            signals = generate_bot_signals(sub.bot.slug)
+            signals = generate_bot_signals(
+                sub.bot.slug,
+                ticker=ticker,
+                timeframe=timeframe,
+                asset_class=asset_class,
+            )
             for s in signals:
-                s["bot_name"] = sub.bot.name
-                s["auto_trade_enabled"] = sub.auto_trade_enabled
-                s["auto_trade_mode"] = sub.auto_trade_mode
+                s['bot_name']          = sub.bot.name
+                s['auto_trade_enabled'] = sub.auto_trade_enabled
+                s['auto_trade_mode']    = sub.auto_trade_mode
                 all_signals.append(s)
 
         if not all_signals:
-            signals = generate_bot_signals("ict_core_m5")
+            # Preview signal even without subscription
+            signals = generate_bot_signals(
+                'ict_core_m5',
+                ticker=ticker,
+                timeframe=timeframe,
+                asset_class=asset_class,
+            )
             for s in signals:
-                s["bot_name"] = "ICT Core Liquidity Raider"
-                s["auto_trade_enabled"] = False
-                s["auto_trade_mode"] = "paper"
+                s['bot_name']          = 'ICT Core M5'
+                s['auto_trade_enabled'] = False
+                s['auto_trade_mode']    = 'paper'
                 all_signals.append(s)
 
         return Response({
-            "ok": True,
-            "signals": all_signals,
-            "total_count": len(all_signals)
+            'ok':          True,
+            'signals':     all_signals,
+            'total_count': len(all_signals),
         })
+
 
 class BotAutoTradeView(APIView):
     """POST /api/bots/auto-trade -> Toggles automated trade execution and sets risk parameters."""
@@ -472,13 +494,15 @@ class BotBacktestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        bot_slug = request.data.get("bot_slug") or request.data.get("slug") or "ict_core_m5"
-        ticker = (request.data.get("ticker") or request.data.get("symbol") or "SPY").upper()
-        period_days = int(request.data.get("period_days", 180))
-        risk_pct = float(request.data.get("risk_pct", 1.0))
+        bot_slug    = request.data.get('bot_slug') or request.data.get('slug') or 'ict_core_m5'
+        ticker      = (request.data.get('ticker') or request.data.get('symbol') or 'SPY').upper()
+        period_days = int(request.data.get('period_days', 180))
+        risk_pct    = float(request.data.get('risk_pct', 1.0))
+        timeframe   = request.data.get('timeframe') or '1d'
 
-        backtest_result = run_bot_backtest(bot_slug, ticker, period_days, risk_pct)
+        backtest_result = run_bot_backtest(bot_slug, ticker, period_days, risk_pct, timeframe)
         return Response({
-            "ok": True,
-            "backtest": backtest_result
+            'ok':       True,
+            'backtest': backtest_result,
         })
+
