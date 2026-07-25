@@ -59,29 +59,46 @@ export const OrderTicket = () => {
         <Divider sx={{ mb: 3 }} />
         
         <Box component="form" onSubmit={handleSubmit} sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <ToggleButtonGroup
-            value={action}
-            exclusive
-            onChange={(_, newVal) => newVal && setAction(newVal)}
-            fullWidth
-            sx={{
-              '& .MuiToggleButton-root': {
+          <Box sx={{ display: 'flex', width: '100%', gap: 1 }}>
+            <Button
+              variant={action === 'buy' ? 'contained' : 'outlined'}
+              color="secondary"
+              fullWidth
+              onClick={() => setAction('buy')}
+              sx={{
                 py: 1.5,
                 fontWeight: 600,
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                '&.Mui-selected': {
-                  bgcolor: action === 'buy' ? 'secondary.main' : 'error.main',
-                  color: '#fff',
-                  '&:hover': {
-                    bgcolor: action === 'buy' ? 'secondary.dark' : 'error.dark',
-                  }
+                color: action === 'buy' ? '#fff' : 'text.secondary',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                bgcolor: action === 'buy' ? 'secondary.main' : 'transparent',
+                '&:hover': {
+                  bgcolor: action === 'buy' ? 'secondary.dark' : 'rgba(255, 255, 255, 0.05)',
+                  borderColor: action === 'buy' ? 'secondary.dark' : 'rgba(255, 255, 255, 0.2)',
                 }
-              }
-            }}
-          >
-            <ToggleButton value="buy">BUY</ToggleButton>
-            <ToggleButton value="sell">SELL</ToggleButton>
-          </ToggleButtonGroup>
+              }}
+            >
+              BUY
+            </Button>
+            <Button
+              variant={action === 'sell' ? 'contained' : 'outlined'}
+              color="error"
+              fullWidth
+              onClick={() => setAction('sell')}
+              sx={{
+                py: 1.5,
+                fontWeight: 600,
+                color: action === 'sell' ? '#fff' : 'text.secondary',
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                bgcolor: action === 'sell' ? 'error.main' : 'transparent',
+                '&:hover': {
+                  bgcolor: action === 'sell' ? 'error.dark' : 'rgba(255, 255, 255, 0.05)',
+                  borderColor: action === 'sell' ? 'error.dark' : 'rgba(255, 255, 255, 0.2)',
+                }
+              }}
+            >
+              SELL
+            </Button>
+          </Box>
 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
