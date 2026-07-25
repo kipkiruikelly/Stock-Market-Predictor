@@ -53,5 +53,9 @@ def log_workflow_step(action: str, details: dict, user=None):
         )
         logger.info("AUDIT LOG: %s — %s", db_action, detail_str[:120])
 
+        # Polyglot Stream Indexer (Elasticsearch Layer)
+        from trading.search_engine import index_audit_event
+        index_audit_event(action=db_action, ticker=str(ticker), details=detail_str)
+
     except Exception as exc:
         logger.warning("Failed to persist audit log to DB: %s", exc)

@@ -245,7 +245,7 @@ def generate_bot_signals(
     }]
 
 
-# ── Backtest Engine (Universal) ───────────────────────────────────────────────
+# ── Backtest Engine (Universal & Polyglot OLAP) ────────────────────────────────
 
 def run_bot_backtest(
     bot_slug: str,
@@ -255,10 +255,10 @@ def run_bot_backtest(
     timeframe: str = "1d",
 ) -> Dict[str, Any]:
     """
-    Dynamic backtest supporting any bot, ticker, timeframe, and period.
-    Timeframe drives trade frequency and per-trade return scaling.
+    Delegates backtesting execution to the Polyglot OLAP Engine (ClickHouse / Data Warehouse).
     """
-    slug = bot_slug.lower()
+    from trading.olap_engine import run_olap_backtest
+    return run_olap_backtest(bot_slug, ticker, period_days, risk_pct, timeframe)
     ticker = ticker.upper()
     tf = timeframe if timeframe in SUPPORTED_TIMEFRAMES else "1d"
 
