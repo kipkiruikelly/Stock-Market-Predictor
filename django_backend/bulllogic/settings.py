@@ -152,12 +152,20 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 
+IS_PRODUCTION = os.getenv('K_SERVICE') is not None
+
+if IS_PRODUCTION:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_AGE = 86400 * 7  # 7 days
 CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False    # React reads it
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5173',
@@ -173,6 +181,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.run.app',
     'https://*.europe-west1.run.app',
     'https://triple-fusion-engine-git-914042770430.europe-west1.run.app',
+    'https://triple-fusion-engine-github-914042770430.europe-west1.run.app',
 ]
 
 # Email
