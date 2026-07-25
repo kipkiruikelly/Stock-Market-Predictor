@@ -126,11 +126,13 @@ class ManualPaperAccountView(APIView):
             positions.append({
                 'id': t.id,
                 'ticker': t.ticker,
+                'symbol': t.ticker,
                 'side': t.side,
                 'qty': t.qty,
                 'entry_price': t.entry_price,
                 'current_price': current_price,
                 'pnl': round(pnl, 2),
+                'unrealized_pnl': round(pnl, 2),
                 'status': t.status,
                 'opened_at': t.entry_time.isoformat() if t.entry_time else '',
             })
@@ -146,9 +148,11 @@ class ManualPaperAccountView(APIView):
                 'equity': round(balance + total_pnl, 2),
                 'unrealized_pnl': round(total_pnl, 2),
                 'realized_pnl': round(realized_pnl, 2),
+                'starting_balance': 10000.0,
                 'open_positions': len(positions),
             },
             'positions': positions,
+            'orders': [],
         })
 
 
