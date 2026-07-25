@@ -1,0 +1,44 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/triple-fusion-engine:latest'
+      - '.'
+
+  # Step 2: Push the image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/triple-fusion-engine:latest'
+
+  # Step 3: Deploy to Cloud Run with Cloud SQL attached
+  # Credentials are passed at deploy time via gcloud CLI substitutions or Secret Manager.
+  # Do NOT hardcode secrets here; pass them with --substitutions or Cloud Run --update-secrets.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'triple-fusion-engine-git'
+      - '--image'
+      - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/triple-fusion-engine:latest'
+      - '--region'
+      - 'europe-west1'
+      - '--platform'
+      - 'managed'
+      - '--add-cloudsql-instances'
+      - '$PROJECT_ID:europe-west1:triple-fusion-engine'
+      - '--update-env-vars'
+      - 'DATABASE_URL=mysql+pymysql://root:${_DB_PASS}@/bulllogic?unix_socket=/cloudsql/$PROJECT_ID:europe-west1:triple-fusion-engine'
+      - '--allow-unauthenticated'
+
+substitutions:
+  _DB_PASS: 'changeme'   # Override with: --substitutions _DB_PASS=<password>
+
+images:
+  - 'europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/triple-fusion-engine:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
