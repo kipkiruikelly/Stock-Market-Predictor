@@ -32,6 +32,7 @@ urlpatterns = [
     path('workflow/status', workflow_views.WorkflowStatusView.as_view(), name='api-workflow-status'),
     path('workflow/toggle-scanner', workflow_views.WorkflowToggleScannerView.as_view(), name='api-workflow-toggle-scanner'),
     path('workflow/trigger-scan', workflow_views.WorkflowTriggerScanView.as_view(), name='api-workflow-trigger-scan'),
+    path('workflow/update-tickers', workflow_views.WorkflowUpdateTickersView.as_view(), name='api-workflow-update-tickers'),
     # ── AI Robots & Automation ───────────────────────────────────
     path('bots', views.BotsView.as_view(), name='api-bots'),
     path('bots/subscribe', views.BotSubscribeView.as_view(), name='api-bots-subscribe'),
