@@ -25,7 +25,7 @@ class RequestTimingMiddleware:
 
 
 class LastSeenMiddleware:
-    """Update user.last_seen and gamification metrics on every authenticated request."""
+    """Update user.last_seen and gamification metrics on authenticated requests, with throttling to prevent DB locks."""
 
     def __init__(self, get_response):
         self.get_response = get_response
@@ -57,12 +57,18 @@ class LastSeenMiddleware:
                     user.last_active_date = today
                     changed = True
 
-                user.last_seen = datetime.utcnow()
-                
-                if changed:
-                    user.save(update_fields=['last_seen', 'last_active_date', 'current_streak', 'longest_streak', 'xp'])
-                else:
-                    user.save(update_fields=['last_seen'])
+                # Throttle database saves for last_seen to once every 60 seconds
+                now = datetime.utcnow()
+                should_save = changed
+                if not user.last_seen or (now - user.last_seen.replace(tzinfo=None)).total_seconds() > 60:
+                    user.last_seen = now
+                    should_save = True
+
+                if should_save:
+                    if changed:
+                        user.save(update_fields=['last_seen', 'last_active_date', 'current_streak', 'longest_streak', 'xp'])
+                    else:
+                        user.save(update_fields=['last_seen'])
             except Exception:
                 pass  # Non-fatal
 
