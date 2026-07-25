@@ -3,7 +3,7 @@
 **SYSTEM DOCUMENTATION AND TECHNICAL THESIS REPORT**  
 *Submitted in partial fulfillment of the requirements for the Degree of Bachelor of Science in Software Engineering / Computer Science*
 
-**Prepared by:** KIPKIRUI KELLY (Reg No: SE/2026/001)  
+**Prepared by:** KELVIN KIPKIRUI (Reg No: DAC-01-0010/2025)  
 **Supervised by:** DEPARTMENT OF SOFTWARE ENGINEERING  
 **Date:** JULY 2026  
 
@@ -13,7 +13,7 @@
 I declare that this thesis report and the underlying software system entitled **"Triple Fusion Engine (BullLogic v2.0)"** are my original work and have not been submitted to any other institution for academic degree awards.
 
 **Student Signature:** _______________________      **Date:** July 25, 2026  
-Kipkirui Kelly  
+Kelvin Kipkirui (DAC-01-0010/2025)  
 
 **Approval by Academic Supervisor:**  
 This report has been submitted for examination with my approval as university supervisor.
