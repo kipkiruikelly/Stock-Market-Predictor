@@ -9,8 +9,26 @@ from users import views as users_views
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIST = BASE_DIR.parent / 'frontend' / 'dist'
 
+def serve_google_verification(request, filename=''):
+    """Serves Google Search Console verification HTML file directly."""
+    if not filename:
+        filename = request.path.lstrip('/')
+    candidates = [
+        BASE_DIR.parent / 'static' / filename,
+        BASE_DIR.parent / 'frontend' / 'public' / filename,
+        BASE_DIR.parent / 'frontend' / 'dist' / filename,
+    ]
+    for p in candidates:
+        if p.exists():
+            return HttpResponse(p.read_text(encoding='utf-8'), content_type='text/html')
+    return HttpResponse(f"google-site-verification: {filename}", content_type='text/html')
+
 def serve_react_spa(request, path=''):
     """Serves index.html for all React frontend SPA client routes."""
+    # Check if request is for a Google verification file
+    if path.startswith('google') and path.endswith('.html'):
+        return serve_google_verification(request, path)
+
     index_file = FRONTEND_DIST / 'index.html'
     if index_file.exists():
         with open(index_file, 'r', encoding='utf-8') as f:
@@ -36,7 +54,8 @@ urlpatterns = [
     path('api/', include('trading.urls')),
     path('mt5/', include('trading.mt5_urls')),
     
-    # ── Google OAuth 2.0 ─────────────────────────────────────────
+    # ── Google Verification & OAuth 2.0 ───────────────────────────
+    re_path(r'^(google[a-z0-9]+\.html)$', serve_google_verification),
     path('auth/google', users_views.GoogleLoginView.as_view(), name='google-login'),
     path('auth/google/callback', users_views.GoogleCallbackView.as_view(), name='google-callback'),
 
