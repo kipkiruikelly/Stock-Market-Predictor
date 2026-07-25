@@ -612,7 +612,7 @@ class GoogleLoginView(APIView):
             if '8001' in host:
                 redirect_uri = "http://localhost:8002/auth/google/callback"
             else:
-                redirect_uri = f"http://{host}/auth/google/callback"
+                redirect_uri = f"https://{host}/auth/google/callback"
                 
         request.session['google_oauth_redirect_uri'] = redirect_uri
         
