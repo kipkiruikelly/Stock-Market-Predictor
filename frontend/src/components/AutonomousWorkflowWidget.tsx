@@ -212,15 +212,19 @@ export const AutonomousWorkflowWidget: React.FC = () => {
                   <TableRow key={row.id} sx={{ '& td': { borderColor: 'rgba(255,255,255,0.05)', color: '#ddd' } }}>
                     <TableCell>
                       <Chip
-                        label={row.action.replace('WORKFLOW_', '')}
-                        color={getActionColor(row.action) as any}
+                        label={row.action ? String(row.action).replace('WORKFLOW_', '') : 'RUN'}
+                        color={getActionColor(row.action || '') as any}
                         size="small"
                         sx={{ fontWeight: 'bold', fontSize: '0.7rem' }}
                       />
                     </TableCell>
                     <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{row.details}</TableCell>
                     <TableCell align="right" sx={{ color: '#777', fontSize: '0.75rem' }}>
-                      {row.timestamp ? new Date(row.timestamp).toLocaleTimeString() : 'N/A'}
+                      {(() => {
+                        if (!row.timestamp) return 'N/A';
+                        const d = new Date(row.timestamp);
+                        return isNaN(d.getTime()) ? 'N/A' : d.toLocaleTimeString();
+                      })()}
                     </TableCell>
                   </TableRow>
                 ))

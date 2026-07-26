@@ -193,7 +193,7 @@ export const PipelineDashboard: React.FC = () => {
           </Typography>
           <Grid container spacing={2}>
             {healthServices.map((service, idx) => (
-              <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={idx}>
+              <Grid size={{ xs: 12, sm: 6, md: 2 }} key={idx}>
                 <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
                   <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
