@@ -260,7 +260,7 @@ export const PipelineDashboard: React.FC = () => {
                         <Grid size={{ xs: 4 }} key={idx}>
                           <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{feat.feature_name}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 'bold', color: feat.drift_detected ? 'error.main' : 'success.main' }}>
-                            {feat.drift_detected ? 'DRIFT ⚠️' : 'STABLE ✓'} ({feat.p_value.toFixed(3)})
+                            {feat.drift_detected ? 'DRIFT ⚠️' : 'STABLE ✓'} ({feat.p_value !== undefined && feat.p_value !== null ? Number(feat.p_value).toFixed(3) : 'N/A'})
                           </Typography>
                         </Grid>
                       ))}
