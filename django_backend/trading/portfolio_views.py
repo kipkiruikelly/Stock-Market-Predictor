@@ -185,53 +185,7 @@ class PortfolioAnalyticsView(APIView):
         balance = acct.balance if acct else 10000.0
         equity = acct.equity if acct else 10000.0
         
-        if not trades.exists():
-            # Generate premium demo data for the wow factor
-            now = datetime.utcnow()
-            days = 30
-            equity_curve = []
-            daily_pnl = []
-            curr = 10000.0
-            
-            for i in range(days):
-                d = now - timedelta(days=days-i)
-                change = random.uniform(-100, 250)
-                curr += change
-                equity_curve.append({"date": d.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
-                daily_pnl.append({"date": d.strftime("%Y-%m-%d"), "pnl": round(change, 2)})
-                
-            return Response({
-                "ok": True,
-                "is_demo": True,
-                "overview": {
-                    "balance": 10500.0,
-                    "equity": 10842.50,
-                    "buying_power": 43370.0,
-                    "unrealized_pnl": 342.50,
-                    "realized_pnl": 500.0
-                },
-                "performance": {
-                    "net_profit": 842.50,
-                    "win_rate": 68.5,
-                    "total_trades": 42,
-                    "profit_factor": 2.1
-                },
-                "risk": {
-                    "max_drawdown": 4.2,
-                    "sharpe_ratio": 1.8,
-                    "volatility": 12.4
-                },
-                "charts": {
-                    "equity_curve": equity_curve,
-                    "daily_pnl": daily_pnl[-14:],
-                    "asset_allocation": [
-                        {"name": "Equities", "value": 45},
-                        {"name": "Crypto", "value": 25},
-                        {"name": "Forex", "value": 20},
-                        {"name": "Commodities", "value": 10}
-                    ]
-                }
-            })
+
 
         # Calculate real stats
         wins = [t for t in trades if t.pnl and t.pnl > 0]
