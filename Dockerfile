@@ -58,4 +58,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV PYTHONPATH="/app:/app/django_backend"
 
-CMD ["sh", "-c", "python manage.py migrate --noinput 2>/dev/null || true && exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4 --timeout 120 bulllogic.wsgi:application"]
+CMD ["sh", "-c", "python manage.py migrate --noinput 2>/dev/null || true && python manage.py set_admin_pass 2>/dev/null || true && exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --threads 4 --timeout 120 bulllogic.wsgi:application"]
