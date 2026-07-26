@@ -603,16 +603,19 @@ class GoogleLoginView(APIView):
         referer = request.META.get('HTTP_REFERER', '')
         host = request.get_host()
         
-        if 'localhost:8002' in referer or '127.0.0.1:8002' in referer:
+        if 'localhost:5173' in referer or '127.0.0.1:5173' in referer:
+            redirect_uri = "http://localhost:5173/auth/google/callback"
+        elif 'localhost:8000' in referer or '127.0.0.1:8000' in referer:
+            redirect_uri = "http://localhost:8000/auth/google/callback"
+        elif 'localhost:8002' in referer or '127.0.0.1:8002' in referer:
             redirect_uri = "http://localhost:8002/auth/google/callback"
         elif 'localhost:5000' in referer or '127.0.0.1:5000' in referer:
             redirect_uri = "http://localhost:5000/auth/google/callback"
-        elif 'localhost:5001' in referer or '127.0.0.1:5001' in referer:
-            redirect_uri = "http://localhost:5001/auth/google/callback"
         elif 'localhost' in host or '127.0.0.1' in host:
             redirect_uri = f"http://{host}/auth/google/callback"
         else:
-            redirect_uri = f"https://{host}/auth/google/callback"
+            scheme = 'https' if request.is_secure() or 'run.app' in host else 'http'
+            redirect_uri = f"{scheme}://{host}/auth/google/callback"
                 
         request.session['google_oauth_redirect_uri'] = redirect_uri
         

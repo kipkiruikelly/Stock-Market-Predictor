@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Card, CardContent, TextField, Button, Grid, MenuItem, Select, Switch, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Divider } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, Button, Grid, MenuItem, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Divider } from '@mui/material';
 import { Zap, Play, Square, Settings, Key, AlertTriangle, ShieldCheck, HelpCircle, Activity } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import toast from 'react-hot-toast';
@@ -64,7 +64,7 @@ export const LiveDashboard: React.FC = () => {
   const [algoRisk, setAlgoRisk] = useState('1.0');
   const [algoInterval, setAlgoInterval] = useState('300');
   const [algoModel, setAlgoModel] = useState<'ensemble' | 'rf' | 'xgb' | 'lr' | 'ict' | 'technical'>('ensemble');
-  const [useMl, setUseMl] = useState(true);
+  const [useMl] = useState(true);
   const [startingAlgo, setStartingAlgo] = useState(false);
   const [stoppingAlgo, setStoppingAlgo] = useState(false);
 

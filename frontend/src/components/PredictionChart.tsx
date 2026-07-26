@@ -28,21 +28,38 @@ interface PredictionChartData {
   sl?: number;
   tp?: number;
   direction?: string;
+  intervalSeconds?: number;
+}
+
+interface LiveTickData {
+  price: number;
+  timestamp: number;
 }
 
 interface PredictionChartProps {
   data: PredictionChartData;
   ticker: string;
+  liveTick?: LiveTickData | null;
 }
 
-export const PredictionChart: React.FC<PredictionChartProps> = ({ data, ticker }) => {
+export const PredictionChart: React.FC<PredictionChartProps> = ({ data, ticker, liveTick }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<any>(null);
   const mainSeriesRef = useRef<any>(null);
+  const liveTickRef = useRef<LiveTickData | null>(null);
+
+  liveTickRef.current = liveTick ?? null;
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
+
+    // Guard against empty data
+    if (!data.candles || data.candles.length === 0) return;
+
+    // Defensive: ensure container has non-zero dimensions
+    const rect = chartContainerRef.current.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
 
     // Clear previous chart
     chartContainerRef.current.innerHTML = '';
@@ -73,7 +90,8 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({ data, ticker }
       },
     }) as any;
 
-    const mainSeries = chart.addCandlestickSeries({
+    // Use addCandlestickSeries convenience method (v5 compat, more robust)
+    const mainSeries = (chart as any).addCandlestickSeries({
       upColor: '#10b981',
       downColor: '#ef4444',
       borderVisible: false,
@@ -213,15 +231,62 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({ data, ticker }
     return () => {
       window.removeEventListener('resize', handleResize);
       clearTimeout(timeoutId);
-      chart.remove();
+      try { chart.remove(); } catch {}
+      chartRef.current = null;
+      mainSeriesRef.current = null;
     };
   }, [data, ticker]);
+
+  // ── Live tick updates — incremental, no chart re-creation ─────────────
+  useEffect(() => {
+    const tick = liveTickRef.current;
+    if (!tick || !mainSeriesRef.current) return;
+
+    const series = mainSeriesRef.current;
+    const tickTime = tick.timestamp;
+    const price = tick.price;
+    const interval = data.intervalSeconds || 86400;
+
+    try {
+      const seriesData = series.data();
+      if (!seriesData || seriesData.length === 0) return;
+
+      const lastCandle = seriesData[seriesData.length - 1];
+      const candleStart = (Math.floor(tickTime / interval)) * interval;
+
+      if (lastCandle.time === candleStart) {
+        series.update({
+          time: candleStart,
+          open: lastCandle.open,
+          high: Math.max(lastCandle.high, price),
+          low: Math.min(lastCandle.low, price),
+          close: price,
+        });
+      } else if (candleStart > lastCandle.time) {
+        series.update({
+          time: candleStart,
+          open: price,
+          high: price,
+          low: price,
+          close: price,
+        });
+      }
+
+    } catch {
+      // Series may be mid-transition; safe to skip
+    }
+  }, [liveTick, data.intervalSeconds]);
 
   return (
     <Card sx={{ bgcolor: '#16181d', border: '1px solid rgba(255,255,255,0.05)' }}>
       <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
           ML Model Signal Visualization ({ticker})
+          {liveTick && (
+            <Typography component="span" variant="caption" sx={{ ml: 2, color: '#10b981', fontWeight: 700 }}>
+              ● LIVE ${liveTick.price.toFixed(2)}
+            </Typography>
+          )}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           Lightweight Charts™ · Dynamic Prediction Overlays

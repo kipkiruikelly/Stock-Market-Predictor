@@ -5,6 +5,9 @@ import glob
 import json
 from pathlib import Path
 from datetime import date, datetime, timedelta
+import logging
+
+logger = logging.getLogger("prediction_views")
 
 from rest_framework.views import APIView
 from rest_framework.response import Response

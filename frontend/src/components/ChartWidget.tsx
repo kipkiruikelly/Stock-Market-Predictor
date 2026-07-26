@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { Box, Button, ButtonGroup, Typography, CircularProgress, FormControlLabel, Checkbox, useTheme } from '@mui/material';
-import { Maximize2, Minimize2, ShieldAlert } from 'lucide-react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { Box, Button, ButtonGroup, Typography, CircularProgress, FormControlLabel, Checkbox, useTheme, Tooltip, Chip } from '@mui/material';
+import { Maximize2, Minimize2, ShieldAlert, Wifi, WifiOff, Activity } from 'lucide-react';
 import { createChart, CandlestickSeries, HistogramSeries, LineSeries, createSeriesMarkers, LineStyle, ColorType, CrosshairMode } from 'lightweight-charts';
 import { calculateSMA, calculateEMA } from '../utils/indicators';
 import { apiFetch } from '../utils/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
   const muiTheme = useTheme();
@@ -43,6 +44,81 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
     }
   };
 
+  // ── WebSocket for live chart streaming ──────────────────────────────────
+  const cleanSymbol = useMemo(() => symbol.split(':').pop() || symbol, [symbol]);
+  
+  const wsUrl = useMemo(() => {
+    const host = window.location.hostname || 'localhost';
+    return `ws://${host}:8002/ws/candles/${cleanSymbol}?interval=${timeframe}`;
+  }, [cleanSymbol, timeframe]);
+
+  const handleLiveTick = (msg: any) => {
+    const series = candleSeriesRef.current;
+    if (!series) return;
+
+    // Validate incoming data before touching the chart
+    const candleTime = msg.candle_time;
+    const price = msg.price;
+    if (candleTime == null || price == null || typeof price !== 'number') return;
+
+    try {
+      const seriesData = series.data();
+      if (!seriesData || seriesData.length === 0) return;
+
+      const lastCandle = seriesData[seriesData.length - 1];
+
+      if (lastCandle.time === candleTime) {
+        // Update the current candle in-place — no full re-render
+        series.update({
+          time: candleTime,
+          open: lastCandle.open,
+          high: Math.max(lastCandle.high, price),
+          low: Math.min(lastCandle.low, price),
+          close: price,
+        });
+      } else if (candleTime > lastCandle.time) {
+        // New candle period — append fresh candle
+        series.update({
+          time: candleTime,
+          open: price,
+          high: price,
+          low: price,
+          close: price,
+        });
+      }
+      // If candleTime < lastCandle.time, it's a delayed tick — skip
+    } catch {
+      // Series data access may fail during chart transition; safe to ignore
+    }
+  };
+
+  const handleWsMessage = (msg: any) => {
+    switch (msg.type) {
+      case 'init':
+        // Initial history received — could be used as fallback or to pre-warm
+        // but our REST fetch already loads the full data with predictions.
+        // Store for reference if needed.
+        break;
+      case 'tick':
+        handleLiveTick(msg);
+        break;
+      case 'candle_new_period':
+        handleLiveTick(msg);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const { connectionState } = useWebSocket({
+    url: wsUrl,
+    onMessage: handleWsMessage,
+    reconnectBaseMs: 2000,
+    reconnectMaxMs: 30000,
+  });
+
+
+
   // Fetch and Render Chart Data
   useEffect(() => {
     const fetchAndRenderChart = async () => {
@@ -64,7 +140,9 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
         // Clean previous instances
         if (chartInstance.current) {
-          chartInstance.current.remove();
+          try { chartInstance.current.remove(); } catch {}
+          chartInstance.current = null;
+          candleSeriesRef.current = null;
         }
 
         const chart = createChart(chartContainerRef.current, {
@@ -200,8 +278,9 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
       if (chartInstance.current) {
-        chartInstance.current.remove();
+        try { chartInstance.current.remove(); } catch {}
         chartInstance.current = null;
+        candleSeriesRef.current = null;
       }
     };
   }, [symbol, timeframe, isDark]);
@@ -496,7 +575,7 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
         boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.4)' : '0 4px 20px rgba(99, 71, 246, 0.08)'
       }}>
         {/* Timeframe Buttons */}
-        <ButtonGroup variant="contained" size="small" sx={{ mr: 1 }}>
+        <ButtonGroup variant="contained" size="small">
           {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => (
             <Button
               key={tf}
@@ -515,6 +594,37 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
             </Button>
           ))}
         </ButtonGroup>
+
+        {/* Connection state indicator */}
+        <Tooltip title={
+          connectionState === 'connected' ? 'Live streaming active' :
+          connectionState === 'connecting' ? 'Connecting to stream...' :
+          connectionState === 'reconnecting' ? 'Reconnecting...' : 'Stream disconnected'
+        }>
+          <Chip
+            icon={
+              connectionState === 'connected' ? <Wifi size={12} /> :
+              connectionState === 'disconnected' ? <WifiOff size={12} /> :
+              <Activity size={12} />
+            }
+            label={
+              connectionState === 'connected' ? 'LIVE' :
+              connectionState === 'connecting' ? '...' :
+              connectionState === 'reconnecting' ? 'RECON' : 'OFF'
+            }
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: '0.6rem',
+              fontWeight: 700,
+              bgcolor: connectionState === 'connected' ? 'rgba(16,185,129,0.15)' :
+                       connectionState === 'disconnected' ? 'rgba(239,68,68,0.1)' :
+                       'rgba(234,179,8,0.1)',
+              color: connectionState === 'connected' ? '#10b981' :
+                     connectionState === 'disconnected' ? '#ef4444' : '#fbbf24',
+            }}
+          />
+        </Tooltip>
 
         {/* View Toggle Checkboxes */}
         <Box sx={{ display: 'flex', gap: 1 }}>
