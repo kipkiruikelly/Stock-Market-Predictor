@@ -9,6 +9,13 @@ import { WatchlistWidget } from '../components/WatchlistWidget';
 import { PortfolioTable } from '../components/PortfolioTable';
 import { PendingOrdersTable } from '../components/PendingOrdersTable';
 
+const ASSET_CLASSES = {
+  'Stocks': ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'AMZN', 'META', 'GOOGL'],
+  'Indices': ['SPY', 'QQQ', 'DIA', 'IWM'],
+  'Forex': ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF'],
+  'Crypto': ['BTCUSD', 'ETHUSD', 'SOLUSD', 'XRPUSD']
+};
+
 export const LiveDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
@@ -37,6 +44,7 @@ export const LiveDashboard: React.FC = () => {
   const [stoppingAlgo, setStoppingAlgo] = useState(false);
 
   // Terminal State (Shared between chart and AI engine)
+  const [assetClass, setAssetClass] = useState<keyof typeof ASSET_CLASSES>('Stocks');
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -144,7 +152,21 @@ export const LiveDashboard: React.FC = () => {
           {/* Asset Navigator */}
           <Card sx={{ p: 1, display: 'flex', alignItems: 'center', gap: 1, overflowX: 'auto', flexShrink: 0 }}>
             <Typography variant="body2" sx={{ fontWeight: 'bold', mr: 1, whiteSpace: 'nowrap' }}>Active Asset:</Typography>
-            {['AAPL', 'MSFT', 'TSLA', 'SPY', 'QQQ', 'EURUSD', 'BTCUSD'].map(sym => (
+            <Select 
+              value={assetClass} 
+              onChange={(e) => {
+                const newClass = e.target.value as keyof typeof ASSET_CLASSES;
+                setAssetClass(newClass);
+                setAlgoSymbol(ASSET_CLASSES[newClass][0]);
+              }} 
+              size="small" 
+              sx={{ height: 32, mr: 1, minWidth: 100 }}
+            >
+              {Object.keys(ASSET_CLASSES).map(cls => (
+                <MenuItem key={cls} value={cls}>{cls}</MenuItem>
+              ))}
+            </Select>
+            {ASSET_CLASSES[assetClass].map(sym => (
               <Chip 
                 key={sym} 
                 label={sym} 
