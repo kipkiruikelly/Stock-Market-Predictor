@@ -42,6 +42,7 @@ urlpatterns = [
 
     # ── Market ────────────────────────────────────────────────────
     path('market/movers', views.MarketMoversView.as_view(), name='api-market-movers'),
+    path('market/overview', extra_views.MarketOverviewView.as_view(), name='api-market-overview'),
     path('market/history', views.MarketHistoryView.as_view(), name='api-market-history'),
 
     # ── Screener ──────────────────────────────────────────────────
