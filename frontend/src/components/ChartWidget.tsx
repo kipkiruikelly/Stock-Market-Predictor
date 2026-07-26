@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Button, ButtonGroup, Typography, CircularProgress, FormControlLabel, Checkbox, useTheme } from '@mui/material';
 import { Maximize2, Minimize2, ShieldAlert } from 'lucide-react';
-import { createChart, CandlestickSeries, createSeriesMarkers, LineStyle } from 'lightweight-charts';
+import { createChart, CandlestickSeries, createSeriesMarkers, LineStyle, ColorType, CrosshairMode } from 'lightweight-charts';
 import { apiFetch } from '../utils/api';
 
 export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
@@ -65,32 +65,59 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
           width: chartContainerRef.current.clientWidth,
           height: chartContainerRef.current.clientHeight || 500,
           layout: {
-            background: { color: isDark ? '#16181d' : '#ffffff' },
-            textColor: isDark ? '#d1d4dc' : '#0f0f1a',
+            background: { type: ColorType.Solid, color: '#0D1117' },
+            textColor: '#E6EDF3',
           },
           grid: {
-            vertLines: { color: isDark ? 'rgba(42, 46, 57, 0.4)' : 'rgba(99, 71, 246, 0.08)' },
-            horzLines: { color: isDark ? 'rgba(42, 46, 57, 0.4)' : 'rgba(99, 71, 246, 0.08)' },
+            vertLines: { color: 'rgba(255, 255, 255, 0.08)' },
+            horzLines: { color: 'rgba(255, 255, 255, 0.08)' },
           },
           rightPriceScale: {
-            borderColor: isDark ? 'rgba(197, 203, 206, 0.4)' : 'rgba(99, 71, 246, 0.15)',
+            borderColor: '#8B949E',
+            autoScale: true,
           },
           timeScale: {
-            borderColor: isDark ? 'rgba(197, 203, 206, 0.4)' : 'rgba(99, 71, 246, 0.15)',
+            borderColor: '#8B949E',
             timeVisible: true,
             secondsVisible: false,
+            rightOffset: 12,
+            barSpacing: 10,
           },
+          crosshair: {
+            mode: CrosshairMode.Magnet,
+            vertLine: {
+              color: 'rgba(255, 255, 255, 0.4)',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#7C4DFF',
+            },
+            horzLine: {
+              color: 'rgba(255, 255, 255, 0.4)',
+              width: 1,
+              style: LineStyle.Dashed,
+              labelBackgroundColor: '#7C4DFF',
+            },
+          },
+          handleScroll: {
+            mouseWheel: true,
+            pressedMouseMove: true,
+          },
+          handleScale: {
+            axisPressedMouseMove: true,
+            mouseWheel: true,
+            pinch: true,
+          }
         }) as any;
 
         chartInstance.current = chart;
 
         const candlestickSeries = chart.addSeries(CandlestickSeries, {
-          upColor: '#10b981',
-          downColor: '#ef4444',
-          borderDownColor: '#ef4444',
-          borderUpColor: '#10b981',
-          wickDownColor: '#ef4444',
-          wickUpColor: '#10b981',
+          upColor: '#00C853',
+          downColor: '#FF5252',
+          borderDownColor: '#FF5252',
+          borderUpColor: '#00C853',
+          wickDownColor: '#FF5252',
+          wickUpColor: '#00C853',
         });
 
         candleSeriesRef.current = candlestickSeries;
