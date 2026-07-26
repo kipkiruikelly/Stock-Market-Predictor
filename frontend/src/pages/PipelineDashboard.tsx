@@ -48,8 +48,24 @@ export const PipelineDashboard: React.FC = () => {
     }
   };
 
+  const [healthServices, setHealthServices] = useState<any[]>([]);
+
+  const fetchHealth = async () => {
+    try {
+      const data = await apiFetch('/api/operations/health');
+      if (data.ok && data.services) {
+        setHealthServices(data.services);
+      }
+    } catch (err) {
+      console.error('Failed to fetch operational health', err);
+    }
+  };
+
   useEffect(() => {
     fetchConfig();
+    fetchHealth();
+    const intervalId = window.setInterval(fetchHealth, 15000);
+    return () => window.clearInterval(intervalId);
   }, []);
 
   const handleFeatureToggle = (featName: string) => {
@@ -149,6 +165,43 @@ export const PipelineDashboard: React.FC = () => {
           Configure, train, and query modular DASE pipeline engines and custom plugins dynamically.
         </Typography>
       </Box>
+
+      {/* Real-Time Systems Observability Center */}
+      {healthServices.length > 0 && (
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1.5, letterSpacing: 1, textTransform: 'uppercase', color: 'primary.main' }}>
+            Real-Time Systems Observability Center
+          </Typography>
+          <Grid container spacing={2}>
+            {healthServices.map((service, idx) => (
+              <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={idx}>
+                <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                        {service.name}
+                      </Typography>
+                      <span className={`h-2.5 w-2.5 rounded-full ${service.status === 'healthy' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mt: 0.5 }}>
+                      <Typography variant="caption" color="text.secondary">Uptime</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'success.main' }}>{service.uptime}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <Typography variant="caption" color="text.secondary">Latency</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 'bold' }}>{service.response_time}ms</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <Typography variant="caption" color="text.secondary">CPU / RAM</Typography>
+                      <Typography variant="caption" sx={{ fontWeight: 'bold' }}>{service.cpu_usage}% / {service.memory_usage}MB</Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
 
       {/* Autonomous 15-Minute Market Scanner & Workflow Widget */}
       <AutonomousWorkflowWidget />

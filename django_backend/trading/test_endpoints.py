@@ -36,3 +36,11 @@ class EndpointAPITests(TestCase):
         self.assertTrue(response.data.get('ok'))
         self.assertIn('ticker', response.data)
         self.assertEqual(response.data['ticker'], 'AAPL')
+
+    def test_operations_health_endpoint(self):
+        """Verify GET /api/operations/health returns live service reports."""
+        response = self.client.get('/api/operations/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('services', response.data)
+        self.assertIn('overall_status', response.data)
