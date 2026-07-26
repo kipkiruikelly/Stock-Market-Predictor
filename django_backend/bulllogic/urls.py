@@ -58,6 +58,8 @@ urlpatterns = [
     re_path(r'^(google[a-z0-9]+\.html)$', serve_google_verification),
     path('auth/google', users_views.GoogleLoginView.as_view(), name='google-login'),
     path('auth/google/callback', users_views.GoogleCallbackView.as_view(), name='google-callback'),
+    path('api/auth/google', users_views.GoogleLoginView.as_view()),
+    path('api/auth/google/callback', users_views.GoogleCallbackView.as_view()),
 
     # ── React SPA Catch-All Fallback Route ────────────────────────
     re_path(r'^(?P<path>.*)$', serve_react_spa),
