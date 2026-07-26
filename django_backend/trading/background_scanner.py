@@ -101,6 +101,14 @@ def run_market_scan_cycle() -> dict:
             logger.error("Scanner failed for ticker %s: %s", ticker, err)
             results.append({"ticker": ticker, "state": "FAILED", "error": str(err)})
 
+    # Also refresh the global screener cache
+    try:
+        from django.core.management import call_command
+        logger.info("Autonomous Scanner → Refreshing ML Screener Cache...")
+        call_command('cache_screener')
+    except Exception as e:
+        logger.error("Failed to run cache_screener during scan cycle: %s", e)
+
     elapsed = round(time.time() - start_time, 2)
     logger.info(
         "Market scan cycle finished in %ss. Tickers: %d",

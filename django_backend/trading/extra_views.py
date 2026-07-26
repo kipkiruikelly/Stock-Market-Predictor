@@ -94,6 +94,16 @@ class ScreenerView(APIView):
         else:
             tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
 
+        from django.core.cache import cache
+        cached_results = cache.get("screener_ml_results")
+        
+        # If cache exists and we are not forcing a refresh, just filter the cache
+        if cached_results and not request.query_params.get("force"):
+            filtered = [r for r in cached_results if r["ticker"] in tickers]
+            if asset_class != "ALL":
+                filtered = [r for r in filtered if r["asset_class"] == asset_class]
+            return Response({"ok": True, "interval": interval, "asset_class": asset_class, "rows": filtered})
+
         import yfinance as yf
         import pandas as pd
         import numpy as np
