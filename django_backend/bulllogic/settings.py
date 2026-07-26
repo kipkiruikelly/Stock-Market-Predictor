@@ -95,7 +95,9 @@ if DATABASE_URL and dj_database_url:
                 parsed_db['ENGINE'] = 'django.db.backends.mysql'
                 parsed_db['OPTIONS'] = {'unix_socket': socket_path}
             elif os.getenv('K_SERVICE') is None:
-                pass
+                options = parsed_db.get('OPTIONS', {})
+                options['connect_timeout'] = 30
+                parsed_db['OPTIONS'] = options
         if parsed_db:
             engine = parsed_db.get('ENGINE', '')
             if 'sql_server' in engine or 'mssql' in engine:
