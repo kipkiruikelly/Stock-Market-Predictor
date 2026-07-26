@@ -139,11 +139,14 @@ class ScreenerView(APIView):
             yf_tickers.append(yt)
             ticker_map[yt] = t
 
+        cache_timeout = 300
         period = "3mo"
         if interval == "1m":
             period = "5d"
+            cache_timeout = 30
         elif interval in ("5m", "15m", "30m"):
             period = "1mo"
+            cache_timeout = 60 if interval == "5m" else 180
         elif interval in ("1h", "4h"):
             period = "1y"
         elif interval in ("1d", "1w", "1mo"):
@@ -250,7 +253,7 @@ class ScreenerView(APIView):
 
         rows.sort(key=lambda x: x["confidence"], reverse=True)
         # Update cache for next time
-        cache.set(cache_key, rows, timeout=300)
+        cache.set(cache_key, rows, timeout=cache_timeout)
         
         return Response({"ok": True, "interval": interval, "asset_class": asset_class, "rows": rows})
 
