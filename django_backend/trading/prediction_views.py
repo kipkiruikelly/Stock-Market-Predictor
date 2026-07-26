@@ -421,17 +421,19 @@ class ResearchView(APIView):
             ]
 
         def _prediction():
-            action = inf.get("direction", "BUY")
-            conf = inf.get("confidence", 75.0)
+            from predictor import ml_signal
+            res = ml_signal(ticker, "1d")
+            action = res.get("action", "HOLD")
+            conf = res.get("confidence", 50.0)
             return {
                 "direction":     "Up" if action == "BUY" else ("Down" if action == "SELL" else "HOLD"),
                 "confidence":    conf,
-                "lr_pred":       round(base_price * (1.025 if action == "BUY" else 0.975), 2),
+                "lr_pred":       res.get("lr_pred", round(base_price * (1.025 if action == "BUY" else 0.975), 2)),
                 "action":        action,
-                "rsi":           round(58.4 if action == "BUY" else 42.1, 1),
-                "macd":          "Bullish Crossover" if action == "BUY" else "Bearish Divergence",
-                "ict_bias":      "Bullish Order Block" if action == "BUY" else "Bearish FVG Rejection",
-                "current_price": base_price,
+                "rsi":           res.get("rsi", 50.0),
+                "macd":          "Bullish" if res.get("macd_hist", 0) > 0 else "Bearish",
+                "ict_bias":      "Bullish Bias" if action == "BUY" else "Bearish Bias",
+                "current_price": res.get("current_price", base_price),
             }
 
         with ThreadPoolExecutor(max_workers=4) as ex:
