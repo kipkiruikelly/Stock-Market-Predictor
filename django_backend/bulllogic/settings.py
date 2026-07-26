@@ -130,6 +130,8 @@ DB_DIR = BASE_DIR.parent / 'instance'
 DB_DIR.mkdir(parents=True, exist_ok=True)
 
 if parsed_db:
+    if 'sqlite' in parsed_db.get('ENGINE', ''):
+        parsed_db['NAME'] = str(DB_DIR / 'bulllogic_django.db')
     DATABASES = {'default': parsed_db}
 elif os.getenv("DATABASE_TYPE") == "postgres":
     DATABASES = {
