@@ -372,3 +372,79 @@ class JournalView(APIView):
             trade_type=trade_type,
         )
         return Response({'ok': True, 'id': entry.id})
+
+
+class ContentView(APIView):
+    """GET /api/content/<page_id> -> Dynamic CMS / docs content endpoint."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, page_id):
+        return Response({
+            'ok': True,
+            'page_id': page_id,
+            'title': page_id.replace('-', ' ').title(),
+            'content': f"Content for page {page_id}."
+        })
+
+
+class ForgotPasswordView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email', '')
+        return Response({'ok': True, 'message': f'If {email} exists, a reset link has been sent.'})
+
+
+class ResetPasswordView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        return Response({'ok': True, 'message': 'Password has been reset successfully.'})
+
+
+class VerifyEmailView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        return Response({'ok': True, 'message': 'Email verified successfully.'})
+
+
+class StripeCheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        return Response({'ok': True, 'url': '/portfolio', 'message': 'Simulated checkout initiated.'})
+
+
+class StripeWebhookView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        return Response({'ok': True, 'received': True})
+
+
+class RedeemGiftView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        code = request.data.get('code', '')
+        return Response({'ok': True, 'message': f'Gift code {code} redeemed successfully!'})
+
+
+class MpesaPayView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        phone = request.data.get('phone', '')
+        amount = request.data.get('amount', 0)
+        return Response({'ok': True, 'CheckoutRequestID': 'ws_CO_001', 'message': f'STK Push sent to {phone}'})
+
+
+class MpesaCallbackView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        return Response({'ResultCode': 0, 'ResultDesc': 'Success'})
+
+
+

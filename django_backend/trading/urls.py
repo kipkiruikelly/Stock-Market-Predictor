@@ -49,8 +49,8 @@ urlpatterns = [
 
     # ── Watchlist ─────────────────────────────────────────────────
     path('watchlist', views.WatchlistView.as_view(), name='api-watchlist'),
-    path('watchlist/add', extra_views.WatchlistAddView.as_view(), name='api-watchlist-add'),
-    path('watchlist/remove', extra_views.WatchlistRemoveView.as_view(), name='api-watchlist-remove'),
+    path('watchlist/add', views.WatchlistView.as_view(), name='api-watchlist-add'),
+    path('watchlist/remove', views.WatchlistView.as_view(), name='api-watchlist-remove'),
 
     # ── Portfolio (Manual Positions) ──────────────────────────────
     path('portfolio', views.PortfolioView.as_view(), name='api-portfolio'),
@@ -74,9 +74,9 @@ urlpatterns = [
     path('ai/analyze/<str:ticker>', prediction_views.AiAnalyzeView.as_view(), name='api-ai-analyze'),
 
     # ── Notifications ─────────────────────────────────────────────
-    path('notifications', extra_views.NotificationsView.as_view(), name='api-notifications'),
-    path('notifications/read', extra_views.NotificationsReadView.as_view(), name='api-notifications-read'),
-    path('notifications/clear', extra_views.NotificationsClearView.as_view(), name='api-notifications-clear'),
+    path('notifications', tools_views.NotificationsListView.as_view(), name='api-notifications'),
+    path('notifications/read', tools_views.NotificationsReadView.as_view(), name='api-notifications-read'),
+    path('notifications/clear', tools_views.NotificationsClearView.as_view(), name='api-notifications-clear'),
     
     path('notifications/list', tools_views.NotificationsListView.as_view(), name='api-notifications-list'),
     path('notifications/read-new', tools_views.NotificationsReadView.as_view(), name='api-notifications-read-new'),

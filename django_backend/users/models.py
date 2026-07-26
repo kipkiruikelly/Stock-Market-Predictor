@@ -840,3 +840,8 @@ class SmartOrderExecution(models.Model):
 
     class Meta:
         db_table = 'smart_order_executions'
+
+
+# Alias SystemConfig to AppSetting for backward compatibility
+SystemConfig = AppSetting
+

@@ -70,10 +70,12 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 parsed_db = None
 if DATABASE_URL and dj_database_url:
     try:
-        # Standardize postgresql and mysql+pymysql schemes
+        # Standardize postgresql, mysql, and mssql schemes
         url = DATABASE_URL
         if url.startswith('postgres://'):
             url = url.replace('postgres://', 'postgresql://', 1)
+        if url.startswith('mssql+pyodbc://'):
+            url = url.replace('mssql+pyodbc://', 'mssql://', 1)
         
         is_mysql = False
         if url.startswith('mysql://') or url.startswith('mysql+pymysql://'):
@@ -93,8 +95,17 @@ if DATABASE_URL and dj_database_url:
                 parsed_db['HOST'] = 'localhost'
                 parsed_db['PORT'] = ''
                 parsed_db['ENGINE'] = 'django.db.backends.mysql'
-                parsed_db.setdefault('OPTIONS', {})
-                parsed_db['OPTIONS']['unix_socket'] = socket_path
+        if parsed_db:
+            engine = parsed_db.get('ENGINE', '')
+            if 'sql_server' in engine or 'mssql' in engine:
+                try:
+                    import mssql
+                except ImportError:
+                    try:
+                        import sql_server
+                    except ImportError:
+                        print("DATABASE_URL specified MSSQL but backend module is not installed. Falling back to SQLite.")
+                        parsed_db = None
     except Exception as e:
         print("DATABASE_URL parsing error:", e)
         parsed_db = None

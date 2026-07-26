@@ -9,7 +9,10 @@ thread, eliminating duplicate audit log entries from multi-worker deployments.
 import os
 import sys
 import time
-import fcntl
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 import logging
 import threading
 from pathlib import Path
@@ -51,6 +54,8 @@ def _acquire_process_lock() -> bool:
     Returns False if another Gunicorn worker already holds it.
     """
     global _LOCK_FD
+    if fcntl is None:
+        return True  # Windows fallback: allow local single-process run
     try:
         _LOCK_FD = open(_LOCK_FILE_PATH, "w")
         fcntl.flock(_LOCK_FD, fcntl.LOCK_EX | fcntl.LOCK_NB)

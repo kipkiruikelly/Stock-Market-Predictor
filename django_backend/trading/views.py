@@ -177,78 +177,136 @@ class MarketHistoryView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
-        symbol = request.query_params.get('symbol', 'EURUSD').upper().strip()
-        interval = request.query_params.get('interval', '5m')
+        try:
+            symbol = request.query_params.get('symbol', 'EURUSD').upper().strip()
+            interval = request.query_params.get('interval', '5m')
 
-        from trading.tsdb_manager import query_candles
-        candles = query_candles(symbol, interval, count=100)
+            from trading.tsdb_manager import query_candles
+            candles = query_candles(symbol, interval, count=100)
 
-        # Fetch user's paper executions for overlaying entry/exit lines
-        from users.models import PaperTrade
-        clean_symbol = symbol.split(':').pop() if ':' in symbol else symbol
-        base_ticker = clean_symbol.replace('USD', '').replace('500', '')
-        
-        trades = PaperTrade.objects.filter(
-            user=request.user, 
-            ticker__icontains=base_ticker
-        )
-        
-        executions = []
-        for t in trades:
-            entry_ts = int(t.entry_time.timestamp()) * 1000
-            executions.append({
-                'id': t.id,
-                'type': 'BUY' if t.side == 'LONG' else 'SELL',
-                'action': 'ENTRY',
-                'time': entry_ts,
-                'price': t.entry_price,
-                'qty': t.qty,
-                'status': t.status
-            })
-            if t.status == 'closed' and t.exit_time:
-                exit_ts = int(t.exit_time.timestamp()) * 1000
+            # Fetch user's paper executions for overlaying entry/exit lines
+            from users.models import PaperTrade
+            clean_symbol = symbol.split(':').pop() if ':' in symbol else symbol
+            base_ticker = clean_symbol.replace('USD', '').replace('500', '')
+            
+            trades = PaperTrade.objects.filter(
+                user=request.user, 
+                ticker__icontains=base_ticker
+            )
+            
+            executions = []
+            for t in trades:
+                entry_ts = int(t.entry_time.timestamp()) * 1000
                 executions.append({
                     'id': t.id,
-                    'type': 'SELL' if t.side == 'LONG' else 'BUY',
-                    'action': 'EXIT',
-                    'time': exit_ts,
-                    'price': t.exit_price,
+                    'type': 'BUY' if t.side == 'LONG' else 'SELL',
+                    'action': 'ENTRY',
+                    'time': entry_ts,
+                    'price': t.entry_price,
                     'qty': t.qty,
                     'status': t.status
                 })
+                if t.status == 'closed' and t.exit_time:
+                    exit_ts = int(t.exit_time.timestamp()) * 1000
+                    executions.append({
+                        'id': t.id,
+                        'type': 'SELL' if t.side == 'LONG' else 'BUY',
+                        'action': 'EXIT',
+                        'time': exit_ts,
+                        'price': t.exit_price,
+                        'qty': t.qty,
+                        'status': t.status
+                    })
 
-        # Get current active running trade
-        active_trade = PaperTrade.objects.filter(
-            user=request.user, 
-            ticker__icontains=base_ticker,
-            status='open'
-        ).order_by('-entry_time').first()
-        
-        active_trade_data = None
-        if active_trade:
-            active_trade_data = {
-                'id': active_trade.id,
-                'side': active_trade.side,
-                'entry_price': active_trade.entry_price,
-                'stop_price': active_trade.stop_price,
-                'target_price': active_trade.target_price,
-                'qty': active_trade.qty,
-                'time': int(active_trade.entry_time.timestamp()) * 1000
-            }
-        else:
+            # Get current active running trade
+            active_trade = PaperTrade.objects.filter(
+                user=request.user, 
+                ticker__icontains=base_ticker,
+                status='open'
+            ).order_by('-entry_time').first()
+            
+            active_trade_data = None
+            if active_trade:
+                active_trade_data = {
+                    'id': active_trade.id,
+                    'side': active_trade.side,
+                    'entry_price': active_trade.entry_price,
+                    'stop_price': active_trade.stop_price,
+                    'target_price': active_trade.target_price,
+                    'qty': active_trade.qty,
+                    'time': int(active_trade.entry_time.timestamp()) * 1000
+                }
+            else:
+                from users.models import PredictionHistory
+                preds = PredictionHistory.objects.filter(
+                    user=request.user,
+                    ticker__icontains=base_ticker
+                ).order_by('-predicted_at')
+                if preds.count() >= 2:
+                    prev_pred = preds[1]
+                    latest_atr = candles[-1]['atr'] if candles else 1.0
+                    if latest_atr == 0.0:
+                        latest_atr = 1.0
+                        
+                    entry = prev_pred.current_price
+                    direction_upper = prev_pred.direction.upper()
+                    
+                    if any(x in direction_upper for x in ('BUY', 'LONG', 'UP')):
+                        side = 'LONG'
+                        sl = entry - 1.5 * latest_atr
+                        tp = entry + 3.0 * latest_atr
+                    elif any(x in direction_upper for x in ('SELL', 'SHORT', 'DOWN')):
+                        side = 'SHORT'
+                        sl = entry + 1.5 * latest_atr
+                        tp = entry - 3.0 * latest_atr
+                    else:
+                        side = 'HOLD'
+                        sl = entry
+                        tp = entry
+                        
+                    active_trade_data = {
+                        'id': f"prev_{prev_pred.id}",
+                        'side': side,
+                        'entry_price': entry,
+                        'stop_price': sl,
+                        'target_price': tp,
+                        'qty': 0,
+                        'time': int(prev_pred.predicted_at.timestamp()) * 1000
+                    }
+
+            # Get last closed trade
+            last_closed = PaperTrade.objects.filter(
+                user=request.user,
+                ticker__icontains=base_ticker,
+                status='closed'
+            ).order_by('-exit_time').first()
+            
+            last_closed_data = None
+            if last_closed:
+                last_closed_data = {
+                    'id': last_closed.id,
+                    'side': last_closed.side,
+                    'entry_price': last_closed.entry_price,
+                    'exit_price': last_closed.exit_price,
+                    'pnl': last_closed.pnl,
+                    'time': int(last_closed.exit_time.timestamp()) * 1000 if last_closed.exit_time else None
+                }
+
+            # Fetch the latest prediction (regardless of execution)
             from users.models import PredictionHistory
-            preds = PredictionHistory.objects.filter(
+            pred = PredictionHistory.objects.filter(
                 user=request.user,
                 ticker__icontains=base_ticker
-            ).order_by('-predicted_at')
-            if preds.count() >= 2:
-                prev_pred = preds[1]
+            ).order_by('-predicted_at').first()
+            
+            current_prediction_data = None
+            if pred:
                 latest_atr = candles[-1]['atr'] if candles else 1.0
                 if latest_atr == 0.0:
                     latest_atr = 1.0
-                    
-                entry = prev_pred.current_price
-                direction_upper = prev_pred.direction.upper()
+                
+                entry = pred.current_price
+                direction_upper = pred.direction.upper()
                 
                 if any(x in direction_upper for x in ('BUY', 'LONG', 'UP')):
                     side = 'LONG'
@@ -262,84 +320,27 @@ class MarketHistoryView(APIView):
                     side = 'HOLD'
                     sl = entry
                     tp = entry
-                    
-                active_trade_data = {
-                    'id': f"prev_{prev_pred.id}",
+                
+                current_prediction_data = {
+                    'id': pred.id,
                     'side': side,
                     'entry_price': entry,
                     'stop_price': sl,
                     'target_price': tp,
-                    'qty': 0,
-                    'time': int(prev_pred.predicted_at.timestamp()) * 1000
+                    'confidence': pred.confidence,
+                    'time': int(pred.predicted_at.timestamp()) * 1000
                 }
-
-        # Get last closed trade
-        last_closed = PaperTrade.objects.filter(
-            user=request.user,
-            ticker__icontains=base_ticker,
-            status='closed'
-        ).order_by('-exit_time').first()
-        
-        last_closed_data = None
-        if last_closed:
-            last_closed_data = {
-                'id': last_closed.id,
-                'side': last_closed.side,
-                'entry_price': last_closed.entry_price,
-                'exit_price': last_closed.exit_price,
-                'pnl': last_closed.pnl,
-                'time': int(last_closed.exit_time.timestamp()) * 1000 if last_closed.exit_time else None
-            }
-
-        # Fetch the latest prediction (regardless of execution)
-        from users.models import PredictionHistory
-        pred = PredictionHistory.objects.filter(
-            user=request.user,
-            ticker__icontains=base_ticker
-        ).order_by('-predicted_at').first()
-        
-        current_prediction_data = None
-        if pred:
-            latest_atr = candles[-1]['atr'] if candles else 1.0
-            if latest_atr == 0.0:
-                latest_atr = 1.0
             
-            entry = pred.current_price
-            direction_upper = pred.direction.upper()
-            
-            if any(x in direction_upper for x in ('BUY', 'LONG', 'UP')):
-                side = 'LONG'
-                sl = entry - 1.5 * latest_atr
-                tp = entry + 3.0 * latest_atr
-            elif any(x in direction_upper for x in ('SELL', 'SHORT', 'DOWN')):
-                side = 'SHORT'
-                sl = entry + 1.5 * latest_atr
-                tp = entry - 3.0 * latest_atr
-            else:
-                side = 'HOLD'
-                sl = entry
-                tp = entry
-            
-            current_prediction_data = {
-                'id': pred.id,
-                'side': side,
-                'entry_price': entry,
-                'stop_price': sl,
-                'target_price': tp,
-                'confidence': pred.confidence,
-                'time': int(pred.predicted_at.timestamp()) * 1000
-            }
-        
-        return Response({
-            'ok': True, 
-            'symbol': symbol, 
-            'interval': interval, 
-            'candles': candles,
-            'executions': executions,
-            'active_trade': active_trade_data,
-            'last_closed_trade': last_closed_data,
-            'current_prediction': current_prediction_data
-        })
+            return Response({
+                'ok': True, 
+                'symbol': symbol, 
+                'interval': interval, 
+                'candles': candles,
+                'executions': executions,
+                'active_trade': active_trade_data,
+                'last_closed_trade': last_closed_data,
+                'current_prediction': current_prediction_data
+            })
         except Exception as e:
             return Response({'ok': False, 'error': str(e)}, status=500)
 
