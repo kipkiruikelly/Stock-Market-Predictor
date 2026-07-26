@@ -33,28 +33,45 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
         return  # Override to bypass CSRF cookies validation check
 
+def _get_ticker_asset_class(ticker: str) -> str:
+    ticker_upper = ticker.upper()
+    for category, tickers in ASSET_CLASSES_TICKERS.items():
+        if ticker_upper in tickers:
+            return category
+    if any(cur in ticker_upper for cur in ("USD", "EUR", "GBP", "JPY", "CAD", "AUD", "CHF")):
+        return "FOREX"
+    if any(c in ticker_upper for c in ("BTC", "ETH", "SOL", "XRP", "BNB")):
+        return "CRYPTO"
+    return "STOCKS"
+
 
 # ── Screener Endpoint ─────────────────────────────────────────────────────────
 
 class ScreenerView(APIView):
-    """GET /api/screener — return stock screener results via Search Engine."""
+    """GET /api/screener — return market screener results across all asset classes & timeframes."""
     permission_classes = [IsAuthenticated]
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
-        interval = request.query_params.get("interval", "1d")
+        interval = request.query_params.get("interval", "1d").lower()
+        asset_class = request.query_params.get("asset_class", "ALL").upper()
         q = request.query_params.get("q", "")
-        if interval not in ("1d", "1h", "5m", "15m", "4h"):
+
+        valid_intervals = ("1m", "5m", "15m", "1h", "4h", "1d", "1w")
+        if interval not in valid_intervals:
             interval = "1d"
 
         from trading.search_engine import search_instruments
         if q:
-            catalog = search_instruments(q, limit=15)
+            catalog = search_instruments(q, limit=20)
             tickers = [inst["ticker"] for inst in catalog]
+        elif asset_class in ASSET_CLASSES_TICKERS:
+            tickers = ASSET_CLASSES_TICKERS[asset_class]
         else:
             tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
 
         def _scan(ticker):
+            category = _get_ticker_asset_class(ticker)
             try:
                 # Fast, reliable ML inference signal
                 inf = _run_lightweight_inference(ticker, interval)
@@ -77,6 +94,7 @@ class ScreenerView(APIView):
 
                 return {
                     "ticker":        ticker,
+                    "asset_class":   category,
                     "action":        action,
                     "price":         price,
                     "ai_score":      round(conf / 10.0, 1),
@@ -90,16 +108,16 @@ class ScreenerView(APIView):
             except Exception as err:
                 logger.warning("Screener failed for %s: %s", ticker, err)
                 return {
-                    "ticker": ticker, "action": "HOLD", "price": 100.0, "ai_score": 5.0,
+                    "ticker": ticker, "asset_class": category, "action": "HOLD", "price": 100.0, "ai_score": 5.0,
                     "alpha_signals": ["Neutral"], "lr_pred": 100.0, "confidence": 50.0,
                     "rsi": 50.0, "macd_hist": 0.0, "atr": 1.5
                 }
 
-        with ThreadPoolExecutor(max_workers=min(len(tickers), 10)) as ex:
+        with ThreadPoolExecutor(max_workers=min(len(tickers), 12)) as ex:
             rows = list(ex.map(_scan, tickers))
 
         rows.sort(key=lambda x: x["confidence"], reverse=True)
-        return Response({"ok": True, "interval": interval, "rows": rows})
+        return Response({"ok": True, "interval": interval, "asset_class": asset_class, "rows": rows})
 
 
 # ── Paper Trading Account & Order Engine ──────────────────────────────────────

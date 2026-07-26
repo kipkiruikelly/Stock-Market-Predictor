@@ -32,12 +32,30 @@ def get_client_ip(request) -> str:
     return request.META.get('REMOTE_ADDR', '')
 
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# ── Constants & Asset Classes ───────────────────────────────────────────────
 
-SCREENER_TICKERS = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
-    "QQQ", "NDX", "NFLX", "AMD", "V", "JPM", "ADBE", "CRM",
-]
+ASSET_CLASSES_TICKERS = {
+    "STOCKS": [
+        "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+        "NFLX", "AMD", "V", "JPM", "DIS", "BA", "BABA", "INTC", "PLTR"
+    ],
+    "FOREX": [
+        "EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "EURGBP",
+        "USDCHF", "NZDUSD", "EURJPY", "GBPJPY"
+    ],
+    "CRYPTO": [
+        "BTC", "ETH", "SOL", "XRP", "BNB", "AVAX", "DOGE", "LINK", "ADA", "DOT", "MATIC", "LTC"
+    ],
+    "COMMODITIES": [
+        "XAUUSD", "XAGUSD", "USOIL", "UKOIL", "NG"
+    ],
+    "INDICES": [
+        "SPX500", "US30", "NAS100", "GER40", "UK100", "JPN225"
+    ]
+}
+
+# Flattened default list of all covered tickers
+SCREENER_TICKERS = [ticker for category in ASSET_CLASSES_TICKERS.values() for ticker in category]
 
 _SECTOR_ETFS = {
     "Technology":       "XLK",
