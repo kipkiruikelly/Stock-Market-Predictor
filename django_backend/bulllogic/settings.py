@@ -95,21 +95,7 @@ if DATABASE_URL and dj_database_url:
                 parsed_db['ENGINE'] = 'django.db.backends.mysql'
                 parsed_db['OPTIONS'] = {'unix_socket': socket_path}
             elif os.getenv('K_SERVICE') is None:
-                # Local environment check: test connection to local MySQL server
-                try:
-                    import pymysql
-                    conn = pymysql.connect(
-                        host=parsed_db.get('HOST', '127.0.0.1'),
-                        port=int(parsed_db.get('PORT') or 3306),
-                        user=parsed_db.get('USER', 'root'),
-                        password=parsed_db.get('PASSWORD', ''),
-                        database=parsed_db.get('NAME', 'bulllogic'),
-                        connect_timeout=5
-                    )
-                    conn.close()
-                except Exception as db_err:
-                    print("Local MySQL database connection unverified (", db_err, "). Falling back to local SQLite database.")
-                    parsed_db = None
+                pass
         if parsed_db:
             engine = parsed_db.get('ENGINE', '')
             if 'sql_server' in engine or 'mssql' in engine:
