@@ -10,6 +10,7 @@ import { apiFetch } from '../utils/api';
 
 interface ScreenerRow {
   ticker: string;
+  asset_class?: string;
   action: 'BUY' | 'SELL' | 'HOLD';
   price: number;
   ai_score: number;
@@ -27,13 +28,14 @@ export const ScreenerDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   // Controls
-  const [interval, setIntervalVal] = useState<'1d' | '1h'>('1d');
+  const [interval, setIntervalVal] = useState<'1m' | '5m' | '15m' | '1h' | '4h' | '1d' | '1w'>('1d');
+  const [assetClass, setAssetClass] = useState<'ALL' | 'STOCKS' | 'FOREX' | 'CRYPTO' | 'COMMODITIES' | 'INDICES'>('ALL');
   const [filterAction, setFilterAction] = useState<'ALL' | 'BUY' | 'SELL'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchScreener = useCallback(async () => {
     try {
-      const json = await apiFetch(`/api/screener?interval=${interval}`);
+      const json = await apiFetch(`/api/screener?interval=${interval}&asset_class=${assetClass}`);
       if (json.ok && json.rows) {
         setData(json.rows);
       }
@@ -42,7 +44,7 @@ export const ScreenerDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [interval]);
+  }, [interval, assetClass]);
 
   // Initial load + interval toggle
   useEffect(() => {
@@ -157,62 +159,77 @@ export const ScreenerDashboard: React.FC = () => {
       </Grid>
 
       {/* Controls */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyItems: 'center', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, flexWrap: 'wrap' }}>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          {/* Daily vs Hourly Segment */}
-          <Paper sx={{ display: 'flex', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', p: 0.5, borderRadius: 2 }}>
-            <Button 
+      {/* Controls Bar: Asset Class & Timeframe Selectors */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* Asset Class Filter Tabs */}
+        <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 0.5 }}>
+          {(['ALL', 'STOCKS', 'FOREX', 'CRYPTO', 'COMMODITIES', 'INDICES'] as const).map(ac => (
+            <Button
+              key={ac}
               size="small"
-              variant={interval === '1d' ? 'contained' : 'text'}
-              onClick={() => setIntervalVal('1d')}
-              sx={{ fontWeight: 'bold', px: 2, py: 0.5 }}
+              variant={assetClass === ac ? 'contained' : 'outlined'}
+              color={assetClass === ac ? 'primary' : 'inherit'}
+              onClick={() => setAssetClass(ac)}
+              sx={{ fontWeight: 'bold', textTransform: 'capitalize', px: 2, whiteSpace: 'nowrap' }}
             >
-              Daily
+              {ac === 'ALL' ? '🌐 All Assets' : ac === 'STOCKS' ? '📈 Stocks' : ac === 'FOREX' ? '💱 Forex' : ac === 'CRYPTO' ? '🪙 Crypto' : ac === 'COMMODITIES' ? '🛢️ Commodities' : '📊 Indices'}
             </Button>
-            <Button 
-              size="small"
-              variant={interval === '1h' ? 'contained' : 'text'}
-              onClick={() => setIntervalVal('1h')}
-              sx={{ fontWeight: 'bold', px: 2, py: 0.5 }}
-            >
-              Hourly
-            </Button>
-          </Paper>
-
-          {/* Action Filters */}
-          <Box sx={{ display: 'flex', gap: 0.5, bgcolor: 'rgba(255,255,255,0.02)', p: 0.5, borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)' }}>
-            {(['ALL', 'BUY', 'SELL'] as const).map(action => (
-              <Button 
-                key={action}
-                size="small"
-                variant={filterAction === action ? 'contained' : 'text'}
-                color={filterAction === action ? 'primary' : 'inherit'}
-                onClick={() => setFilterAction(action)}
-                sx={{ fontWeight: 'bold', px: 2, py: 0.5 }}
-              >
-                {action === 'ALL' ? 'All' : action}
-              </Button>
-            ))}
-          </Box>
+          ))}
         </Box>
 
-        {/* Search */}
-        <TextField 
-          size="small"
-          placeholder="Search Ticker..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search size={16} />
-                </InputAdornment>
-              )
-            }
-          }}
-          sx={{ width: { xs: '100%', sm: 200 } }}
-        />
+        {/* Toolbar: Timeframe, Action Filter & Search */}
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyItems: 'center', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {/* Timeframe Segment */}
+            <Paper sx={{ display: 'flex', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', p: 0.5, borderRadius: 2 }}>
+              {(['1m', '5m', '15m', '1h', '4h', '1d', '1w'] as const).map(tf => (
+                <Button 
+                  key={tf}
+                  size="small"
+                  variant={interval === tf ? 'contained' : 'text'}
+                  onClick={() => setIntervalVal(tf)}
+                  sx={{ fontWeight: 'bold', px: 1.5, py: 0.5, minWidth: 40 }}
+                >
+                  {tf.toUpperCase()}
+                </Button>
+              ))}
+            </Paper>
+
+            {/* Action Filters */}
+            <Box sx={{ display: 'flex', gap: 0.5, bgcolor: 'rgba(255,255,255,0.02)', p: 0.5, borderRadius: 2, border: '1px solid rgba(255,255,255,0.05)' }}>
+              {(['ALL', 'BUY', 'SELL'] as const).map(action => (
+                <Button 
+                  key={action}
+                  size="small"
+                  variant={filterAction === action ? 'contained' : 'text'}
+                  color={filterAction === action ? 'primary' : 'inherit'}
+                  onClick={() => setFilterAction(action)}
+                  sx={{ fontWeight: 'bold', px: 2, py: 0.5 }}
+                >
+                  {action === 'ALL' ? 'All Signals' : action}
+                </Button>
+              ))}
+            </Box>
+          </Box>
+
+          {/* Search */}
+          <TextField 
+            size="small"
+            placeholder="Search Ticker..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search size={16} />
+                  </InputAdornment>
+                )
+              }
+            }}
+            sx={{ width: { xs: '100%', sm: 200 } }}
+          />
+        </Box>
       </Box>
 
       {/* Main Signal Grid Table */}
@@ -233,6 +250,7 @@ export const ScreenerDashboard: React.FC = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Ticker</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Asset Class</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Signal</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textAlign: 'right' }}>Price</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textAlign: 'right' }}>Predicted Close</TableCell>
@@ -263,6 +281,16 @@ export const ScreenerDashboard: React.FC = () => {
                           >
                             {row.ticker}
                           </Button>
+                        </TableCell>
+
+                        {/* Asset Class Badge */}
+                        <TableCell sx={{ py: 1.5 }}>
+                          <Chip 
+                            label={row.asset_class || 'STOCKS'} 
+                            size="small" 
+                            variant="outlined" 
+                            sx={{ fontSize: '0.7rem', fontWeight: 'bold', height: 20 }}
+                          />
                         </TableCell>
 
                         {/* Signal Badge */}
