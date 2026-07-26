@@ -343,11 +343,8 @@ class ResearchView(APIView):
         ticker = ticker.upper().strip()
         import yfinance as yf
         from concurrent.futures import ThreadPoolExecutor
-        from trading.state_machine import _run_lightweight_inference
 
-        # Fast inference baseline
-        inf = _run_lightweight_inference(ticker, "1d")
-        base_price = inf.get("current_price", 100.0)
+        base_price = 100.0
 
         def _price():
             try:

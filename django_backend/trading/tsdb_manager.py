@@ -92,36 +92,80 @@ def query_candles(symbol: str, interval: str, count: int = 100) -> List[Dict[str
     if candles:
         return sanitize_json_floats(candles[-count:])
 
-    # Generate fast baseline candles if buffer empty
-    from trading.state_machine import _run_lightweight_inference
-    inf = _run_lightweight_inference(symbol, interval)
-    ref = inf.get("current_price", 100.0)
-    now_ts = int(time.time())
-    step_sec = 300 if interval in ('1m', '5m', '15m') else 86400
+    # Fetch real data via yfinance if buffer empty
+    import yfinance as yf
+    
+    # Map TSDB interval to yfinance interval
+    yf_interval_map = {
+        '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m',
+        '1h': '1h', '4h': '1h', '1d': '1d', '1w': '1wk'
+    }
+    yf_interval = yf_interval_map.get(interval, '1d')
+    
+    # Map TSDB interval to yfinance period
+    if interval in ['1m', '5m']:
+        period = "5d"
+    elif interval in ['15m', '30m', '1h', '4h']:
+        period = "1mo"
+    else:
+        period = "1y"
 
-    generated = []
-    for i in range(count, 0, -1):
-        t = (now_ts - i * step_sec) * 1000
-        o = ref * (1 + (i % 7 - 3) * 0.002)
-        h = o * 1.004
-        l = o * 0.996
-        c = o * (1 + (i % 5 - 2) * 0.001)
-        generated.append({
-            'time': t,
-            'open': round(o, 2),
-            'high': round(h, 2),
-            'low': round(l, 2),
-            'close': round(c, 2),
-            'volume': 10000 + i * 150,
-            'bull_fvg': 1 if i % 6 == 0 else 0,
-            'bear_fvg': 1 if i % 7 == 0 else 0,
-            'bull_ob': 1 if i % 8 == 0 else 0,
-            'bear_ob': 1 if i % 9 == 0 else 0,
-            'above_200sma': 1,
-            'structure_bullish': 1,
-            'htf_bias': 1,
-            'atr': round(ref * 0.012, 2)
-        })
+    try:
+        df = yf.download(symbol, period=period, interval=yf_interval, progress=False)
+        if df.empty:
+            return []
+            
+        generated = []
+        for dt, row in df.iterrows():
+            if isinstance(dt, tuple): # Multi-index column handling workaround if needed
+                continue
+            
+            # handle flat or multi-level column names
+            def _get_val(col):
+                if col in df.columns:
+                    val = row[col]
+                    return float(val.iloc[0]) if hasattr(val, 'iloc') else float(val)
+                # handle multi-index cases
+                for c in df.columns:
+                    if isinstance(c, tuple) and c[0] == col:
+                        val = row[c]
+                        return float(val.iloc[0]) if hasattr(val, 'iloc') else float(val)
+                return 0.0
 
-    _TSDB_BUFFER[key] = generated
-    return sanitize_json_floats(generated[-count:])
+            try:
+                # pandas datetime to milliseconds
+                t = int(dt.timestamp() * 1000)
+                o = _get_val('Open')
+                h = _get_val('High')
+                l = _get_val('Low')
+                c = _get_val('Close')
+                v = _get_val('Volume')
+                
+                # Basic market structure mock flags for now since those are complex to calculate
+                # but we give real OHLCV data
+                generated.append({
+                    'time': t,
+                    'open': round(o, 2),
+                    'high': round(h, 2),
+                    'low': round(l, 2),
+                    'close': round(c, 2),
+                    'volume': int(v),
+                    'bull_fvg': 0,
+                    'bear_fvg': 0,
+                    'bull_ob': 0,
+                    'bear_ob': 0,
+                    'above_200sma': 1,
+                    'structure_bullish': 1,
+                    'htf_bias': 1,
+                    'atr': round(c * 0.012, 2)
+                })
+            except Exception as e:
+                logger.warning(f"Error parsing row for {symbol}: {e}")
+                continue
+                
+        _TSDB_BUFFER[key] = generated
+        return sanitize_json_floats(generated[-count:])
+        
+    except Exception as e:
+        logger.error(f"yfinance download failed for {symbol}: {e}")
+        return []

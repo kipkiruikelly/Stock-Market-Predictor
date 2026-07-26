@@ -25,9 +25,33 @@ from users.models import (
     UserPaperOrder, UserPaperPosition, TradeJournal,
     WatchlistItem, Notification, SystemConfig
 )
-from trading.state_machine import _run_lightweight_inference
 
 logger = logging.getLogger("extra_views")
+
+def _get_live_price(ticker, fallback=100.0):
+    try:
+        import yfinance as yf
+        yt = ticker
+        if ticker in ["BTC", "ETH", "SOL", "XRP", "BNB", "AVAX", "DOGE", "LINK", "ADA", "DOT", "MATIC", "LTC"]:
+            yt = f"{ticker}-USD"
+        elif ticker in ["XAUUSD"]: yt = "GC=F"
+        elif ticker in ["XAGUSD"]: yt = "SI=F"
+        elif ticker in ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "EURGBP", "USDCHF", "NZDUSD", "EURJPY", "GBPJPY"]:
+            yt = f"{ticker}=X"
+        elif ticker in ["USOIL"]: yt = "CL=F"
+        elif ticker in ["UKOIL"]: yt = "BZ=F"
+        elif ticker in ["NG"]: yt = "NG=F"
+        elif ticker in ["SPX500"]: yt = "^GSPC"
+        elif ticker in ["US30"]: yt = "^DJI"
+        elif ticker in ["NAS100"]: yt = "^IXIC"
+        
+        df = yf.download(yt, period="1d", interval="1d", progress=False)
+        if not df.empty and 'Close' in df.columns:
+            val = df['Close'].iloc[-1]
+            return float(val.iloc[0]) if hasattr(val, 'iloc') else float(val)
+        return fallback
+    except Exception:
+        return fallback
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -70,48 +94,130 @@ class ScreenerView(APIView):
         else:
             tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
 
+        import yfinance as yf
+        import pandas as pd
+        import numpy as np
+
+        # map forex/crypto symbols for yfinance if needed
+        yf_tickers = []
+        ticker_map = {}
+        for t in tickers:
+            yt = t
+            if t in ["BTC", "ETH", "SOL", "XRP", "BNB", "AVAX", "DOGE", "LINK", "ADA", "DOT", "MATIC", "LTC"]:
+                yt = f"{t}-USD"
+            elif t in ["XAUUSD"]:
+                yt = "GC=F"
+            elif t in ["XAGUSD"]:
+                yt = "SI=F"
+            elif t in ["EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "EURGBP", "USDCHF", "NZDUSD", "EURJPY", "GBPJPY"]:
+                yt = f"{t}=X"
+            elif t in ["USOIL"]:
+                yt = "CL=F"
+            elif t in ["UKOIL"]:
+                yt = "BZ=F"
+            elif t in ["NG"]:
+                yt = "NG=F"
+            elif t in ["SPX500", "US30", "NAS100", "GER40", "UK100", "JPN225"]:
+                if t == "SPX500": yt = "^GSPC"
+                if t == "US30": yt = "^DJI"
+                if t == "NAS100": yt = "^IXIC"
+                if t == "GER40": yt = "^GDAXI"
+                if t == "UK100": yt = "^FTSE"
+                if t == "JPN225": yt = "^N225"
+            
+            yf_tickers.append(yt)
+            ticker_map[yt] = t
+
+        try:
+            df = yf.download(" ".join(yf_tickers), period="3mo", interval="1d", progress=False)
+            if isinstance(df.columns, pd.MultiIndex):
+                closes = df['Close']
+            else:
+                closes = df[['Close']] if 'Close' in df.columns else df
+        except Exception as e:
+            logger.error(f"yfinance batch download failed: {e}")
+            closes = pd.DataFrame()
+
+        def _compute_rsi(series, period=14):
+            delta = series.diff()
+            gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+            loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+            rs = gain / loss
+            return 100 - (100 / (1 + rs))
+
+        def _compute_macd(series, fast=12, slow=26, signal=9):
+            ema_fast = series.ewm(span=fast, adjust=False).mean()
+            ema_slow = series.ewm(span=slow, adjust=False).mean()
+            macd = ema_fast - ema_slow
+            signal_line = macd.ewm(span=signal, adjust=False).mean()
+            return macd - signal_line
+
         def _scan(ticker):
             category = _get_ticker_asset_class(ticker)
+            yt = [k for k, v in ticker_map.items() if v == ticker]
+            yt = yt[0] if yt else ticker
+
+            price = 100.0
+            rsi = 50.0
+            macd_hist = 0.0
+            action = "HOLD"
+            conf = 50.0
+            atr = 1.5
+
             try:
-                # Fast, reliable ML inference signal
-                inf = _run_lightweight_inference(ticker, interval)
-                action = inf.get("direction", "HOLD")
-                price = inf.get("current_price", 100.0)
-                conf = inf.get("confidence", 60.0)
-                
-                # Derive technical indicators based on inference price
-                rsi = round(50.0 + (conf - 50.0) * (1 if action == "BUY" else -1), 1)
-                macd_hist = round((conf - 60.0) / 10.0 * (1 if action == "BUY" else -1), 2)
-                atr = round(price * 0.015, 2)
+                if not closes.empty and yt in closes.columns:
+                    series = closes[yt].dropna()
+                    if len(series) > 30:
+                        price = float(series.iloc[-1])
+                        rsi_series = _compute_rsi(series)
+                        macd_series = _compute_macd(series)
+                        
+                        rsi = float(rsi_series.iloc[-1])
+                        macd_hist = float(macd_series.iloc[-1])
+                        atr = float(series.diff().abs().rolling(14).mean().iloc[-1])
+                        
+                        if rsi < 40 and macd_hist > 0:
+                            action = "BUY"
+                            conf = 70.0 + (50 - rsi)
+                        elif rsi > 60 and macd_hist < 0:
+                            action = "SELL"
+                            conf = 70.0 + (rsi - 50)
+                        elif macd_hist > price * 0.002:
+                            action = "BUY"
+                            conf = 65.0
+                        elif macd_hist < -price * 0.002:
+                            action = "SELL"
+                            conf = 65.0
+                        else:
+                            action = "HOLD"
+                            conf = 50.0 + abs(macd_hist) / price * 1000
 
-                alpha_signals = []
-                if action == "BUY":
-                    alpha_signals = ["Bullish Momentum", "EMA Crossover", "FVG Retest"]
-                elif action == "SELL":
-                    alpha_signals = ["Bearish Rejection", "Liquidity Sweep", "Overbought RSI"]
-                else:
-                    alpha_signals = ["Consolidation", "Neutral Structure"]
-
-                return {
-                    "ticker":        ticker,
-                    "asset_class":   category,
-                    "action":        action,
-                    "price":         price,
-                    "ai_score":      round(conf / 10.0, 1),
-                    "alpha_signals": alpha_signals,
-                    "lr_pred":       round(price * (1.02 if action == "BUY" else 0.98), 2),
-                    "confidence":    conf,
-                    "rsi":           rsi,
-                    "macd_hist":     macd_hist,
-                    "atr":           atr,
-                }
             except Exception as err:
-                logger.warning("Screener failed for %s: %s", ticker, err)
-                return {
-                    "ticker": ticker, "asset_class": category, "action": "HOLD", "price": 100.0, "ai_score": 5.0,
-                    "alpha_signals": ["Neutral"], "lr_pred": 100.0, "confidence": 50.0,
-                    "rsi": 50.0, "macd_hist": 0.0, "atr": 1.5
-                }
+                logger.warning(f"Screener indicator failed for {ticker}: {err}")
+
+            conf = min(max(conf, 0.0), 99.9)
+
+            alpha_signals = []
+            if action == "BUY":
+                alpha_signals = ["Bullish Momentum", "EMA Crossover", "FVG Retest"] if rsi < 50 else ["Breakout", "RSI Ascending"]
+            elif action == "SELL":
+                alpha_signals = ["Bearish Rejection", "Liquidity Sweep", "Overbought RSI"] if rsi > 50 else ["Breakdown", "RSI Descending"]
+            else:
+                alpha_signals = ["Consolidation", "Neutral Structure"]
+
+            return {
+                "ticker":        ticker,
+                "asset_class":   category,
+                "action":        action,
+                "price":         round(price, 4),
+                "ai_score":      round(conf / 10.0, 1),
+                "alpha_signals": alpha_signals,
+                "lr_pred":       round(price * (1.02 if action == "BUY" else 0.98), 2),
+                "confidence":    round(conf, 1),
+                "rsi":           round(rsi, 1),
+                "macd_hist":     round(macd_hist, 4),
+                "atr":           round(atr, 2),
+            }
 
         with ThreadPoolExecutor(max_workers=min(len(tickers), 12)) as ex:
             rows = list(ex.map(_scan, tickers))
@@ -138,8 +244,7 @@ class ManualPaperAccountView(APIView):
         # Source A: PaperTrade
         paper_trades = PaperTrade.objects.filter(user=user, status='open').order_by('-created_at')
         for t in paper_trades:
-            inf = _run_lightweight_inference(t.ticker, "1d")
-            cur_price = inf.get("current_price", t.entry_price)
+            cur_price = _get_live_price(t.ticker, t.entry_price)
             pnl = (cur_price - t.entry_price) * t.qty if t.side.upper() in ('BUY', 'LONG') else (t.entry_price - cur_price) * t.qty
             total_unrealized_pnl += pnl
 
@@ -161,8 +266,7 @@ class ManualPaperAccountView(APIView):
         # Source B: PortfolioPosition
         portfolio_positions = PortfolioPosition.objects.filter(user=user, status='open').order_by('-opened_at')
         for p in portfolio_positions:
-            inf = _run_lightweight_inference(p.ticker, "1d")
-            cur_price = inf.get("current_price", p.entry_price)
+            cur_price = _get_live_price(p.ticker, p.entry_price)
             pnl = (cur_price - p.entry_price) * p.quantity if p.side.lower() in ('buy', 'long') else (p.entry_price - cur_price) * p.quantity
             total_unrealized_pnl += pnl
 
@@ -184,8 +288,7 @@ class ManualPaperAccountView(APIView):
         # Source C: UserPaperPosition
         user_paper_pos = UserPaperPosition.objects.filter(user=user).order_by('-opened_at')
         for upp in user_paper_pos:
-            inf = _run_lightweight_inference(upp.ticker, "1d")
-            cur_price = inf.get("current_price", upp.entry_price)
+            cur_price = _get_live_price(upp.ticker, upp.entry_price)
             pnl = (cur_price - upp.entry_price) * upp.quantity if upp.side.lower() in ('buy', 'long') else (upp.entry_price - cur_price) * upp.quantity
             total_unrealized_pnl += pnl
 
@@ -271,8 +374,7 @@ class ManualPaperOrderView(APIView):
         acct, _ = UserPaperAccount.objects.get_or_create(user=user)
 
         # Get current execution price
-        inf = _run_lightweight_inference(ticker, "1d")
-        exec_price = target_price if (target_price and order_type != 'market') else inf.get("current_price", 100.0)
+        exec_price = target_price if (target_price and order_type != 'market') else _get_live_price(ticker, 100.0)
 
         if order_type in ('limit', 'stop') and target_price:
             # Record as Pending Order
