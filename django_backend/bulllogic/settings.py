@@ -104,7 +104,7 @@ if DATABASE_URL and dj_database_url:
                         user=parsed_db.get('USER', 'root'),
                         password=parsed_db.get('PASSWORD', ''),
                         database=parsed_db.get('NAME', 'bulllogic'),
-                        connect_timeout=1
+                        connect_timeout=5
                     )
                     conn.close()
                 except Exception as db_err:
