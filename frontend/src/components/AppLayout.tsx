@@ -7,6 +7,8 @@ import { apiFetch } from '../utils/api';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { getAppTheme } from '../theme';
 import { Sidebar } from './Sidebar';
+import { SearchHub } from './SearchHub';
+import { NotificationDrawer } from './NotificationDrawer';
 
 export const AppLayout = () => {
   const { user, logout, setUser } = useAuth();
@@ -33,6 +35,25 @@ export const AppLayout = () => {
   const [chatPrompt, setChatPrompt] = useState('');
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
+
+  // Release Candidate Premium overlays
+  const [searchHubOpen, setSearchHubOpen] = useState(false);
+  const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [tableDensity, setTableDensity] = useState<'compact' | 'comfortable'>(() => {
+    return (localStorage.getItem('bl-density') as any) || 'compact';
+  });
+
+  // Cmd+K listener
+  useEffect(() => {
+    const handleGlobalSearchKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchHubOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalSearchKey);
+    return () => window.removeEventListener('keydown', handleGlobalSearchKey);
+  }, []);
 
   const notifRef = useRef<HTMLDivElement>(null);
 
@@ -351,6 +372,39 @@ export const AppLayout = () => {
               </div>
             )}
 
+            {/* Universal Search Trigger */}
+            <button 
+              className="px-3 py-1.5 bg-nexus-sf hover:bg-white/5 border border-white/10 rounded-lg text-xs text-nexus-muted hover:text-white flex items-center gap-2 cursor-pointer transition-all"
+              onClick={() => setSearchHubOpen(true)}
+              title="Search Assets & Strategies"
+            >
+              🔍 <span className="hidden sm:inline font-bold">Search</span> <kbd className="text-[10px] bg-nexus-bg border border-white/15 px-1 rounded">⌘K</kbd>
+            </button>
+
+            {/* Central Notification Bell Trigger */}
+            <button 
+              className="bl-icon-btn relative" 
+              onClick={() => setNotificationDrawerOpen(true)} 
+              title="Open Notifications Centre"
+            >
+              🔔
+              <span className="absolute top-0 right-0 w-2 h-2 bg-nexus-pur rounded-full animate-pulse" />
+            </button>
+
+            {/* Table Density Personalizer */}
+            <button 
+              className="px-2.5 py-1.5 bg-nexus-sf hover:bg-white/5 border border-white/10 rounded-lg text-xs text-nexus-white cursor-pointer"
+              onClick={() => {
+                const next = tableDensity === 'compact' ? 'comfortable' : 'compact';
+                setTableDensity(next);
+                localStorage.setItem('bl-density', next);
+                toast.success(`Grid density updated to ${next.toUpperCase()}`);
+              }}
+              title="Toggle Table Grid Density"
+            >
+              📊 {tableDensity === 'compact' ? 'Compact' : 'Comfortable'}
+            </button>
+
             <button className="bl-icon-btn" onClick={toggleTheme} title="Toggle theme">
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
@@ -500,6 +554,12 @@ export const AppLayout = () => {
           <button className="bl-upgrade-dismiss" onClick={() => setUpgradeOpen(false)}>Not now</button>
         </div>
       </div>
+
+      {/* Release Candidate Universal Search Overlay */}
+      <SearchHub open={searchHubOpen} onClose={() => setSearchHubOpen(false)} />
+
+      {/* Release Candidate Notifications Side Drawer */}
+      <NotificationDrawer open={notificationDrawerOpen} onClose={() => setNotificationDrawerOpen(false)} />
     </div>
     </ThemeProvider>
   );
