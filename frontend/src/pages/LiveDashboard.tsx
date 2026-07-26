@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Card, TextField, Button, Grid2 as Grid, MenuItem, Select, Modal, IconButton, Chip } from '@mui/material';
-import { Zap, Settings, X } from 'lucide-react';
+import { Box, Typography, Card, TextField, Button, Grid, MenuItem, Select, Modal, IconButton, Chip } from '@mui/material';
+import { Zap, Settings, X, Play, Square } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -15,7 +15,7 @@ export const LiveDashboard: React.FC = () => {
   const [connected, setConnected] = useState(false);
   const [trading, setTrading] = useState(false);
   const [mode, setMode] = useState<'paper' | 'metaapi' | 'bridge'>('paper');
-  const [account, setAccount] = useState<any>(null);
+  // State removed since account is unused
 
   // Settings Modal State
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -26,20 +26,20 @@ export const LiveDashboard: React.FC = () => {
   const [accNum, setAccNum] = useState('');
   const [accPass, setAccPass] = useState('');
   const [accServer, setAccServer] = useState('');
-  const [bridgeHost, setBridgeHost] = useState('localhost');
-  const [bridgePort, setBridgePort] = useState('18812');
+  const bridgeHost = 'localhost';
+  const bridgePort = '18812';
 
   // Algo Settings Fields
   const [algoSymbol, setAlgoSymbol] = useState('AAPL');
   const [algoTimeframe, setAlgoTimeframe] = useState('M5');
-  const [algoRisk, setAlgoRisk] = useState('1.0');
-  const [algoInterval, setAlgoInterval] = useState('300');
+  const algoRisk = '1.0';
+  const algoInterval = '300';
   const [algoModel, setAlgoModel] = useState<'ensemble' | 'rf' | 'xgb' | 'lr' | 'ict' | 'technical'>('ensemble');
   const [startingAlgo, setStartingAlgo] = useState(false);
   const [stoppingAlgo, setStoppingAlgo] = useState(false);
 
   // Terminal State
-  const [activeSymbol, setActiveSymbol] = useState('AAPL');
+  const [activeSymbol] = useState('AAPL');
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -47,7 +47,6 @@ export const LiveDashboard: React.FC = () => {
       if (data) {
         setConnected(!!data.connected);
         setTrading(!!data.trading);
-        if (data.account && Object.keys(data.account).length) setAccount(data.account);
       }
     } catch (err) {
       console.error('Failed to fetch status:', err);
@@ -97,7 +96,6 @@ export const LiveDashboard: React.FC = () => {
       if (res.ok) {
         toast.success('Disconnected');
         setConnected(false);
-        setAccount(null);
         fetchStatus();
       }
     } catch (err) { toast.error('Disconnect failed'); }

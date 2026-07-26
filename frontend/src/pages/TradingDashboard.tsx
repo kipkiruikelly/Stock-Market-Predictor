@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, Typography, Grid, Card, CardContent, CircularProgress, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
-import { ArrowUpward, ArrowDownward, AccessTime, ShowChart, BarChart as BarChartIcon, Timeline, PieChart as PieChartIcon } from '@mui/icons-material';
+import { Box, Typography, Grid, Card, CardContent, CircularProgress, Chip } from '@mui/material';
+import { ArrowUpward, ArrowDownward, BarChart as BarChartIcon, Timeline, PieChart as PieChartIcon } from '@mui/icons-material';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { useAuth } from '../context/AuthContext';
 
 interface AnalyticsData {
   ok: boolean;
@@ -36,7 +35,6 @@ interface AnalyticsData {
 const COLORS = ['#8b5cf6', '#4a90e2', '#10b981', '#f59e0b', '#f43f5e'];
 
 export const TradingDashboard = () => {
-  const { user } = useAuth();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -210,8 +208,8 @@ export const TradingDashboard = () => {
                           dataKey="pnl" 
                           radius={[4, 4, 0, 0]}
                         >
-                          {data.charts.daily_pnl.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#10b981' : '#f43f5e'} />
+                          {data.charts.daily_pnl.map((_entry, index) => (
+                            <Cell key={`cell-${index}`} fill={_entry.pnl >= 0 ? '#10b981' : '#f43f5e'} />
                           ))}
                         </Bar>
                       </BarChart>
@@ -240,7 +238,7 @@ export const TradingDashboard = () => {
                           paddingAngle={5}
                           dataKey="value"
                         >
-                          {data.charts.asset_allocation.map((entry, index) => (
+                          {data.charts.asset_allocation.map((_entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
