@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box, Button, ButtonGroup, Typography, CircularProgress, FormControlLabel, Checkbox, useTheme } from '@mui/material';
 import { Maximize2, Minimize2, ShieldAlert } from 'lucide-react';
-import { createChart, CandlestickSeries, createSeriesMarkers, LineStyle, ColorType, CrosshairMode } from 'lightweight-charts';
+import { createChart, CandlestickSeries, HistogramSeries, LineSeries, createSeriesMarkers, LineStyle, ColorType, CrosshairMode } from 'lightweight-charts';
+import { calculateSMA, calculateEMA } from '../utils/indicators';
 import { apiFetch } from '../utils/api';
 
 export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
@@ -13,6 +14,8 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [timeframe, setTimeframe] = useState<string>('1d'); // default timeframe
   const [showIndicators, setShowIndicators] = useState(true);
+  const [showEMA, setShowEMA] = useState(false);
+  const [showSMA, setShowSMA] = useState(false);
   const [showTrades, setShowTrades] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -21,6 +24,9 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
   
   const chartInstance = useRef<any>(null);
   const candleSeriesRef = useRef<any>(null);
+  const volumeSeriesRef = useRef<any>(null);
+  const emaSeriesRef = useRef<any>(null);
+  const smaSeriesRef = useRef<any>(null);
   const dataCache = useRef<any>(null);
   const priceLinesRef = useRef<any[]>([]);
 
@@ -134,7 +140,38 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
         candlestickSeries.setData(candlePoints);
 
-        // Apply initial markers and price levels
+        const volumeSeries = chart.addSeries(HistogramSeries, {
+          color: '#26a69a',
+          priceFormat: {
+            type: 'volume',
+          },
+          priceScaleId: 'volume',
+        });
+        
+        volumeSeries.priceScale().applyOptions({
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
+        });
+        
+        volumeSeriesRef.current = volumeSeries;
+
+        const volumePoints = sortedData.map((c: any) => ({
+          time: Math.floor(c.time / 1000),
+          value: c.volume || 0,
+          color: c.close >= c.open ? 'rgba(0, 200, 83, 0.5)' : 'rgba(255, 82, 82, 0.5)',
+        }));
+        
+        volumeSeries.setData(volumePoints);
+
+        // Indicators
+        const emaSeries = chart.addSeries(LineSeries, { color: '#2962FF', lineWidth: 2 });
+        emaSeriesRef.current = emaSeries;
+        const smaSeries = chart.addSeries(LineSeries, { color: '#FF6D00', lineWidth: 2 });
+        smaSeriesRef.current = smaSeries;
+
+        // Apply initial markers, levels, and indicators
         applyMarkersAndLevels();
 
         // Fit content
@@ -172,7 +209,7 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
   // Re-apply markers and levels when options change
   useEffect(() => {
     applyMarkersAndLevels();
-  }, [showIndicators, showTrades]);
+  }, [showIndicators, showTrades, showEMA, showSMA]);
 
   const applyMarkersAndLevels = () => {
     const json = dataCache.current;
@@ -188,6 +225,22 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
     const markers: any[] = [];
     const sortedData = [...json.candles].sort((a: any, b: any) => a.time - b.time);
+    const candlePoints = sortedData.map((c: any) => ({
+      time: Math.floor(c.time / 1000),
+      close: c.close,
+    }));
+
+    if (showEMA && emaSeriesRef.current) {
+      emaSeriesRef.current.setData(calculateEMA(candlePoints, 20));
+    } else if (emaSeriesRef.current) {
+      emaSeriesRef.current.setData([]);
+    }
+
+    if (showSMA && smaSeriesRef.current) {
+      smaSeriesRef.current.setData(calculateSMA(candlePoints, 50));
+    } else if (smaSeriesRef.current) {
+      smaSeriesRef.current.setData([]);
+    }
 
     // 2. Loop candles to add historical markers (e.g. executions entry/exit)
     sortedData.forEach((c: any) => {
@@ -219,12 +272,13 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
     // 3. Draw active prediction / trade price levels
     if (showTrades) {
-      // A. Next Prediction Levels (Dashed lines, Purple/Red/Blue theme)
+      // A. Next Prediction Levels
       if (json.current_prediction) {
+        const isLong = json.current_prediction.side === 'LONG';
         const nextEntry = series.createPriceLine({
           price: json.current_prediction.entry_price,
-          color: '#a78bfa',
-          lineWidth: 2,
+          color: isLong ? '#00C853' : '#FF5252',
+          lineWidth: 1,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
           title: `Next Entry: ${json.current_prediction.entry_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
@@ -233,9 +287,9 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
         const nextSL = series.createPriceLine({
           price: json.current_prediction.stop_price,
-          color: '#f87171',
-          lineWidth: 2,
-          lineStyle: LineStyle.Dashed,
+          color: '#FF5252',
+          lineWidth: 1,
+          lineStyle: LineStyle.Dotted,
           axisLabelVisible: true,
           title: `Next SL: ${json.current_prediction.stop_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
         });
@@ -243,9 +297,9 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
         const nextTP = series.createPriceLine({
           price: json.current_prediction.target_price,
-          color: '#60a5fa',
-          lineWidth: 2,
-          lineStyle: LineStyle.Dashed,
+          color: '#00C853',
+          lineWidth: 1,
+          lineStyle: LineStyle.Dotted,
           axisLabelVisible: true,
           title: `Next TP: ${json.current_prediction.target_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
         });
@@ -254,33 +308,34 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
       // B. Running Position Levels (Dotted lines, Green/Red/Blue theme)
       if (json.active_trade) {
+        const isLong = json.active_trade.side === 'LONG';
         const runEntry = series.createPriceLine({
           price: json.active_trade.entry_price,
-          color: '#10b981',
+          color: isLong ? '#00C853' : '#FF5252',
           lineWidth: 2,
-          lineStyle: LineStyle.Dotted,
+          lineStyle: LineStyle.Solid,
           axisLabelVisible: true,
-          title: `Run Entry: ${json.active_trade.entry_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
+          title: `Entry: ${json.active_trade.entry_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
         });
         priceLinesRef.current.push(runEntry);
 
         const runSL = series.createPriceLine({
           price: json.active_trade.stop_price,
-          color: '#ef4444',
+          color: '#FF5252',
           lineWidth: 2,
-          lineStyle: LineStyle.Dotted,
+          lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
-          title: `Run SL: ${json.active_trade.stop_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
+          title: `SL: ${json.active_trade.stop_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
         });
         priceLinesRef.current.push(runSL);
 
         const runTP = series.createPriceLine({
           price: json.active_trade.target_price,
-          color: '#3b82f6',
+          color: '#00C853',
           lineWidth: 2,
-          lineStyle: LineStyle.Dotted,
+          lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
-          title: `Run TP: ${json.active_trade.target_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
+          title: `TP: ${json.active_trade.target_price.toLocaleString(undefined, {minimumFractionDigits: 2})}`,
         });
         priceLinesRef.current.push(runTP);
       } else if (!json.current_prediction && json.last_closed_trade) {
@@ -334,11 +389,11 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
       if (latestBullOBPrice !== null) {
         const bullOBLine = series.createPriceLine({
           price: latestBullOBPrice,
-          color: '#10b981',
-          lineWidth: 2,
+          color: '#00C853',
+          lineWidth: 3,
           lineStyle: LineStyle.Solid,
           axisLabelVisible: true,
-          title: 'Current Bullish OB',
+          title: 'Bullish OB',
         });
         priceLinesRef.current.push(bullOBLine);
       }
@@ -346,11 +401,11 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
       if (latestBearOBPrice !== null) {
         const bearOBLine = series.createPriceLine({
           price: latestBearOBPrice,
-          color: '#ef4444',
-          lineWidth: 2,
+          color: '#FF5252',
+          lineWidth: 3,
           lineStyle: LineStyle.Solid,
           axisLabelVisible: true,
-          title: 'Current Bearish OB',
+          title: 'Bearish OB',
         });
         priceLinesRef.current.push(bearOBLine);
       }
@@ -358,11 +413,11 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
       if (latestBullFVGPrice !== null) {
         const bullFVGLine = series.createPriceLine({
           price: latestBullFVGPrice,
-          color: '#8b5cf6',
+          color: '#2979FF',
           lineWidth: 2,
-          lineStyle: LineStyle.Dotted,
+          lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
-          title: 'Current Bullish FVG',
+          title: 'Bullish FVG',
         });
         priceLinesRef.current.push(bullFVGLine);
       }
@@ -370,11 +425,11 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
       if (latestBearFVGPrice !== null) {
         const bearFVGLine = series.createPriceLine({
           price: latestBearFVGPrice,
-          color: '#f5a623',
+          color: '#FF9800',
           lineWidth: 2,
-          lineStyle: LineStyle.Dotted,
+          lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
-          title: 'Current Bearish FVG',
+          title: 'Bearish FVG',
         });
         priceLinesRef.current.push(bearFVGLine);
       }
@@ -463,6 +518,30 @@ export const ChartWidget = ({ symbol = "SPY" }: { symbol?: string }) => {
 
         {/* View Toggle Checkboxes */}
         <Box sx={{ display: 'flex', gap: 1 }}>
+          <FormControlLabel
+            control={
+              <Checkbox 
+                size="small" 
+                checked={showEMA} 
+                onChange={(e) => setShowEMA(e.target.checked)}
+                sx={{ color: '#2962FF', '&.Mui-checked': { color: '#2962FF' } }}
+              />
+            }
+            label={<Typography sx={{ fontSize: '0.7rem', color: isDark ? '#fff' : '#0f0f1a', fontWeight: 600 }}>EMA 20</Typography>}
+            sx={{ m: 0 }}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox 
+                size="small" 
+                checked={showSMA} 
+                onChange={(e) => setShowSMA(e.target.checked)}
+                sx={{ color: '#FF6D00', '&.Mui-checked': { color: '#FF6D00' } }}
+              />
+            }
+            label={<Typography sx={{ fontSize: '0.7rem', color: isDark ? '#fff' : '#0f0f1a', fontWeight: 600 }}>SMA 50</Typography>}
+            sx={{ m: 0 }}
+          />
           <FormControlLabel
             control={
               <Checkbox 
