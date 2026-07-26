@@ -54,6 +54,7 @@ urlpatterns = [
 
     # ── Portfolio (Manual Positions) ──────────────────────────────
     path('portfolio', views.PortfolioView.as_view(), name='api-portfolio'),
+    path('portfolio/analytics', portfolio_views.PortfolioAnalyticsView.as_view(), name='api-portfolio-analytics'),
     path('portfolio/positions', portfolio_views.PortfolioPositionsView.as_view(), name='api-portfolio-positions'),
     path('portfolio/open', portfolio_views.PortfolioOpenView.as_view(), name='api-portfolio-open'),
     path('portfolio/close', portfolio_views.PortfolioCloseView.as_view(), name='api-portfolio-close'),
