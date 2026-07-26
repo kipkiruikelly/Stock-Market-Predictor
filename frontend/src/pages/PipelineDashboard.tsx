@@ -454,31 +454,31 @@ export const PipelineDashboard: React.FC = () => {
                   Model Prediction Output
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 6, md: 3.2 }}>
+                  <Grid size={{ xs: 6, md: 4 }}>
                     <Typography variant="caption" color="text.secondary">Direction</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 800, color: predictionResult.direction === 'BUY' ? 'success.main' : predictionResult.direction === 'SELL' ? 'error.main' : 'text.primary' }}>
                       {predictionResult.direction}
                     </Typography>
                   </Grid>
-                  <Grid size={{ xs: 6, md: 2.2 }}>
+                  <Grid size={{ xs: 6, md: 2 }}>
                     <Typography variant="caption" color="text.secondary">Entry Price</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
                       ${parseFloat(predictionResult.entry_price).toFixed(2)}
                     </Typography>
                   </Grid>
-                  <Grid size={{ xs: 6, md: 2.2 }}>
+                  <Grid size={{ xs: 6, md: 2 }}>
                     <Typography variant="caption" color="text.secondary">Stop Loss</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'error.main' }}>
                       ${parseFloat(predictionResult.stop_price).toFixed(2)}
                     </Typography>
                   </Grid>
-                  <Grid size={{ xs: 6, md: 2.2 }}>
+                  <Grid size={{ xs: 6, md: 2 }}>
                     <Typography variant="caption" color="text.secondary">Take Profit</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'success.main' }}>
                       ${parseFloat(predictionResult.target_price).toFixed(2)}
                     </Typography>
                   </Grid>
-                  <Grid size={{ xs: 6, md: 2.2 }}>
+                  <Grid size={{ xs: 6, md: 2 }}>
                     <Typography variant="caption" color="text.secondary">Confidence</Typography>
                     <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#8b5cf6' }}>
                       {predictionResult.confidence}
