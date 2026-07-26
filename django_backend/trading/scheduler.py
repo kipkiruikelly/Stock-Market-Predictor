@@ -29,8 +29,11 @@ _SCHEDULER_LOCK = threading.Lock()
 
 
 def run_universe_retraining(timeframes=None, tickers=None, workers=4):
-    """Executes the full data fetch, feature engineering & model retraining pipeline."""
+    """Executes the full data fetch, feature engineering & model retraining pipeline with GCP Logging hooks."""
+    from trading.gcp_logging import GCPErrorReporter, log_audit
+    
     logger.info("Starting nightly automated universe retraining at %s", datetime.now(timezone.utc).isoformat())
+    log_audit(action="MODEL_RETRAINING", status="STARTED", details=f"Timeframes: {timeframes or 'All'}, Tickers: {tickers or 'All'}")
     start_time = time.time()
     
     try:
@@ -53,13 +56,16 @@ def run_universe_retraining(timeframes=None, tickers=None, workers=4):
                 try:
                     T.run_pipeline_for_all(tickers=ticker_list, interval=tf, max_workers=workers)
                 except Exception as e:
+                    GCPErrorReporter.report_exception(e, f"Retraining timeframe {tf}")
                     logger.error("Failed retraining for timeframe %s: %s", tf, e)
 
         duration = round(time.time() - start_time, 2)
         logger.info("Nightly universe retraining finished in %s seconds.", duration)
+        log_audit(action="MODEL_RETRAINING", status="COMPLETED", details=f"Duration: {duration}s")
         return {"ok": True, "duration_seconds": duration}
     
     except Exception as exc:
+        GCPErrorReporter.report_exception(exc, "Full universe retraining execution pipeline")
         logger.exception("Error during nightly universe retraining: %s", exc)
         return {"ok": False, "error": str(exc)}
 

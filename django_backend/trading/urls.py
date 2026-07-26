@@ -91,6 +91,10 @@ urlpatterns = [
     
     # ── Operational Monitoring ────────────────────────────────────
     path('operations/health', extra_views.OperationsHealthView.as_view(), name='api-operations-health'),
+    path('operations/performance', extra_views.ApiPerformanceView.as_view(), name='api-operations-performance'),
+    path('model/health', extra_views.ModelHealthView.as_view(), name='api-model-health'),
+    path('strategy/marketplace', extra_views.StrategyMarketplaceView.as_view(), name='api-strategy-marketplace'),
+    path('ai/assistant/chat', extra_views.EmbeddedAiAssistantView.as_view(), name='api-ai-assistant-chat'),
 
     # ── Simulated Paper Trading Engine ───────────────────────────
     path('paper/summary', paper_views.PaperSummaryView.as_view(), name='api-paper-summary'),

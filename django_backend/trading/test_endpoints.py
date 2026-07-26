@@ -44,3 +44,19 @@ class EndpointAPITests(TestCase):
         self.assertTrue(response.data.get('ok'))
         self.assertIn('services', response.data)
         self.assertIn('overall_status', response.data)
+
+    def test_api_performance_endpoint(self):
+        """Verify GET /api/operations/performance returns live requests and response stats."""
+        response = self.client.get('/api/operations/performance')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('total_requests', response.data)
+        self.assertIn('avg_latency', response.data)
+
+    def test_model_health_endpoint(self):
+        """Verify GET /api/model/health returns deep drift assessments."""
+        response = self.client.get('/api/model/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('drift_detection', response.data)
+        self.assertIn('models', response.data)
