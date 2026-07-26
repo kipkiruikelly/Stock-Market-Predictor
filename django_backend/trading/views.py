@@ -331,7 +331,8 @@ class MarketHistoryView(APIView):
                     'time': int(pred.predicted_at.timestamp()) * 1000
                 }
             
-            return Response({
+            from trading.tsdb_manager import sanitize_json_floats
+            return Response(sanitize_json_floats({
                 'ok': True, 
                 'symbol': symbol, 
                 'interval': interval, 
@@ -340,7 +341,7 @@ class MarketHistoryView(APIView):
                 'active_trade': active_trade_data,
                 'last_closed_trade': last_closed_data,
                 'current_prediction': current_prediction_data
-            })
+            }))
         except Exception as e:
             return Response({'ok': False, 'error': str(e)}, status=500)
 
