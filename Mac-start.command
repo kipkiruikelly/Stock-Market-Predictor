@@ -15,45 +15,49 @@ lsof -ti :8001 | xargs kill -9 2>/dev/null
 lsof -ti :8002 | xargs kill -9 2>/dev/null
 lsof -ti :3307 | xargs kill -9 2>/dev/null
 
-# ── Cloud SQL Auth Proxy ───────────────────────────────────────────────────────
+# ── Cloud SQL Auth Proxy (only needed for MySQL / Cloud SQL) ───────────────────
 PROXY_BIN="./cloud-sql-proxy"
 INSTANCE_CONNECTION="triple-fusion-engine-503215:europe-west1:triple-fusion-engine"
+DB_URL=$(grep -v '^#' .env | grep 'DATABASE_URL=' | head -1 | cut -d= -f2-)
 
-if [ ! -f "$PROXY_BIN" ]; then
-    echo "Cloud SQL Auth Proxy not found. Downloading..."
-    ARCH=$(uname -m)
-    if [ "$ARCH" = "arm64" ]; then
-        PROXY_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.3/cloud-sql-proxy.darwin.arm64"
-    else
-        PROXY_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.3/cloud-sql-proxy.darwin.amd64"
+if echo "$DB_URL" | grep -q 'mysql'; then
+    if [ ! -f "$PROXY_BIN" ]; then
+        echo "Cloud SQL Auth Proxy not found. Downloading..."
+        ARCH=$(uname -m)
+        if [ "$ARCH" = "arm64" ]; then
+            PROXY_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.3/cloud-sql-proxy.darwin.arm64"
+        else
+            PROXY_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/v2.14.3/cloud-sql-proxy.darwin.amd64"
+        fi
+        curl -o "$PROXY_BIN" "$PROXY_URL"
+        chmod +x "$PROXY_BIN"
+        echo "Cloud SQL Auth Proxy downloaded."
     fi
-    curl -o "$PROXY_BIN" "$PROXY_URL"
-    chmod +x "$PROXY_BIN"
-    echo "Cloud SQL Auth Proxy downloaded."
-fi
 
-echo "Starting Cloud SQL Auth Proxy on port 3307..."
-"$PROXY_BIN" \
-    --credentials-file=./cloudsql-key.json \
-    --port=3307 \
-    "$INSTANCE_CONNECTION" \
-    > logs/cloud-sql-proxy.log 2>&1 &
+    echo "Starting Cloud SQL Auth Proxy on port 3307..."
+    "$PROXY_BIN" \
+        --credentials-file=./cloudsql-key.json \
+        --port=3307 \
+        "$INSTANCE_CONNECTION" \
+        > logs/cloud-sql-proxy.log 2>&1 &
 
-PROXY_PID=$!
-echo "Cloud SQL Proxy started (PID: $PROXY_PID). Waiting for it to be ready..."
+    PROXY_PID=$!
+    echo "Cloud SQL Proxy started (PID: $PROXY_PID). Waiting for it to be ready..."
 
-# Wait up to 15 seconds for proxy to be ready
-for i in $(seq 1 15); do
-    if lsof -ti :3307 > /dev/null 2>&1; then
-        echo "Cloud SQL Proxy is ready on port 3307."
-        break
+    for i in $(seq 1 15); do
+        if lsof -ti :3307 > /dev/null 2>&1; then
+            echo "Cloud SQL Proxy is ready on port 3307."
+            break
+        fi
+        sleep 1
+    done
+
+    if ! lsof -ti :3307 > /dev/null 2>&1; then
+        echo "WARNING: Cloud SQL Proxy may not have started. Check logs/cloud-sql-proxy.log"
+        echo "Continuing anyway..."
     fi
-    sleep 1
-done
-
-if ! lsof -ti :3307 > /dev/null 2>&1; then
-    echo "WARNING: Cloud SQL Proxy may not have started. Check logs/cloud-sql-proxy.log"
-    echo "Continuing anyway..."
+else
+    echo "Using SQLite (no Cloud SQL Proxy needed)."
 fi
 
 # ── Python Virtual Environment ─────────────────────────────────────────────────
