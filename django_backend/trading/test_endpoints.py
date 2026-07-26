@@ -1,0 +1,38 @@
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient
+
+User = get_user_model()
+
+class EndpointAPITests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='testtrader',
+            email='testtrader@example.com',
+            password='securepassword123'
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_market_overview_endpoint(self):
+        """Verify GET /api/market/overview returns structured segments."""
+        response = self.client.get('/api/market/overview')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('indices', response.data)
+        self.assertIn('forex', response.data)
+
+    def test_screener_endpoint(self):
+        """Verify GET /api/screener processes interval-based listings."""
+        response = self.client.get('/api/screener', {'interval': '1h'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('data', response.data)
+
+    def test_research_endpoint(self):
+        """Verify GET /api/research/<ticker> runs deep model evaluations."""
+        response = self.client.get('/api/research/AAPL')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('ticker', response.data)
+        self.assertEqual(response.data['ticker'], 'AAPL')
