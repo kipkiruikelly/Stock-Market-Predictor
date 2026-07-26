@@ -170,6 +170,8 @@ export const ResearchDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
   const fetchQuantLabData = useCallback(async () => {
     setQuantLoading(true);
     try {
@@ -354,7 +356,6 @@ export const ResearchDashboard: React.FC = () => {
     ? ((infoData.target_mean / priceData.price) - 1) * 100 
     : null;
 
-  return (
   return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
       {/* ── Enterprise Quantitative Research Lab Workspace ────────── */}

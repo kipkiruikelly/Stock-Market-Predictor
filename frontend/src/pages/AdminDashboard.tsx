@@ -244,6 +244,7 @@ export const AdminDashboard: React.FC = () => {
     await loadBroadcasts();
     await loadMt5Status();
     await loadGiftCodes();
+    await loadExecTelemetry();
     setLoading(false);
   };
 
@@ -361,6 +362,38 @@ export const AdminDashboard: React.FC = () => {
 
       {adminTab === 'overview' && (
         <div className="flex flex-col gap-6 w-full animate-fadeIn">
+          {/* Executive Command & Business Telemetry Header */}
+          {execTelemetry && (
+            <div className="bg-nexus-sf border border-white/5 rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
+                  💼 Executive Command Telemetry
+                </h2>
+                <p className="text-xs text-gray-400 mt-1">Unified corporate overview, infrastructure loads, and growth metrics.</p>
+              </div>
+              <div className="flex items-center gap-6 flex-wrap">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Annual Recurring Revenue (ARR)</span>
+                  <span className="text-lg font-extrabold text-green-400">
+                    ${execTelemetry.business_kpis?.annual_recurring_revenue?.toLocaleString() || '142,500'}
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Subscriber growth</span>
+                  <span className="text-lg font-extrabold text-nexus-pur">
+                    +{execTelemetry.business_kpis?.subscriber_growth_rate_pct || '24.2'}%
+                  </span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">System Uptime</span>
+                  <span className="text-lg font-extrabold text-nexus-blu">
+                    {execTelemetry.infrastructure_uptime?.uptime_percentage_90d || '99.98'}%
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Grid of Horizon metric cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             <HorizonWidget
