@@ -63,6 +63,7 @@ export const LiveDashboard: React.FC = () => {
   const [algoTimeframe, setAlgoTimeframe] = useState('M5');
   const [algoRisk, setAlgoRisk] = useState('1.0');
   const [algoInterval, setAlgoInterval] = useState('300');
+  const [algoModel, setAlgoModel] = useState<'ensemble' | 'rf' | 'xgb' | 'lr' | 'ict' | 'technical'>('ensemble');
   const [useMl, setUseMl] = useState(true);
   const [startingAlgo, setStartingAlgo] = useState(false);
   const [stoppingAlgo, setStoppingAlgo] = useState(false);
@@ -184,6 +185,7 @@ export const LiveDashboard: React.FC = () => {
           risk_pct: parseFloat(algoRisk),
           interval: parseInt(algoInterval),
           use_ml: useMl,
+          algorithm: algoModel,
         }
       });
       if (res.ok) {
@@ -490,16 +492,24 @@ export const LiveDashboard: React.FC = () => {
                 fullWidth
               />
 
-              <FormControlLabel 
-                control={
-                  <Switch 
-                    checked={useMl} 
-                    onChange={(e) => setUseMl(e.target.checked)} 
-                    color="primary"
-                  />
-                }
-                label="ML Ensemble Filtering"
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
+                  Execution Strategy Model
+                </Typography>
+                <Select 
+                  value={algoModel}
+                  onChange={(e) => setAlgoModel(e.target.value as any)}
+                  size="small"
+                  fullWidth
+                >
+                  <MenuItem value="ensemble">Multi-Factor Ensemble (ICT + ML + Technical)</MenuItem>
+                  <MenuItem value="rf">Random Forest Classifier</MenuItem>
+                  <MenuItem value="xgb">XGBoost Classifier</MenuItem>
+                  <MenuItem value="lr">Linear Regression & Trend Slope</MenuItem>
+                  <MenuItem value="ict">ICT Price Action (Order Blocks / FVG / Sweeps)</MenuItem>
+                  <MenuItem value="technical">Technical Oscillators (RSI + MACD + EMA)</MenuItem>
+                </Select>
+              </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
                 <Button

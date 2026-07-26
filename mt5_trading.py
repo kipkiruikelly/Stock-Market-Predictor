@@ -594,6 +594,7 @@ class MT5Trader:
         self.connected     = False
         self.trading       = False
         self.use_ml        = True
+        self.algorithm     = "ensemble"
         self._thread       = None
         self._lock         = threading.Lock()
         self.trade_log     = deque(maxlen=MAX_LOG_ENTRIES)
@@ -963,89 +964,137 @@ class MT5Trader:
 
     # ── Triple-fusion signal (ICT gate + ML + Technical) ─────────────────────
 
-    def generate_signal_ml(self, symbol: str, timeframe=None) -> dict:
+    def generate_signal_ml(self, symbol: str, timeframe=None, algorithm: str = None) -> dict:
         """
-        Triple-layer signal fusion, ICT has highest priority.
-
-        Layer 1 (ICT gate): Above_200SMA + Structure_Bullish sets directional bias.
-                            ICT score from OBs, FVGs, liquidity sweeps, PD zone.
-                            Requires bias present AND ICT score >= 3.
-        Layer 2 (ML):       LR + RF agreement adds +2 pts; disagreement subtracts -1.
-        Layer 3 (Tech):     RSI/MACD/EMA confluence adds its score; conflict subtracts -1.
-        Entry fires when total score (ICT + ML + Tech) >= 5.
-
-        Falls back to original ML + tech fusion if ICT data is unavailable.
+        Signal generation with selectable algorithm mode:
+        'ensemble'  : Multi-layer fusion (ICT + ML + Technical)
+        'rf'        : Random Forest Classifier
+        'xgb'       : XGBoost Classifier
+        'lr'        : Linear Regression Trend
+        'ict'       : ICT Price Action & Market Structure
+        'technical' : RSI / MACD / EMA Confluence
         """
-        # 1. ICT features (daily bars, primary gate)
+        algo = (algorithm or self.algorithm or "ensemble").lower()
+        
+        # 1. ICT features
         ict = self._ict_row(symbol)
 
-        # 2. ML signal (LR + RF on daily 18-month data from predictor)
+        # 2. ML signal
         ml = (_ml_signal(symbol) if (_ML_AVAILABLE and _ml_signal)
               else {"action": "HOLD", "confidence": 0})
         self.last_ml = ml
 
-        # 3. Technical signal (RSI/MACD/EMA)
+        # 3. Technical signal
         tec = self.generate_signal(symbol, timeframe)
 
         ml_action  = ml.get("action",  "HOLD")
         tec_action = tec.get("action", "HOLD")
         atr        = ml.get("atr", tec.get("atr", 0))
+        cur_price  = ml.get("current_price", tec.get("price", 0))
+        rf_pred    = ml.get("rf_pred", cur_price)
+        lr_pred    = ml.get("lr_pred", cur_price)
+        xgb_pred   = ml.get("xgb_pred", rf_pred)
 
         action = "HOLD"
         score  = 0
+        reason = f"Algorithm: {algo.upper()}"
 
-        if ict is not None:
-            cfg = mt5_config.load()
+        if algo == "rf":
+            if cur_price > 0 and rf_pred > 0:
+                diff_pct = (rf_pred - cur_price) / cur_price
+                if diff_pct > 0.003:
+                    action = "BUY"
+                    score  = 4
+                    reason = f"RandomForest BUY | Pred={rf_pred:.2f} (Cur={cur_price:.2f})"
+                elif diff_pct < -0.003:
+                    action = "SELL"
+                    score  = 4
+                    reason = f"RandomForest SELL | Pred={rf_pred:.2f} (Cur={cur_price:.2f})"
+                else:
+                    reason = f"RandomForest HOLD | Pred={rf_pred:.2f} (Cur={cur_price:.2f})"
 
-            # Use ICT's ATR (daily ATR, better for daily signal sizing)
-            if ict["atr"] > 0:
-                atr = ict["atr"]
+        elif algo == "xgb":
+            if cur_price > 0 and xgb_pred > 0:
+                diff_pct = (xgb_pred - cur_price) / cur_price
+                if diff_pct > 0.003:
+                    action = "BUY"
+                    score  = 4
+                    reason = f"XGBoost BUY | Pred={xgb_pred:.2f} (Cur={cur_price:.2f})"
+                elif diff_pct < -0.003:
+                    action = "SELL"
+                    score  = 4
+                    reason = f"XGBoost SELL | Pred={xgb_pred:.2f} (Cur={cur_price:.2f})"
+                else:
+                    reason = f"XGBoost HOLD | Pred={xgb_pred:.2f} (Cur={cur_price:.2f})"
 
-            for side in ("BUY", "SELL"):
-                bias_ok = ict["bullish_bias"] if side == "BUY" else ict["bearish_bias"]
-                ict_raw = ict["buy_score"]    if side == "BUY" else ict["sell_score"]
+        elif algo == "lr":
+            if cur_price > 0 and lr_pred > 0:
+                diff_pct = (lr_pred - cur_price) / cur_price
+                if diff_pct > 0.002:
+                    action = "BUY"
+                    score  = 3
+                    reason = f"LinearRegression BUY | Pred={lr_pred:.2f} (Cur={cur_price:.2f})"
+                elif diff_pct < -0.002:
+                    action = "SELL"
+                    score  = 3
+                    reason = f"LinearRegression SELL | Pred={lr_pred:.2f} (Cur={cur_price:.2f})"
+                else:
+                    reason = f"LinearRegression HOLD | Pred={lr_pred:.2f} (Cur={cur_price:.2f})"
 
-                if not bias_ok or ict_raw < cfg["ict_score_threshold"]:
-                    continue
+        elif algo == "ict" and ict is not None:
+            if ict["bullish_bias"] and ict["buy_score"] >= 3:
+                action = "BUY"
+                score  = ict["buy_score"]
+                reason = f"ICT BUY | Bias=Bullish Score={score} PD={ict['pd_pos']:.2f}"
+            elif ict["bearish_bias"] and ict["sell_score"] >= 3:
+                action = "SELL"
+                score  = ict["sell_score"]
+                reason = f"ICT SELL | Bias=Bearish Score={score} PD={ict['pd_pos']:.2f}"
+            else:
+                reason = f"ICT HOLD | BuyScore={ict['buy_score']} SellScore={ict['sell_score']}"
 
-                ml_pts  = (cfg["ml_agreement_pts"] if ml_action == side
-                           else (0 if ml_action == "HOLD" else cfg["ml_conflict_pts"]))
-                tec_pts = tec.get("score", 0) if tec_action == side else (
-                          0 if tec_action == "HOLD" else -1)
-
-                total = ict_raw + ml_pts + tec_pts
-                if total >= cfg["total_score_threshold"]:
-                    action = side
-                    score  = total
-                    break
-
-            bias_str = ("bull" if ict["bullish_bias"] else
-                        "bear" if ict["bearish_bias"] else "neutral")
-            reason = (
-                f"ICT_bias={bias_str} PD={ict['pd_pos']:.2f} "
-                f"buy_pts={ict['buy_score']} sell_pts={ict['sell_score']} | "
-                f"ML={ml_action} conf={ml.get('confidence',0):.0f}% | "
-                f"Tech={tec_action} | "
-                f"LR={ml.get('lr_pred',0):.2f} RF={ml.get('rf_pred',0):.2f}"
-            )
-            if action != "HOLD":
-                reason = f"{action} total={score} | " + reason
+        elif algo == "technical":
+            action = tec_action
+            score  = tec.get("score", 0)
+            reason = f"Technical {action} | Score={score} RSI={tec.get('rsi', 50):.1f}"
 
         else:
-            # ICT unavailable, fall back to ML + tech fusion
-            if ml_action == "HOLD":
-                reason = f"ML=HOLD | Tech={tec_action}"
-            elif ml_action == tec_action:
-                action = ml_action
-                score  = tec.get("score", 0) + 2
-                reason = (f"ML={ml_action} conf={ml.get('confidence',0):.0f}% | "
-                          f"Tech={tec_action} | fallback (no ICT data)")
-            elif tec_action == "HOLD":
-                action = ml_action
-                score  = 2
-                reason = f"ML={ml_action} (tech neutral) | fallback (no ICT data)"
+            # Default: Multi-Factor Ensemble Fusion
+            if ict is not None:
+                cfg = mt5_config.load()
+                if ict["atr"] > 0:
+                    atr = ict["atr"]
+                for side in ("BUY", "SELL"):
+                    bias_ok = ict["bullish_bias"] if side == "BUY" else ict["bearish_bias"]
+                    ict_raw = ict["buy_score"]    if side == "BUY" else ict["sell_score"]
+                    if not bias_ok or ict_raw < cfg["ict_score_threshold"]:
+                        continue
+                    ml_pts  = (cfg["ml_agreement_pts"] if ml_action == side
+                               else (0 if ml_action == "HOLD" else cfg["ml_conflict_pts"]))
+                    tec_pts = tec.get("score", 0) if tec_action == side else (
+                              0 if tec_action == "HOLD" else -1)
+                    total = ict_raw + ml_pts + tec_pts
+                    if total >= cfg["total_score_threshold"]:
+                        action = side
+                        score  = total
+                        break
+                bias_str = ("bull" if ict["bullish_bias"] else
+                            "bear" if ict["bearish_bias"] else "neutral")
+                reason = (
+                    f"Ensemble {action} score={score} | "
+                    f"ICT_bias={bias_str} PD={ict['pd_pos']:.2f} | "
+                    f"ML={ml_action} conf={ml.get('confidence',0):.0f}% | "
+                    f"Tech={tec_action}"
+                )
             else:
-                reason = f"CONFLICT ML={ml_action} vs Tech={tec_action} | fallback"
+                if ml_action == "HOLD":
+                    reason = f"Ensemble HOLD | ML=HOLD Tech={tec_action}"
+                elif ml_action == tec_action:
+                    action = ml_action
+                    score  = tec.get("score", 0) + 2
+                    reason = f"Ensemble {action} | ML={ml_action} Tech={tec_action}"
+                else:
+                    reason = f"Ensemble HOLD | Conflict ML={ml_action} Tech={tec_action}"
 
         signal = {
             "action"    : action,
@@ -1054,9 +1103,9 @@ class MT5Trader:
             "rsi"       : ml.get("rsi",  tec.get("rsi", 50)),
             "macd"      : ml.get("macd_hist", tec.get("macd", 0)),
             "atr"       : atr,
-            "price"     : ml.get("current_price", tec.get("price", 0)),
-            "lr_pred"   : ml.get("lr_pred", 0),
-            "rf_pred"   : ml.get("rf_pred", 0),
+            "price"     : cur_price,
+            "lr_pred"   : lr_pred,
+            "rf_pred"   : rf_pred,
             "confidence": ml.get("confidence", 0),
         }
         self.last_signal = signal
@@ -1455,9 +1504,7 @@ class MT5Trader:
                 except Exception as e:
                     self._log("ERROR", f"News check failed: {e}")
 
-                signal = (self.generate_signal_ml(symbol, tf)
-                          if self.use_ml and _ML_AVAILABLE
-                          else self.generate_signal(symbol, tf))
+                signal = self.generate_signal_ml(symbol, tf, algorithm=self.algorithm)
                 self._log("SIGNAL", f"{signal['action']} score={signal['score']} {signal['reason']}")
 
                 if signal["action"] in ("BUY", "SELL"):
@@ -1483,24 +1530,28 @@ class MT5Trader:
 
     def start_trading(self, symbol: str, timeframe: str = "M5",
                       risk_pct: float = 1.0, interval: int = 60,
-                      use_ml: bool = True) -> dict:
+                      use_ml: bool = True, algorithm: str = "ensemble") -> dict:
         if not self.connected:
-            return {"ok": False, "error": "Not connected. Use account=0 for paper mode."}
+            self._paper      = PaperAccount()
+            self.connected   = True
+            self.account     = self._paper.info()
+            self.equity_open = self._paper.balance
+            self._log("INFO", "Auto-activated Paper Mode for trading session.")
         if self.trading:
             return {"ok": False, "error": "Already trading"}
         self.use_ml       = use_ml and _ML_AVAILABLE
+        self.algorithm    = algorithm or "ensemble"
         self.trading      = True
         self.risk_manager = None   # recreated in _trading_loop with fresh config
         mode = "Paper" if self.is_paper else ("MetaApi" if self.is_metaapi else "Live")
-        ml_tag = "+ML" if self.use_ml else ""
-        self.status_msg = f"{mode} Trading{ml_tag}, {symbol} {timeframe}"
+        self.status_msg = f"{mode} Trading ({self.algorithm.upper()}), {symbol} {timeframe}"
         self._thread = threading.Thread(
             target=self._trading_loop,
             args=(symbol, timeframe, risk_pct, interval),
             daemon=True,
         )
         self._thread.start()
-        return {"ok": True, "mode": mode.lower(), "ml": self.use_ml}
+        return {"ok": True, "mode": mode.lower(), "ml": self.use_ml, "algorithm": self.algorithm}
 
     def stop_trading(self) -> dict:
         if not self.trading:

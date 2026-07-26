@@ -106,9 +106,10 @@ class MT5StartView(APIView):
         risk_pct = float(data.get("risk_pct", 1.0))
         interval = int(data.get("interval", 60))
         use_ml = bool(data.get("use_ml", True))
+        algorithm = data.get("algorithm", "ensemble")
 
         try:
-            res = _mt5.trader.start_trading(symbol, timeframe, risk_pct, interval, use_ml)
+            res = _mt5.trader.start_trading(symbol, timeframe, risk_pct, interval, use_ml, algorithm)
             return Response(res)
         except Exception as exc:
             return Response({'ok': False, 'error': str(exc)}, status=500)
