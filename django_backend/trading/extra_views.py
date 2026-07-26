@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication
 
-from core.utils import SCREENER_TICKERS
+from core.utils import SCREENER_TICKERS, ASSET_CLASSES_TICKERS
 from users.models import (
     PaperTrade, PortfolioPosition, UserPaperAccount,
     UserPaperOrder, UserPaperPosition, TradeJournal,
