@@ -98,6 +98,20 @@ export const AdminDashboard: React.FC = () => {
   const [generatingGift, setGeneratingGift] = useState(false);
   const [giftCodesGenerated, setGiftCodesGenerated] = useState<string[]>([]);
 
+  // Executive Command Telemetry
+  const [execTelemetry, setExecTelemetry] = useState<any>(null);
+
+  const loadExecTelemetry = async () => {
+    try {
+      const res = await apiFetch('/api/executive/command');
+      if (res.ok) {
+        setExecTelemetry(res);
+      }
+    } catch (err) {
+      console.error('Failed to load executive telemetry', err);
+    }
+  };
+
   // If not admin (role_level < 3), boot them out
   if (!user || user.role_level < 3) {
     return <Navigate to="/portfolio" replace />;

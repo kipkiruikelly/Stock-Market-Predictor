@@ -49,6 +49,8 @@ export const PipelineDashboard: React.FC = () => {
   };
 
   const [healthServices, setHealthServices] = useState<any[]>([]);
+  const [perfData, setPerfData] = useState<any>(null);
+  const [driftData, setDriftData] = useState<any>(null);
 
   const fetchHealth = async () => {
     try {
@@ -61,10 +63,27 @@ export const PipelineDashboard: React.FC = () => {
     }
   };
 
+  const fetchPerformanceAndDrift = async () => {
+    try {
+      const [pRes, dRes] = await Promise.all([
+        apiFetch('/api/operations/performance'),
+        apiFetch('/api/model/health')
+      ]);
+      if (pRes.ok) setPerfData(pRes);
+      if (dRes.ok) setDriftData(dRes);
+    } catch (err) {
+      console.error('Failed to fetch performance or drift telemetry', err);
+    }
+  };
+
   useEffect(() => {
     fetchConfig();
     fetchHealth();
-    const intervalId = window.setInterval(fetchHealth, 15000);
+    fetchPerformanceAndDrift();
+    const intervalId = window.setInterval(() => {
+      fetchHealth();
+      fetchPerformanceAndDrift();
+    }, 15000);
     return () => window.clearInterval(intervalId);
   }, []);
 
@@ -199,6 +218,57 @@ export const PipelineDashboard: React.FC = () => {
                 </Card>
               </Grid>
             ))}
+          </Grid>
+
+          {/* Real-Time API Performance & Model Drift Telemetry */}
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            {perfData && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 1.5, display: 'block', color: 'primary.main', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      ⚡ API Traffic & Performance telemetry
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid size={{ xs: 4 }}>
+                        <Typography variant="caption" color="text.secondary">Total Requests</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>{perfData.total_requests}</Typography>
+                      </Grid>
+                      <Grid size={{ xs: 4 }}>
+                        <Typography variant="caption" color="text.secondary">P95 Latency</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'warning.main' }}>{perfData.p95_latency_ms}ms</Typography>
+                      </Grid>
+                      <Grid size={{ xs: 4 }}>
+                        <Typography variant="caption" color="text.secondary">P99 Latency</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'error.main' }}>{perfData.p99_latency_ms}ms</Typography>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+
+            {driftData && (
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 1.5, display: 'block', color: 'primary.main', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      📊 ML Feature Distribution & Model Drift
+                    </Typography>
+                    <Grid container spacing={2}>
+                      {driftData.drift_detection?.features?.slice(0, 3).map((feat: any, idx: number) => (
+                        <Grid size={{ xs: 4 }} key={idx}>
+                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{feat.feature_name}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: feat.drift_detected ? 'error.main' : 'success.main' }}>
+                            {feat.drift_detected ? 'DRIFT ⚠️' : 'STABLE ✓'} ({feat.p_value.toFixed(3)})
+                          </Typography>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
           </Grid>
         </Box>
       )}

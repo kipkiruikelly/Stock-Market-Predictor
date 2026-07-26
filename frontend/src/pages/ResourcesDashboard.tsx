@@ -17,14 +17,21 @@ interface ResourceCategory {
 
 export const ResourcesDashboard: React.FC = () => {
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
+  const [hub, setHub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const response = await apiFetch('/api/resources');
-        if (response.ok && response.categories) {
-          setCategories(response.categories);
+        const [res, hubRes] = await Promise.all([
+          apiFetch('/api/resources'),
+          apiFetch('/api/knowledge/hub')
+        ]);
+        if (res.ok && res.categories) {
+          setCategories(res.categories);
+        }
+        if (hubRes.ok) {
+          setHub(hubRes);
         }
       } catch (err) {
         console.error('Failed to load resources:', err);
@@ -113,6 +120,64 @@ export const ResourcesDashboard: React.FC = () => {
               </Grid>
             </Box>
           ))}
+        </Box>
+      )}
+
+      {/* Interactive API Explorer & Systems Architecture Blueprint Hub */}
+      {hub && (
+        <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
+          <Typography variant="subtitle2" sx={{ textTransform: 'uppercase', color: 'primary.main', fontWeight: 'bold', mb: 2, letterSpacing: 0.5 }}>
+            ⚙️ Interactive API Explorer & Systems Architectural Blueprints
+          </Typography>
+
+          <Grid container spacing={3}>
+            {/* API Blueprints List */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    🔗 Platform Core API Reference Schema
+                  </Typography>
+                </Box>
+                <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 300, overflowY: 'auto' }}>
+                  {hub.api_blueprints?.map((api: any, idx: number) => (
+                    <Box key={idx} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+                      <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', mb: 0.5 }}>
+                        <span style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#10b981', fontSize: '0.75rem' }}>{api.method}</span>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: '#fff' }}>{api.endpoint}</span>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>{api.description}</Typography>
+                      <Box sx={{ p: 1, mt: 1, bgcolor: '#0f0f1a', borderRadius: 1, fontFamily: 'monospace', fontSize: '0.7rem', color: '#d1d4dc' }}>
+                        Payload: {JSON.stringify(api.example_payload)}
+                      </Box>
+                    </Box>
+                  ))}
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Architecture Documents Explorer */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                    📖 Operations Handbook & Architectural Guidelines
+                  </Typography>
+                </Box>
+                <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 300, overflowY: 'auto' }}>
+                  {hub.operations_handbook_links?.map((doc: any, idx: number) => (
+                    <Box key={idx} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{doc.title}</Typography>
+                        <Typography variant="caption" color="text.secondary">Path: {doc.path}</Typography>
+                      </Box>
+                      <Chip label="Core Docs" size="small" variant="outlined" sx={{ fontSize: '0.65rem' }} />
+                    </Box>
+                  ))}
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </Box>
       )}
     </Box>

@@ -254,6 +254,116 @@ export const TradingDashboard = () => {
               </Card>
             </Grid>
           </Grid>
+
+          {/* ── Autonomous Pre-Execution Risk Gate Supervisor Widget ── */}
+          <Grid container spacing={3} sx={{ mt: 1 }}>
+            <Grid size={12}>
+              <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.05)', bgcolor: 'rgba(139, 92, 246, 0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+                    🛡️ Autonomous Risk Supervisor pre-execution gate
+                  </Typography>
+                  <span className="text-[10px] px-3 py-1 bg-violet-500/10 text-violet-400 border border-violet-500/20 rounded-full font-bold uppercase">Active Protection</span>
+                </Box>
+                <CardContent sx={{ p: 3 }}>
+                  <Grid container spacing={3}>
+                    <Grid size={{ xs: 12, md: 5 }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <Typography variant="caption" color="text.secondary">Enter order details to execute institutional risk sweep:</Typography>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                          <input 
+                            id="order-ticker"
+                            type="text" 
+                            placeholder="Ticker (e.g. AAPL)" 
+                            defaultValue="AAPL"
+                            className="bg-nexus-bg border border-nexus-border rounded-lg px-3 py-2 text-xs text-nexus-white focus:outline-none focus:border-nexus-pur w-1/2"
+                          />
+                          <input 
+                            id="order-qty"
+                            type="number" 
+                            placeholder="Quantity" 
+                            defaultValue="100"
+                            className="bg-nexus-bg border border-nexus-border rounded-lg px-3 py-2 text-xs text-nexus-white focus:outline-none focus:border-nexus-pur w-1/2"
+                          />
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                          <select 
+                            id="order-dir"
+                            className="bg-nexus-bg border border-nexus-border rounded-lg px-3 py-2 text-xs text-nexus-white focus:outline-none focus:border-nexus-pur w-1/2"
+                          >
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                          </select>
+                          <input 
+                            id="order-lev"
+                            type="number" 
+                            placeholder="Leverage (e.g. 1)" 
+                            defaultValue="1"
+                            className="bg-nexus-bg border border-nexus-border rounded-lg px-3 py-2 text-xs text-nexus-white focus:outline-none focus:border-nexus-pur w-1/2"
+                          />
+                        </Box>
+                        <button 
+                          onClick={async () => {
+                            const tk = (document.getElementById('order-ticker') as HTMLInputElement).value || 'AAPL';
+                            const qt = Number((document.getElementById('order-qty') as HTMLInputElement).value) || 100;
+                            const dir = (document.getElementById('order-dir') as HTMLSelectElement).value || 'BUY';
+                            const lev = Number((document.getElementById('order-lev') as HTMLInputElement).value) || 1;
+                            
+                            try {
+                              const res = await axios.post('/api/trading/supervisor/check', {
+                                ticker: tk.toUpperCase(),
+                                quantity: qt,
+                                direction: dir,
+                                leverage: lev
+                              });
+                              if (res.data && res.data.ok) {
+                                const auth = res.data.authorization;
+                                if (auth.status === 'APPROVED') {
+                                  alert(`✅ Risk check Passed!\n\nStatus: APPROVED\nRemaining Margin: $${auth.metrics_evaluated?.available_leverage_margin?.toLocaleString()}`);
+                                } else if (auth.status === 'REJECTED') {
+                                  alert(`❌ Risk check Rejected!\n\nReason: ${auth.rejection_reason}\nSector limit: ${auth.risk_metrics?.sector_concentration_warning ? 'WARNING' : 'OK'}`);
+                                } else {
+                                  alert(`⚠️ Warning: ${auth.rejection_reason}`);
+                                }
+                              }
+                            } catch (err) {
+                              alert("Failed to submit pre-execution security check.");
+                            }
+                          }}
+                          className="bg-violet-600 hover:bg-violet-500 text-white font-bold py-2.5 rounded-lg text-xs transition-all cursor-pointer"
+                        >
+                          Execute Safety Risk-Gate Sweep
+                        </button>
+                      </Box>
+                    </Grid>
+
+                    <Grid size={{ xs: 12, md: 7 }}>
+                      <Box sx={{ p: 2, height: '100%', borderRadius: 2, bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold', color: 'text.primary' }}>🛡️ Multi-Dimensional Compliance Gates Evaluated:</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>1. Portfolio Leverage Guard limits</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>ACTIVE (Max 3.0x)</span>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>2. Sector Concentration warning limits</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>ACTIVE (Max 40% of funds)</span>
+                          </Box>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>3. Correlated Asset concentration barriers</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>ACTIVE (Max 3 highly correlated positions)</span>
+                          </Box>
+                        </Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 'auto', fontStyle: 'italic' }}>
+                          *System actively prevents over-leverage or risk-limit breeches prior to order routing.
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </>
       ) : null}
     </Box>

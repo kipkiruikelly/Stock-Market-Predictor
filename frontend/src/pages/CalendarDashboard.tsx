@@ -13,22 +13,29 @@ interface EarningsEvent {
 export const CalendarDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<EarningsEvent[]>([]);
+  const [macroEvents, setMacroEvents] = useState<any[]>([]);
   const tvContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const fetchEarnings = async () => {
+    const fetchEvents = async () => {
       try {
-        const data = await apiFetch('/api/calendar/earnings');
-        if (data.ok && data.events) {
-          setEvents(data.events);
+        const [earnRes, macroRes] = await Promise.all([
+          apiFetch('/api/calendar/earnings'),
+          apiFetch('/api/market/events')
+        ]);
+        if (earnRes.ok && earnRes.events) {
+          setEvents(earnRes.events);
+        }
+        if (macroRes.ok && macroRes.events) {
+          setMacroEvents(macroRes.events);
         }
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load calendars data', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchEarnings();
+    fetchEvents();
   }, []);
 
   // Inject TradingView Economic Calendar
@@ -159,6 +166,42 @@ export const CalendarDashboard: React.FC = () => {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Real-Time High-Impact Macro Timeline */}
+      {macroEvents.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1.5, letterSpacing: 1, textTransform: 'uppercase', color: 'primary.main' }}>
+            🔥 Real-Time Event-Driven Market Intelligence & Volatility Feed
+          </Typography>
+          <Grid container spacing={2}>
+            {macroEvents.map((evt, idx) => (
+              <Grid size={{ xs: 12, md: 6 }} key={idx}>
+                <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2.5, display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{ p: 1.5, bgcolor: evt.impact === 'high' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(245, 158, 11, 0.1)', color: evt.impact === 'high' ? 'error.main' : 'warning.main', borderRadius: 2, fontWeight: 'bold', fontSize: '1.25rem' }}>
+                      ⚡
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{evt.event_name}</Typography>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: evt.impact === 'high' ? '#ef4444' : '#f59e0b' }}>
+                          {evt.impact?.toUpperCase()} IMPACT
+                        </span>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                        Scheduled: <strong style={{ color: '#fff' }}>{evt.date}</strong> • Volatility Index: <strong style={{ color: '#fff' }}>{evt.historical_volatility_pct}%</strong>
+                      </Typography>
+                      <Typography variant="caption" color="primary.main" sx={{ display: 'block', mt: 0.5, fontWeight: 'medium' }}>
+                        Model Adjustment: {evt.confidence_adjustment_commentary}
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+      )}
     </Box>
   );
 };

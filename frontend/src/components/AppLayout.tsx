@@ -28,6 +28,12 @@ export const AppLayout = () => {
   const [upgradeMessage, setUpgradeMessage] = useState('');
   const [upgradeCta, setUpgradeCta] = useState('/pricing');
 
+  // AI Chat Sidebar state
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatPrompt, setChatPrompt] = useState('');
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
 
   // Apply theme to HTML tag
@@ -374,14 +380,113 @@ export const AppLayout = () => {
         </header>
 
         {/* Workspace Split Layout */}
-        <div className="flex-1 flex overflow-hidden w-full bg-nexus-bg">
+        <div className="flex-1 flex overflow-hidden w-full bg-nexus-bg relative">
           {/* Sidebar Navigation Shell on the Left */}
           <Sidebar />
 
           {/* Main Content Area on the Right */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6">
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col gap-6 relative">
             <Outlet />
           </main>
+
+          {/* ── Global Floating AI Assistant Widget ────────────────── */}
+          <div className="fixed bottom-6 right-6 z-[1000] flex flex-col items-end">
+            {chatOpen && (
+              <div className="w-[380px] h-[500px] mb-4 bg-nexus-sf/90 backdrop-blur-md border border-nexus-border rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slideUp">
+                {/* Chat Header */}
+                <div className="p-4 border-b border-nexus-border bg-nexus-pur/15 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-nexus-pur font-bold text-lg">🤖</span>
+                    <div>
+                      <div className="text-xs font-bold text-nexus-white uppercase tracking-wider">AI Assistant</div>
+                      <div className="text-[10px] text-nexus-muted">Powered by Triple Fusion OS</div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setChatOpen(false)}
+                    className="bg-none border-none text-nexus-muted hover:text-nexus-white text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* Chat Message Lists */}
+                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center text-nexus-muted text-xs my-auto">
+                      Ask me any quant trading questions, portfolio metrics, drift rates, or system documentation queries!
+                    </div>
+                  ) : (
+                    chatMessages.map((msg, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-3 rounded-xl max-w-[85%] text-xs ${
+                          msg.role === "user" 
+                            ? "bg-nexus-pur text-nexus-white self-end" 
+                            : "bg-nexus-bg2 text-nexus-text border border-nexus-border self-start"
+                        }`}
+                      >
+                        {msg.content}
+                      </div>
+                    ))
+                  )}
+                  {chatLoading && (
+                    <div className="text-nexus-pur text-xs self-start italic animate-pulse">Assistant is compiling...</div>
+                  )}
+                </div>
+
+                {/* Chat Inputs */}
+                <form 
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!chatPrompt.trim() || chatLoading) return;
+                    const userMsg = chatPrompt.trim();
+                    setChatMessages(prev => [...prev, { role: "user", content: userMsg }]);
+                    setChatPrompt("");
+                    setChatLoading(true);
+                    try {
+                      const res = await apiFetch('/api/ai/assistant/chat', {
+                        method: 'POST',
+                        body: { prompt: userMsg }
+                      });
+                      if (res.ok && res.response) {
+                        setChatMessages(prev => [...prev, { role: "assistant", content: res.response }]);
+                      } else {
+                        setChatMessages(prev => [...prev, { role: "assistant", content: "Error contacting the assistant system gateway." }]);
+                      }
+                    } catch (err) {
+                      setChatMessages(prev => [...prev, { role: "assistant", content: "Failed to dispatch analytical request." }]);
+                    } finally {
+                      setChatLoading(false);
+                    }
+                  }}
+                  className="p-3 border-t border-nexus-border bg-nexus-sf flex gap-2"
+                >
+                  <input 
+                    type="text" 
+                    placeholder="Ask about risk, drift, or pipelines..." 
+                    value={chatPrompt}
+                    onChange={(e) => setChatPrompt(e.target.value)}
+                    className="flex-1 bg-nexus-bg border border-nexus-border rounded-lg px-3 py-2 text-xs text-nexus-white focus:outline-none focus:border-nexus-pur"
+                  />
+                  <button 
+                    type="submit" 
+                    className="bg-nexus-pur hover:bg-nexus-pur/80 text-nexus-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
+            )}
+
+            <button 
+              onClick={() => setChatOpen(prev => !prev)}
+              className="w-12 h-14 bg-nexus-pur hover:bg-nexus-pur/80 text-nexus-white rounded-full flex items-center justify-center text-lg font-bold shadow-2xl transition-all cursor-pointer"
+              title="Toggle AI Assistant"
+            >
+              💬
+            </button>
+          </div>
         </div>
       </div>
 

@@ -139,6 +139,12 @@ export const ResearchDashboard: React.FC = () => {
   const [ptQty, setPtQty] = useState('10');
   const [submittingPt, setSubmittingPt] = useState(false);
 
+  // Enterprise Quant Research Lab Workspace states
+  const [projects, setProjects] = useState<any[]>([]);
+  const [datasets, setDatasets] = useState<any[]>([]);
+  const [comparisons, setComparisons] = useState<any[]>([]);
+  const [quantLoading, setQuantLoading] = useState(false);
+
   const [featOpen, setFeatOpen] = useState(false);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
   const [loadingFeat, setLoadingFeat] = useState(false);
@@ -164,16 +170,50 @@ export const ResearchDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  const fetchQuantLabData = useCallback(async () => {
+    setQuantLoading(true);
+    try {
+      const [projRes, dataRes, compRes] = await Promise.all([
+        apiFetch('/api/research/projects'),
+        apiFetch('/api/research/datasets'),
+        apiFetch('/api/research/compare')
+      ]);
+      if (projRes.ok) setProjects(projRes.projects || []);
+      if (dataRes.ok) setDatasets(dataRes.datasets || []);
+      if (compRes.ok) setComparisons(compRes.comparisons || []);
+    } catch (err) {
+      console.error('Failed to load Enterprise Quant Lab registries', err);
+    } finally {
+      setQuantLoading(false);
+    }
   }, []);
 
+  const handleModelPromotion = async (modelId: string, targetStage: string) => {
+    try {
+      const res = await apiFetch('/api/research/promote', {
+        method: 'POST',
+        body: { model_id: modelId, target_stage: targetStage }
+      });
+      if (res.ok) {
+        toast.success(`Model successfully promoted to stage ${targetStage.toUpperCase()}!`);
+        fetchQuantLabData();
+      } else {
+        toast.error(res.error || 'Failed to promote model');
+      }
+    } catch (err) {
+      toast.error('Error promoting model pipeline');
+    }
+  };
+
   useEffect(() => {
+    fetchQuantLabData();
     if (queryTicker) {
       setTicker(queryTicker);
       fetchResearch(queryTicker);
     } else {
       fetchResearch('AAPL');
     }
-  }, [queryTicker, fetchResearch]);
+  }, [queryTicker, fetchResearch, fetchQuantLabData]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,7 +355,111 @@ export const ResearchDashboard: React.FC = () => {
     : null;
 
   return (
+  return (
     <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* ── Enterprise Quantitative Research Lab Workspace ────────── */}
+      <Box sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)', pb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 0.5 }}>
+          🧪 Enterprise Quantitative Research Lab
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>
+          Manage research registries, inspect feature distribution schemas, and promote validated ML engines to production.
+        </Typography>
+
+        <Grid container spacing={3}>
+          {/* Projects Registry Column */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2 }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'uppercase', color: 'primary.main' }}>
+                  📁 Active Workspace Projects ({projects.length})
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 220, overflowY: 'auto' }}>
+                {projects.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary">No active quant projects found.</Typography>
+                ) : (
+                  projects.map((proj) => (
+                    <Box key={proj.id} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{proj.name}</Typography>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">{proj.status}</span>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>By {proj.author} • Updated {new Date(proj.created_at).toLocaleDateString()}</Typography>
+                    </Box>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Dataset Registry Column */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2 }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'uppercase', color: 'primary.main' }}>
+                  📦 Central Dataset Registries ({datasets.length})
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 220, overflowY: 'auto' }}>
+                {datasets.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary">No quantitative dataset versions registered.</Typography>
+                ) : (
+                  datasets.map((ds) => (
+                    <Box key={ds.id} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{ds.name}</Typography>
+                        <Typography variant="caption" color="primary.main" sx={{ fontWeight: 'bold' }}>{ds.row_count} rows</Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>Source: {ds.source} • {ds.feature_count} engineered features</Typography>
+                    </Box>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Model Comparisons & Promotion Column */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ bgcolor: 'background.paper', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2 }}>
+              <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'uppercase', color: 'primary.main' }}>
+                  🚀 Candidate comparisons & step-gate promotions
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: 220, overflowY: 'auto' }}>
+                {comparisons.length === 0 ? (
+                  <Typography variant="caption" color="text.secondary">No candidate models compared.</Typography>
+                ) : (
+                  comparisons.map((comp) => (
+                    <Box key={comp.id} sx={{ p: 1.5, borderRadius: 1.5, bgcolor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{comp.algorithm}</Typography>
+                        <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold' }}>R²: {comp.r2?.toFixed(3)}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Stage: <strong style={{ color: '#fff' }}>{comp.stage?.toUpperCase()}</strong></Typography>
+                        <Select 
+                          size="small" 
+                          defaultValue={comp.stage}
+                          onChange={(e) => handleModelPromotion(comp.id, e.target.value)}
+                          sx={{ height: 24, fontSize: '0.75rem', bgcolor: 'background.paper' }}
+                        >
+                          <MenuItem value="research">Research</MenuItem>
+                          <MenuItem value="backtesting">Backtesting</MenuItem>
+                          <MenuItem value="paper">Paper</MenuItem>
+                          <MenuItem value="prod">Prod</MenuItem>
+                        </Select>
+                      </Box>
+                    </Box>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+
       {/* Search Input block */}
       <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', width: '100%', maxWidth: 460 }}>
