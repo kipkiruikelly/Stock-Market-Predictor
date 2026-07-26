@@ -48,3 +48,4 @@ cookies.txt
 scratch/
 uploads/
 *.sql
+cloudsql-key.json
