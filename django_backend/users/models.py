@@ -647,20 +647,6 @@ class UserPreferences(models.Model):
         db_table = 'user_preferences'
 
 
-# ── Watchlist (Phase 4) ───────────────────────────────────────────────────────
-
-class Watchlist(models.Model):
-    """User watchlist of tickers to monitor (Phase 4 gamification model)."""
-    user     = models.ForeignKey('users.User', on_delete=models.CASCADE, db_column='user_id')
-    ticker   = models.CharField(max_length=12)
-    added_at = models.DateTimeField(default=datetime.utcnow)
-    notes    = models.CharField(max_length=200, null=True, blank=True)
-
-    class Meta:
-        db_table = 'watchlist'
-        unique_together = [('user', 'ticker')]
-
-
 # ── User Portfolio ────────────────────────────────────────────────────────────
 
 class UserPortfolio(models.Model):

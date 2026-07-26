@@ -27,7 +27,7 @@ class EndpointAPITests(TestCase):
         response = self.client.get('/api/screener', {'interval': '1h'})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data.get('ok'))
-        self.assertIn('data', response.data)
+        self.assertIn('rows', response.data)
 
     def test_research_endpoint(self):
         """Verify GET /api/research/<ticker> runs deep model evaluations."""

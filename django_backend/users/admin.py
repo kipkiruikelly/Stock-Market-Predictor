@@ -7,7 +7,7 @@ from .models import (
     TradeJournal, DiscordConfig, GiftCode, UserWebhook, ActivityLog,
     TwoFactorAuth, AdminAuditLog, AppSetting, TickerConfig, Broadcast,
     ErrorLog, PythFeed, ResourceLink, Feedback, PaperTrade, PaperTradeEvent,
-    PaperEquitySnapshot, UserPreferences, Watchlist, UserPortfolio,
+    PaperEquitySnapshot, UserPreferences, UserPortfolio,
     UserAchievement, CompetitionModel, CompetitionEntry, ModelVersion,
     UserBotSubscription, UserPaperAccount, UserPaperOrder, UserPaperPosition,
 )
@@ -54,7 +54,6 @@ admin.site.register(PaperTrade)
 admin.site.register(PaperTradeEvent)
 admin.site.register(PaperEquitySnapshot)
 admin.site.register(UserPreferences)
-admin.site.register(Watchlist)
 admin.site.register(UserPortfolio)
 admin.site.register(UserAchievement)
 admin.site.register(CompetitionModel)
