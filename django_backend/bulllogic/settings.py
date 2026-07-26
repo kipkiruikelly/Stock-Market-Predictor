@@ -97,6 +97,7 @@ if DATABASE_URL and dj_database_url:
             elif os.getenv('K_SERVICE') is None:
                 options = parsed_db.get('OPTIONS', {})
                 options['connect_timeout'] = 60
+                options['init_command'] = "SET net_write_timeout=60, net_read_timeout=60;"
                 parsed_db['OPTIONS'] = options
         if parsed_db:
             engine = parsed_db.get('ENGINE', '')
