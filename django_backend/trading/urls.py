@@ -13,6 +13,7 @@ from . import workflow_views
 from . import analytics_views
 from . import recommender_views
 from . import execution_views
+from . import v22_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -69,6 +70,12 @@ urlpatterns = [
     path('predict/history', prediction_views.PredictionHistoryView.as_view(), name='api-predict-history'),
     path('accuracy', prediction_views.PredictionAccuracyView.as_view(), name='api-accuracy'),
     path('model-metrics', prediction_views.ModelMetricsView.as_view(), name='api-model-metrics'),
+    # ── Enterprise Quantitative Research Workspace (v2.2) ────────
+    path('research/projects', v22_views.ResearchProjectView.as_view(), name='api-research-projects'),
+    path('research/datasets', v22_views.ResearchDatasetView.as_view(), name='api-research-datasets'),
+    path('research/compare', v22_views.ModelComparisonView.as_view(), name='api-research-compare'),
+    path('research/promote', v22_views.ModelPromotionView.as_view(), name='api-research-promote'),
+
     path('research/<str:ticker>', prediction_views.ResearchView.as_view(), name='api-research'),
     path('feature-importance/<str:ticker>', prediction_views.FeatureImportanceView.as_view(), name='api-feature-importance'),
     path('track-record', prediction_views.TrackRecordView.as_view(), name='api-track-record'),
@@ -95,6 +102,12 @@ urlpatterns = [
     path('model/health', extra_views.ModelHealthView.as_view(), name='api-model-health'),
     path('strategy/marketplace', extra_views.StrategyMarketplaceView.as_view(), name='api-strategy-marketplace'),
     path('ai/assistant/chat', extra_views.EmbeddedAiAssistantView.as_view(), name='api-ai-assistant-chat'),
+
+    # ── Enterprise Quantitative Research Platform & AI OS (v2.2) ──
+    path('market/events', v22_views.MarketEventView.as_view(), name='api-market-events'),
+    path('trading/supervisor/check', v22_views.TradingSupervisorView.as_view(), name='api-trading-supervisor-check'),
+    path('knowledge/hub', v22_views.KnowledgeHubView.as_view(), name='api-knowledge-hub'),
+    path('executive/command', v22_views.ExecutiveCommandView.as_view(), name='api-executive-command'),
 
     # ── Simulated Paper Trading Engine ───────────────────────────
     path('paper/summary', paper_views.PaperSummaryView.as_view(), name='api-paper-summary'),

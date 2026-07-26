@@ -74,3 +74,60 @@ class EndpointAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data.get('ok'))
         self.assertIn('response', response.data)
+
+    def test_research_projects_endpoint(self):
+        """Verify GET /api/research/projects returns active projects and metadata."""
+        response = self.client.get('/api/research/projects')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('projects', response.data)
+
+    def test_research_datasets_endpoint(self):
+        """Verify GET /api/research/datasets returns continuous stock tick series."""
+        response = self.client.get('/api/research/datasets')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('datasets', response.data)
+
+    def test_model_comparison_endpoint(self):
+        """Verify GET /api/research/compare returns model comparison data."""
+        response = self.client.get('/api/research/compare')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('comparisons', response.data)
+
+    def test_model_promotion_endpoint(self):
+        """Verify POST /api/research/promote manages step-gate model deployment levels."""
+        response = self.client.post('/api/research/promote', {"model_id": "model_xgb_01", "target_stage": "production"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('gate_checks', response.data)
+
+    def test_market_events_endpoint(self):
+        """Verify GET /api/market/events aggregates high-impact news releases."""
+        response = self.client.get('/api/market/events')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('events', response.data)
+
+    def test_trading_supervisor_endpoint(self):
+        """Verify POST /api/trading/supervisor/check gates orders and risk criteria."""
+        response = self.client.post('/api/trading/supervisor/check', {"ticker": "AAPL", "side": "long", "size": 15.0})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('decision', response.data)
+
+    def test_knowledge_hub_endpoint(self):
+        """Verify GET /api/knowledge/hub exposes system documentation."""
+        response = self.client.get('/api/knowledge/hub')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('documentation', response.data)
+
+    def test_executive_command_endpoint(self):
+        """Verify GET /api/executive/command compiles command indicators."""
+        response = self.client.get('/api/executive/command')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('business', response.data)
+        self.assertIn('ai', response.data)
