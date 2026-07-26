@@ -96,11 +96,7 @@ if DATABASE_URL and dj_database_url:
                 parsed_db['OPTIONS'] = {'unix_socket': socket_path}
             elif os.getenv('K_SERVICE') is None:
                 options = parsed_db.get('OPTIONS', {})
-                options.update({
-                    'connect_timeout': 30,
-                    'read_timeout': 30,
-                    'write_timeout': 30,
-                })
+                options['connect_timeout'] = 60
                 parsed_db['OPTIONS'] = options
         if parsed_db:
             engine = parsed_db.get('ENGINE', '')
