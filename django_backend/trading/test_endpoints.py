@@ -60,3 +60,17 @@ class EndpointAPITests(TestCase):
         self.assertTrue(response.data.get('ok'))
         self.assertIn('drift_detection', response.data)
         self.assertIn('models', response.data)
+
+    def test_strategy_marketplace_endpoint(self):
+        """Verify GET /api/strategy/marketplace returns premium strategy grids."""
+        response = self.client.get('/api/strategy/marketplace')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('strategies', response.data)
+
+    def test_ai_assistant_chat_endpoint(self):
+        """Verify POST /api/ai/assistant/chat processes conversational inputs."""
+        response = self.client.post('/api/ai/assistant/chat', {"prompt": "Analyze my portfolio risk"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get('ok'))
+        self.assertIn('response', response.data)
