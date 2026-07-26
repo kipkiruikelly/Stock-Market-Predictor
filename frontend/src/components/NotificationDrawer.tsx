@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Drawer, Box, Typography, Divider, IconButton, List, ListItem, Card, CardContent, Chip } from '@mui/material';
+import { Drawer, Box, Typography, IconButton, List, ListItem, Card, CardContent, Chip } from '@mui/material';
 import { X, CheckCircle, Bell, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 interface Notification {

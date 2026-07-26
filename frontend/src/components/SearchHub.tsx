@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent, Box, InputBase, Typography, List, ListItem, ListItemButton, Divider } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, Box, InputBase, Typography, List, ListItem, ListItemButton } from '@mui/material';
 import { Search, Compass, Cpu, FileText, Settings, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 

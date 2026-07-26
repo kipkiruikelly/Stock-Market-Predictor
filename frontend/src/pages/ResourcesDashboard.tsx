@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BookOpen, ExternalLink } from 'lucide-react';
-import { Box, Typography, Card, CardContent, Grid, CircularProgress } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, CircularProgress, Chip } from '@mui/material';
 import { apiFetch } from '../utils/api';
 
 interface ResourceLink {

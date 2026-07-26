@@ -143,7 +143,7 @@ export const ResearchDashboard: React.FC = () => {
   const [projects, setProjects] = useState<any[]>([]);
   const [datasets, setDatasets] = useState<any[]>([]);
   const [comparisons, setComparisons] = useState<any[]>([]);
-  const [quantLoading, setQuantLoading] = useState(false);
+
 
   const [featOpen, setFeatOpen] = useState(false);
   const [features, setFeatures] = useState<FeatureItem[]>([]);
@@ -173,7 +173,6 @@ export const ResearchDashboard: React.FC = () => {
   }, []);
 
   const fetchQuantLabData = useCallback(async () => {
-    setQuantLoading(true);
     try {
       const [projRes, dataRes, compRes] = await Promise.all([
         apiFetch('/api/research/projects'),
@@ -185,8 +184,6 @@ export const ResearchDashboard: React.FC = () => {
       if (compRes.ok) setComparisons(compRes.comparisons || []);
     } catch (err) {
       console.error('Failed to load Enterprise Quant Lab registries', err);
-    } finally {
-      setQuantLoading(false);
     }
   }, []);
 
