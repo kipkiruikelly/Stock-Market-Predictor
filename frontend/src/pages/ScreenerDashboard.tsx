@@ -7,6 +7,7 @@ import {
   CircularProgress, Chip, InputAdornment, LinearProgress, Paper
 } from '@mui/material';
 import { apiFetch } from '../utils/api';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 interface ScreenerRow {
   ticker: string;
@@ -20,6 +21,7 @@ interface ScreenerRow {
   rsi: number;
   macd_hist: number;
   atr: number;
+  sparkline?: number[];
 }
 
 export const ScreenerDashboard: React.FC = () => {
@@ -172,7 +174,7 @@ export const ScreenerDashboard: React.FC = () => {
               onClick={() => setAssetClass(ac)}
               sx={{ fontWeight: 'bold', textTransform: 'capitalize', px: 2, whiteSpace: 'nowrap' }}
             >
-              {ac === 'ALL' ? '🌐 All Assets' : ac === 'STOCKS' ? '📈 Stocks' : ac === 'FOREX' ? '💱 Forex' : ac === 'CRYPTO' ? '🪙 Crypto' : ac === 'COMMODITIES' ? '🛢️ Commodities' : '📊 Indices'}
+              {ac === 'ALL' ? 'All Assets' : ac === 'STOCKS' ? 'Stocks' : ac === 'FOREX' ? 'Forex' : ac === 'CRYPTO' ? 'Crypto' : ac === 'COMMODITIES' ? 'Commodities' : 'Indices'}
             </Button>
           ))}
         </Box>
@@ -251,6 +253,7 @@ export const ScreenerDashboard: React.FC = () => {
                   <TableRow>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Ticker</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Asset Class</TableCell>
+                    <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Chart</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold' }}>Signal</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textAlign: 'right' }}>Price</TableCell>
                     <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', textAlign: 'right' }}>Predicted Close</TableCell>
@@ -291,6 +294,28 @@ export const ScreenerDashboard: React.FC = () => {
                             variant="outlined" 
                             sx={{ fontSize: '0.7rem', fontWeight: 'bold', height: 20 }}
                           />
+                        </TableCell>
+
+                        {/* Sparkline Chart */}
+                        <TableCell sx={{ width: 120, p: 0 }}>
+                          {row.sparkline && row.sparkline.length > 0 ? (
+                            <Box sx={{ height: 40, width: '100%', pt: 0.5 }}>
+                              <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={row.sparkline.map((v, i) => ({ value: v, index: i }))}>
+                                  <Line 
+                                    type="monotone" 
+                                    dataKey="value" 
+                                    stroke={row.action === 'BUY' ? '#10b981' : row.action === 'SELL' ? '#f43f5e' : '#8b5cf6'} 
+                                    strokeWidth={2} 
+                                    dot={false} 
+                                    isAnimationActive={false} 
+                                  />
+                                </LineChart>
+                              </ResponsiveContainer>
+                            </Box>
+                          ) : (
+                            <Typography variant="caption" color="text.secondary">No Data</Typography>
+                          )}
                         </TableCell>
 
                         {/* Signal Badge */}

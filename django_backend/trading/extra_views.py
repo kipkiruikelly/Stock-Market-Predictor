@@ -95,7 +95,8 @@ class ScreenerView(APIView):
             tickers = request.query_params.getlist("tickers") or SCREENER_TICKERS
 
         from django.core.cache import cache
-        cached_results = cache.get("screener_ml_results")
+        cache_key = f"screener_ml_results_{interval}"
+        cached_results = cache.get(cache_key)
         
         # If cache exists and we are not forcing a refresh, just filter the cache
         if cached_results and not request.query_params.get("force"):
@@ -138,8 +139,18 @@ class ScreenerView(APIView):
             yf_tickers.append(yt)
             ticker_map[yt] = t
 
+        period = "3mo"
+        if interval == "1m":
+            period = "5d"
+        elif interval in ("5m", "15m", "30m"):
+            period = "1mo"
+        elif interval in ("1h", "4h"):
+            period = "1y"
+        elif interval in ("1d", "1w", "1mo"):
+            period = "5y"
+
         try:
-            df = yf.download(" ".join(yf_tickers), period="3mo", interval="1d", progress=False)
+            df = yf.download(" ".join(yf_tickers), period=period, interval=interval, progress=False)
             if isinstance(df.columns, pd.MultiIndex):
                 closes = df['Close']
             else:
@@ -173,10 +184,14 @@ class ScreenerView(APIView):
             action = "HOLD"
             conf = 50.0
             atr = 1.5
+            sparkline = []
 
             try:
                 if not closes.empty and yt in closes.columns:
                     series = closes[yt].dropna()
+                    if len(series) > 0:
+                        sparkline = series.tail(20).tolist()
+                        
                     if len(series) > 30:
                         price = float(series.iloc[-1])
                         rsi_series = _compute_rsi(series)
@@ -227,12 +242,16 @@ class ScreenerView(APIView):
                 "rsi":           round(rsi, 1),
                 "macd_hist":     round(macd_hist, 4),
                 "atr":           round(atr, 2),
+                "sparkline":     [round(v, 2) for v in sparkline],
             }
 
         with ThreadPoolExecutor(max_workers=min(len(tickers), 12)) as ex:
             rows = list(ex.map(_scan, tickers))
 
         rows.sort(key=lambda x: x["confidence"], reverse=True)
+        # Update cache for next time
+        cache.set(cache_key, rows, timeout=300)
+        
         return Response({"ok": True, "interval": interval, "asset_class": asset_class, "rows": rows})
 
 
