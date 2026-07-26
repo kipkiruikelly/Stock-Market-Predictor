@@ -168,3 +168,112 @@ class RiskCalculateView(APIView):
             "kelly_shares": round(kelly_shares, 4),
             "kelly_pct": round(kelly_fraction * 100, 2),
         })
+
+
+class PortfolioAnalyticsView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication]
+
+    def get(self, request):
+        from users.models import PaperTrade, UserPaperAccount
+        from datetime import datetime, timedelta
+        import random
+
+        trades = PaperTrade.objects.filter(user=request.user, status="closed").order_by("exit_time")
+        acct = UserPaperAccount.objects.filter(user=request.user).first()
+        
+        balance = acct.balance if acct else 10000.0
+        equity = acct.equity if acct else 10000.0
+        
+        if not trades.exists():
+            # Generate premium demo data for the wow factor
+            now = datetime.utcnow()
+            days = 30
+            equity_curve = []
+            daily_pnl = []
+            curr = 10000.0
+            
+            for i in range(days):
+                d = now - timedelta(days=days-i)
+                change = random.uniform(-100, 250)
+                curr += change
+                equity_curve.append({"date": d.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
+                daily_pnl.append({"date": d.strftime("%Y-%m-%d"), "pnl": round(change, 2)})
+                
+            return Response({
+                "ok": True,
+                "is_demo": True,
+                "overview": {
+                    "balance": 10500.0,
+                    "equity": 10842.50,
+                    "buying_power": 43370.0,
+                    "unrealized_pnl": 342.50,
+                    "realized_pnl": 500.0
+                },
+                "performance": {
+                    "net_profit": 842.50,
+                    "win_rate": 68.5,
+                    "total_trades": 42,
+                    "profit_factor": 2.1
+                },
+                "risk": {
+                    "max_drawdown": 4.2,
+                    "sharpe_ratio": 1.8,
+                    "volatility": 12.4
+                },
+                "charts": {
+                    "equity_curve": equity_curve,
+                    "daily_pnl": daily_pnl[-14:],
+                    "asset_allocation": [
+                        {"name": "Equities", "value": 45},
+                        {"name": "Crypto", "value": 25},
+                        {"name": "Forex", "value": 20},
+                        {"name": "Commodities", "value": 10}
+                    ]
+                }
+            })
+
+        # Calculate real stats
+        wins = [t for t in trades if t.pnl and t.pnl > 0]
+        losses = [t for t in trades if t.pnl and t.pnl <= 0]
+        net_profit = sum(t.pnl or 0 for t in trades)
+        
+        overview = {
+            "balance": balance,
+            "equity": equity,
+            "buying_power": balance * 4, # assuming 4x leverage
+            "unrealized_pnl": equity - balance,
+            "realized_pnl": net_profit
+        }
+        
+        performance = {
+            "net_profit": net_profit,
+            "win_rate": round(len(wins) / len(trades) * 100, 1) if trades else 0,
+            "total_trades": len(trades),
+            "profit_factor": round(sum(t.pnl for t in wins) / abs(sum(t.pnl for t in losses) or 1), 2)
+        }
+        
+        # We can build a simple real equity curve from trades
+        equity_curve = []
+        curr = 10000.0
+        for t in trades:
+            if t.exit_time:
+                curr += (t.pnl or 0)
+                equity_curve.append({"date": t.exit_time.strftime("%Y-%m-%d"), "equity": curr})
+                
+        return Response({
+            "ok": True,
+            "is_demo": False,
+            "overview": overview,
+            "performance": performance,
+            "risk": {
+                "max_drawdown": 0, # To be implemented fully later
+                "sharpe_ratio": 0,
+                "volatility": 0
+            },
+            "charts": {
+                "equity_curve": equity_curve,
+                "daily_pnl": [],
+                "asset_allocation": [{"name": "Cash", "value": 100}]
+            }
+        })

@@ -1,53 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Card, CardContent, TextField, Button, Grid, MenuItem, Select, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Divider } from '@mui/material';
-import { Zap, Play, Square, Settings, Key, AlertTriangle, ShieldCheck, HelpCircle, Activity } from 'lucide-react';
+import { Box, Typography, Card, TextField, Button, Grid2 as Grid, MenuItem, Select, Modal, IconButton, Chip } from '@mui/material';
+import { Zap, Settings, X } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import toast from 'react-hot-toast';
 
-interface AccountInfo {
-  name: string;
-  login: string;
-  server: string;
-  balance: number;
-  equity: number;
-  free_margin: number;
-  leverage: number;
-  currency: string;
-}
-
-interface LogEntry {
-  time: string;
-  level: string;
-  msg: string;
-}
-
-interface SignalData {
-  action: 'BUY' | 'SELL' | 'HOLD';
-  score: number;
-  rsi: number | null;
-  macd: number | null;
-  atr: number | null;
-  price: number | null;
-  reason: string | null;
-}
-
-interface MlData {
-  action: 'BUY' | 'SELL' | 'HOLD';
-  confidence: number | null;
-  lr_pred: number | null;
-  rf_pred: number | null;
-  current_price: number | null;
-}
+import { OrderTicket } from '../components/OrderTicket';
+import { ChartWidget } from '../components/ChartWidget';
+import { WatchlistWidget } from '../components/WatchlistWidget';
+import { PortfolioTable } from '../components/PortfolioTable';
+import { PendingOrdersTable } from '../components/PendingOrdersTable';
 
 export const LiveDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [connected, setConnected] = useState(false);
   const [trading, setTrading] = useState(false);
   const [mode, setMode] = useState<'paper' | 'metaapi' | 'bridge'>('paper');
-  const [account, setAccount] = useState<AccountInfo | null>(null);
-  const [signal, setSignal] = useState<SignalData | null>(null);
-  const [ml, setMl] = useState<MlData | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [account, setAccount] = useState<any>(null);
+
+  // Settings Modal State
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Connection Fields
   const [mapiToken, setMapiToken] = useState('');
@@ -64,9 +35,11 @@ export const LiveDashboard: React.FC = () => {
   const [algoRisk, setAlgoRisk] = useState('1.0');
   const [algoInterval, setAlgoInterval] = useState('300');
   const [algoModel, setAlgoModel] = useState<'ensemble' | 'rf' | 'xgb' | 'lr' | 'ict' | 'technical'>('ensemble');
-  const [useMl] = useState(true);
   const [startingAlgo, setStartingAlgo] = useState(false);
   const [stoppingAlgo, setStoppingAlgo] = useState(false);
+
+  // Terminal State
+  const [activeSymbol, setActiveSymbol] = useState('AAPL');
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -74,21 +47,7 @@ export const LiveDashboard: React.FC = () => {
       if (data) {
         setConnected(!!data.connected);
         setTrading(!!data.trading);
-        if (data.status_msg) {
-          // parse or update state from status message
-        }
-        if (data.account && Object.keys(data.account).length) {
-          setAccount(data.account);
-        }
-        if (data.last_signal && data.last_signal.action) {
-          setSignal(data.last_signal);
-        }
-        if (data.last_ml && data.last_ml.action) {
-          setMl(data.last_ml);
-        }
-        if (data.log) {
-          setLogs(data.log);
-        }
+        if (data.account && Object.keys(data.account).length) setAccount(data.account);
       }
     } catch (err) {
       console.error('Failed to fetch status:', err);
@@ -103,61 +62,33 @@ export const LiveDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, [fetchStatus]);
 
-  // Adjust default symbols based on trading mode
   const handleModeChange = (newMode: 'paper' | 'metaapi' | 'bridge') => {
     setMode(newMode);
-    if (newMode === 'paper') {
-      setAlgoSymbol('AAPL');
-    } else {
-      setAlgoSymbol('EURUSD');
-    }
+    if (newMode === 'paper') setAlgoSymbol('AAPL');
+    else setAlgoSymbol('EURUSD');
   };
 
   const handleConnect = async () => {
     let payload: any = {};
     if (mode === 'metaapi') {
-      if (!mapiToken || !mapiAccountId) {
-        toast.error('Token and Account ID required for MetaApi');
-        return;
-      }
-      payload = {
-        metaapi_token: mapiToken,
-        metaapi_account_id: mapiAccountId,
-        account: 0, password: '', server: '', host: 'localhost', port: 18812,
-      };
+      if (!mapiToken || !mapiAccountId) { toast.error('Token and Account ID required'); return; }
+      payload = { metaapi_token: mapiToken, metaapi_account_id: mapiAccountId, account: 0, password: '', server: '', host: 'localhost', port: 18812 };
     } else if (mode === 'paper') {
       payload = { account: 0, password: '', server: '', host: 'localhost', port: 18812 };
     } else {
-      if (!accNum || !accPass || !accServer) {
-        toast.error('Account login credentials required');
-        return;
-      }
-      payload = {
-        account: parseInt(accNum),
-        password: accPass,
-        server: accServer,
-        host: bridgeHost || 'localhost',
-        port: parseInt(bridgePort || '18812'),
-      };
+      if (!accNum || !accPass || !accServer) { toast.error('Account credentials required'); return; }
+      payload = { account: parseInt(accNum), password: accPass, server: accServer, host: bridgeHost || 'localhost', port: parseInt(bridgePort || '18812') };
     }
 
     setLoading(true);
     try {
-      const res = await apiFetch('/mt5/connect', {
-        method: 'POST',
-        body: payload
-      });
+      const res = await apiFetch('/mt5/connect', { method: 'POST', body: payload });
       if (res.ok) {
         toast.success(`Connected in ${mode} mode!`);
         fetchStatus();
-      } else {
-        toast.error(res.error || 'Connection failed');
-      }
-    } catch (err) {
-      toast.error('Failed to connect to MT5 bridge');
-    } finally {
-      setLoading(false);
-    }
+      } else { toast.error(res.error || 'Connection failed'); }
+    } catch (err) { toast.error('Failed to connect to MT5 bridge'); }
+    finally { setLoading(false); }
   };
 
   const handleDisconnect = async () => {
@@ -169,9 +100,7 @@ export const LiveDashboard: React.FC = () => {
         setAccount(null);
         fetchStatus();
       }
-    } catch (err) {
-      toast.error('Disconnect failed');
-    }
+    } catch (err) { toast.error('Disconnect failed'); }
   };
 
   const handleStartAlgo = async () => {
@@ -179,26 +108,14 @@ export const LiveDashboard: React.FC = () => {
     try {
       const res = await apiFetch('/mt5/start', {
         method: 'POST',
-        body: {
-          symbol: algoSymbol.toUpperCase(),
-          timeframe: algoTimeframe,
-          risk_pct: parseFloat(algoRisk),
-          interval: parseInt(algoInterval),
-          use_ml: useMl,
-          algorithm: algoModel,
-        }
+        body: { symbol: algoSymbol.toUpperCase(), timeframe: algoTimeframe, risk_pct: parseFloat(algoRisk), interval: parseInt(algoInterval), use_ml: true, algorithm: algoModel }
       });
       if (res.ok) {
         toast.success('Algorithmic engine started successfully');
         setTrading(true);
-      } else {
-        toast.error(res.error || 'Could not start engine');
-      }
-    } catch (err) {
-      toast.error('Failed to start algo');
-    } finally {
-      setStartingAlgo(false);
-    }
+      } else { toast.error(res.error || 'Could not start engine'); }
+    } catch (err) { toast.error('Failed to start algo'); }
+    finally { setStartingAlgo(false); }
   };
 
   const handleStopAlgo = async () => {
@@ -209,479 +126,128 @@ export const LiveDashboard: React.FC = () => {
         toast.success('Algorithmic engine stopped');
         setTrading(false);
       }
-    } catch (err) {
-      toast.error('Failed to stop algo');
-    } finally {
-      setStoppingAlgo(false);
-    }
-  };
-
-  const handleCloseAll = async () => {
-    if (!confirm(`Close ALL open positions for ${algoSymbol.toUpperCase()}?`)) return;
-    try {
-      const res = await apiFetch('/mt5/close_all', {
-        method: 'POST',
-        body: { symbol: algoSymbol.toUpperCase() }
-      });
-      if (res.ok) {
-        toast.success(`Closed ${res.closed} position(s)`);
-      }
-    } catch (err) {
-      toast.error('Close positions failed');
-    }
-  };
-
-  const getLevelColor = (level: string) => {
-    const l = level.toUpperCase();
-    if (l.includes('ERROR')) return 'error.main';
-    if (l.includes('WARN')) return 'warning.main';
-    if (l.includes('SIGNAL')) return 'secondary.main';
-    if (l.includes('TRADE') || l.includes('PAPER-TRADE')) return 'primary.main';
-    if (l.includes('CLOSE') || l.includes('PAPER-CLOSE')) return 'success.main';
-    return 'text.secondary';
+    } catch (err) { toast.error('Failed to stop algo'); }
+    finally { setStoppingAlgo(false); }
   };
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {/* Header Banner */}
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between', gap: 2 }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1.5, color: 'text.primary' }}>
-            <Zap color="#3b82f6" />
-            MetaTrader 5 Algorithmic Hub
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Automate trade execution using technical indicators confluences and machine learning models.
-          </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', gap: 2, p: 2 }}>
+      {/* Header Bar */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Zap color="#3b82f6" /> Trading Terminal
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Chip label={connected ? `Connected (${mode})` : 'Disconnected'} color={connected ? 'success' : 'default'} variant={connected ? 'filled' : 'outlined'} />
+          <Button variant="outlined" startIcon={<Settings size={18} />} onClick={() => setSettingsOpen(true)}>Settings & Algo</Button>
         </Box>
-        <Chip 
-          label={connected ? (trading ? "Algo Running" : "Connected") : "Disconnected"}
-          color={connected ? (trading ? "success" : "primary") : "default"}
-          icon={<Activity size={16} />}
-          sx={{ fontWeight: 'bold' }}
-        />
       </Box>
 
-      {/* Warnings & Notices */}
-      <Card sx={{ bgcolor: 'rgba(234,179,8,0.02)', border: '1px solid rgba(234,179,8,0.1)' }}>
-        <CardContent sx={{ display: 'flex', gap: 2, p: 2, '&:last-child': { pb: 2 } }}>
-          <AlertTriangle color="#fbbf24" style={{ flexShrink: 0 }} />
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-            <strong>Operator Advisory:</strong> Algorithmic trading involves substantial risk of loss. Simulated balance is used by default. Real trading requires a Pro package subscription, explicit configuration of Metatrader 5 servers, and direct local bridge deployment.
-          </Typography>
-        </CardContent>
-      </Card>
-
-      <Grid container spacing={3}>
-        {/* Left Side: Configuration Controls */}
-        <Grid size={{ xs: 12, lg: 4 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* Connection Settings */}
-          <Card>
-            <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Key size={16} color="#3b82f6" />
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Bridge Connection</Typography>
-            </Box>
-            <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {/* Mode Selector */}
-              <Box sx={{ display: 'flex', gap: 0.5, border: '1px solid rgba(255,255,255,0.05)', p: 0.5, borderRadius: 2, bgcolor: 'rgba(0,0,0,0.15)' }}>
-                {(['paper', 'metaapi', 'bridge'] as const).map((m) => (
-                  <Button
-                    key={m}
-                    size="small"
-                    fullWidth
-                    variant={mode === m ? 'contained' : 'text'}
-                    onClick={() => handleModeChange(m)}
-                    sx={{ fontWeight: 'bold', textTransform: 'capitalize' }}
-                  >
-                    {m === 'bridge' ? 'Direct MT5' : m}
-                  </Button>
-                ))}
-              </Box>
-
-              {/* Mode specific fields */}
-              {mode === 'paper' && (
-                <Box sx={{ p: 1.5, border: '1px solid rgba(251,191,36,0.15)', borderRadius: 2, bgcolor: 'rgba(251,191,36,0.02)' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>
-                    Paper trading mode enabled.
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>
-                    Provides a $10,000 virtual balance and fetches real-time quote feeds via yfinance without needing local software.
-                  </Typography>
-                </Box>
-              )}
-
-              {mode === 'metaapi' && (
-                <>
-                  <TextField 
-                    label="MetaApi Token" 
-                    type="password"
-                    size="small"
-                    value={mapiToken}
-                    onChange={(e) => setMapiToken(e.target.value)}
-                    placeholder="MetaApi dashboard token"
-                    fullWidth
-                  />
-                  <TextField 
-                    label="MetaApi Account ID" 
-                    size="small"
-                    value={mapiAccountId}
-                    onChange={(e) => setMapiAccountId(e.target.value)}
-                    placeholder="MetaApi account ID hash"
-                    fullWidth
-                  />
-                </>
-              )}
-
-              {mode === 'bridge' && (
-                <>
-                  <TextField 
-                    label="Account Login" 
-                    size="small"
-                    type="number"
-                    value={accNum}
-                    onChange={(e) => setAccNum(e.target.value)}
-                    placeholder="MT5 account number"
-                    fullWidth
-                  />
-                  <TextField 
-                    label="Account Password" 
-                    type="password"
-                    size="small"
-                    value={accPass}
-                    onChange={(e) => setAccPass(e.target.value)}
-                    placeholder="Broker password"
-                    fullWidth
-                  />
-                  <TextField 
-                    label="Broker Server" 
-                    size="small"
-                    value={accServer}
-                    onChange={(e) => setAccServer(e.target.value)}
-                    placeholder="e.g. ICMarkets-Demo"
-                    fullWidth
-                  />
-                  <Box sx={{ display: 'flex', gap: 1.5 }}>
-                    <TextField 
-                      label="Host" 
-                      size="small"
-                      value={bridgeHost}
-                      onChange={(e) => setBridgeHost(e.target.value)}
-                      fullWidth
-                    />
-                    <TextField 
-                      label="Port" 
-                      size="small"
-                      value={bridgePort}
-                      onChange={(e) => setBridgePort(e.target.value)}
-                      fullWidth
-                    />
-                  </Box>
-                </>
-              )}
-
-              {!connected ? (
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  fullWidth 
-                  onClick={handleConnect}
-                  disabled={loading}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {loading ? 'Connecting...' : 'Connect Bridge'}
-                </Button>
-              ) : (
-                <Button 
-                  variant="outlined" 
-                  color="error" 
-                  fullWidth 
-                  onClick={handleDisconnect}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  Disconnect Bridge
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Account Details */}
-          {connected && account && (
-            <Card>
-              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ShieldCheck size={16} color="#10b981" />
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Broker Account</Typography>
-              </Box>
-              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Name</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{account.name}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Login ID</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{account.login}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Server</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{account.server}</Typography>
-                </Box>
-                <Divider />
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Balance</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                    {account.currency} {account.balance.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Equity</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                    {account.currency} {account.equity.toLocaleString()}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyItems: 'center', justifyContent: 'space-between' }}>
-                  <Typography variant="body2" color="text.secondary">Leverage</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>1:{account.leverage}</Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Algorithm Config Panel */}
-          <Card>
-            <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Settings size={16} color="#8b5cf6" />
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Algorithm Settings</Typography>
-            </Box>
-            <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField 
-                label="Target Symbol"
-                size="small"
-                value={algoSymbol}
-                onChange={(e) => setAlgoSymbol(e.target.value)}
-                placeholder="EURUSD or AAPL"
-                fullWidth
-              />
-
-              <Box sx={{ display: 'flex', gap: 1.5 }}>
-                <Select 
-                  value={algoTimeframe}
-                  onChange={(e) => setAlgoTimeframe(e.target.value)}
-                  size="small"
-                  fullWidth
-                >
-                  <MenuItem value="M1">M1 (1 Min)</MenuItem>
-                  <MenuItem value="M5">M5 (5 Min)</MenuItem>
-                  <MenuItem value="M15">M15 (15 Min)</MenuItem>
-                  <MenuItem value="H1">H1 (1 Hour)</MenuItem>
-                </Select>
-                <TextField 
-                  label="Risk per Trade (%)"
-                  size="small"
-                  type="number"
-                  value={algoRisk}
-                  onChange={(e) => setAlgoRisk(e.target.value)}
-                  fullWidth
-                />
-              </Box>
-
-              <TextField 
-                label="Interval Check (sec)"
-                size="small"
-                type="number"
-                value={algoInterval}
-                onChange={(e) => setAlgoInterval(e.target.value)}
-                fullWidth
-              />
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>
-                  Execution Strategy Model
-                </Typography>
-                <Select 
-                  value={algoModel}
-                  onChange={(e) => setAlgoModel(e.target.value as any)}
-                  size="small"
-                  fullWidth
-                >
-                  <MenuItem value="ensemble">Multi-Factor Ensemble (ICT + ML + Technical)</MenuItem>
-                  <MenuItem value="rf">Random Forest Classifier</MenuItem>
-                  <MenuItem value="xgb">XGBoost Classifier</MenuItem>
-                  <MenuItem value="lr">Linear Regression & Trend Slope</MenuItem>
-                  <MenuItem value="ict">ICT Price Action (Order Blocks / FVG / Sweeps)</MenuItem>
-                  <MenuItem value="technical">Technical Oscillators (RSI + MACD + EMA)</MenuItem>
-                </Select>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  disabled={!connected || trading || startingAlgo}
-                  onClick={handleStartAlgo}
-                  startIcon={<Play size={16} />}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {startingAlgo ? 'Starting...' : 'Start Algorithm'}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  disabled={!connected || !trading || stoppingAlgo}
-                  onClick={handleStopAlgo}
-                  startIcon={<Square size={16} />}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  {stoppingAlgo ? 'Stopping...' : 'Stop Algorithm'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="warning"
-                  onClick={handleCloseAll}
-                  disabled={!connected}
-                  sx={{ fontWeight: 'bold' }}
-                >
-                  Close All Positions
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+      {/* Main Terminal Layout */}
+      <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
+        {/* Left Side: Chart and Positions */}
+        <Grid size={{ xs: 12, lg: 9 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          {/* Chart Widget */}
+          <Box sx={{ flexGrow: 1, minHeight: 0 }}>
+            <ChartWidget symbol={activeSymbol} />
+          </Box>
+          {/* Positions Table (Fixed Height at bottom) */}
+          <Box sx={{ height: '300px', overflowY: 'auto' }}>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12 }}>
+                <PortfolioTable />
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <PendingOrdersTable />
+              </Grid>
+            </Grid>
+          </Box>
         </Grid>
 
-        {/* Right Side: Signal overview & logging console */}
-        <Grid size={{ xs: 12, lg: 8 }} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-          {/* Live Signal Panel */}
-          <Card>
-            <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyItems: 'center', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Live Signals</Typography>
-              {useMl && ml && (
-                <Chip label="ML Ensemble Mode" size="small" color="primary" sx={{ height: 18, fontSize: '0.65rem', fontWeight: 'bold' }} />
+        {/* Right Side: Execution and Watchlist */}
+        <Grid size={{ xs: 12, lg: 3 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
+          <OrderTicket />
+          <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
+            <WatchlistWidget />
+          </Box>
+        </Grid>
+      </Grid>
+
+      {/* Settings & Algo Modal */}
+      <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Card sx={{ width: 600, maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto', p: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h6">Connection & Algo Settings</Typography>
+            <IconButton onClick={() => setSettingsOpen(false)}><X /></IconButton>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Broker Connection */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} gutterBottom>1. Broker Connection</Typography>
+              <Select value={mode} onChange={(e) => handleModeChange(e.target.value as any)} fullWidth size="small" sx={{ mb: 2 }}>
+                <MenuItem value="paper">Paper Trading (Local Simulation)</MenuItem>
+                <MenuItem value="metaapi">MetaApi (Cloud MT5/MT4)</MenuItem>
+                <MenuItem value="bridge">Python MT5 Bridge (Windows Local)</MenuItem>
+              </Select>
+              
+              {mode === 'metaapi' && (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12 }}><TextField label="MetaApi Token" value={mapiToken} onChange={(e) => setMapiToken(e.target.value)} fullWidth size="small" type="password" /></Grid>
+                  <Grid size={{ xs: 12 }}><TextField label="MetaApi Account ID" value={mapiAccountId} onChange={(e) => setMapiAccountId(e.target.value)} fullWidth size="small" /></Grid>
+                </Grid>
               )}
+              {mode === 'bridge' && (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}><TextField label="Account Number" value={accNum} onChange={(e) => setAccNum(e.target.value)} fullWidth size="small" /></Grid>
+                  <Grid size={{ xs: 6 }}><TextField label="Password" value={accPass} onChange={(e) => setAccPass(e.target.value)} fullWidth size="small" type="password" /></Grid>
+                  <Grid size={{ xs: 12 }}><TextField label="Server" value={accServer} onChange={(e) => setAccServer(e.target.value)} fullWidth size="small" /></Grid>
+                </Grid>
+              )}
+
+              <Box sx={{ mt: 2 }}>
+                {connected ? (
+                  <Button variant="outlined" color="error" fullWidth onClick={handleDisconnect}>Disconnect</Button>
+                ) : (
+                  <Button variant="contained" color="primary" fullWidth onClick={handleConnect} disabled={loading}>Connect</Button>
+                )}
+              </Box>
             </Box>
-            <CardContent sx={{ p: 3 }}>
+
+            {/* AI Auto-Trading Engine */}
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }} gutterBottom>2. Autonomous AI Engine</Typography>
               <Grid container spacing={2}>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.1)' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }}>Confluence Signal</Typography>
-                    <Chip 
-                      label={signal?.action || 'HOLD'} 
-                      color={signal?.action === 'BUY' ? 'success' : signal?.action === 'SELL' ? 'error' : 'default'}
-                      size="small"
-                      sx={{ fontWeight: 'bold' }}
-                    />
-                  </Box>
+                <Grid size={{ xs: 6 }}>
+                  <TextField label="Symbol" value={algoSymbol} onChange={(e) => setAlgoSymbol(e.target.value)} fullWidth size="small" />
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.1)' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }}>RSI (14)</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{signal?.rsi?.toFixed(1) || '-'}</Typography>
-                  </Box>
+                <Grid size={{ xs: 6 }}>
+                  <Select value={algoTimeframe} onChange={(e) => setAlgoTimeframe(e.target.value)} fullWidth size="small">
+                    <MenuItem value="M1">1 Minute</MenuItem>
+                    <MenuItem value="M5">5 Minutes</MenuItem>
+                    <MenuItem value="H1">1 Hour</MenuItem>
+                  </Select>
                 </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.1)' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }}>MACD Histogram</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{signal?.macd?.toFixed(4) || '-'}</Typography>
-                  </Box>
-                </Grid>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.1)' }}>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }}>ATR (14)</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{signal?.atr?.toFixed(4) || '-'}</Typography>
-                  </Box>
+                <Grid size={{ xs: 12 }}>
+                  <Select value={algoModel} onChange={(e) => setAlgoModel(e.target.value as any)} fullWidth size="small">
+                    <MenuItem value="ensemble">Deep Ensemble (ML + Rules)</MenuItem>
+                    <MenuItem value="xgb">XGBoost Pure Directional</MenuItem>
+                    <MenuItem value="ict">ICT Market Structure Only</MenuItem>
+                  </Select>
                 </Grid>
               </Grid>
 
-              {/* Machine learning details */}
-              {useMl && ml && (
-                <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', display: 'block', mb: 2, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                    ML Forecast Predictions
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid size={{ xs: 12, sm: 4 }}>
-                      <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, bgcolor: 'rgba(0,0,0,0.15)' }}>
-                        <Typography variant="caption" color="text.secondary">ML Signal / Confidence</Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <Chip 
-                            label={ml.action} 
-                            color={ml.action === 'BUY' ? 'success' : ml.action === 'SELL' ? 'error' : 'default'}
-                            size="small"
-                            sx={{ fontWeight: 'bold' }}
-                          />
-                          {ml.confidence !== null && (
-                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{ml.confidence.toFixed(0)}%</Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 4 }}>
-                      <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, bgcolor: 'rgba(0,0,0,0.15)' }}>
-                        <Typography variant="caption" color="text.secondary">Logistic Reg Forecast</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 0.5 }}>
-                          {ml.lr_pred ? `$${ml.lr_pred.toFixed(2)}` : '-'}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                    <Grid size={{ xs: 6, sm: 4 }}>
-                      <Box sx={{ border: '1px solid rgba(255,255,255,0.05)', borderRadius: 2, p: 2, bgcolor: 'rgba(0,0,0,0.15)' }}>
-                        <Typography variant="caption" color="text.secondary">Random Forest Target</Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 0.5 }}>
-                          {ml.rf_pred ? `$${ml.rf_pred.toFixed(2)}` : '-'}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                  {signal?.reason && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, lineHeight: 1.4 }}>
-                      Reasoning: {signal.reason}
-                    </Typography>
-                  )}
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Real-time Log Console */}
-          <Card sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Real-time Console Log</Typography>
-            </Box>
-            <CardContent sx={{ p: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ maxHeight: 360, overflowY: 'auto', flex: 1 }}>
-                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
-                  <Table size="small" stickyHeader>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', width: 90, bgcolor: 'background.paper' }}>Time</TableCell>
-                        <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', width: 110, bgcolor: 'background.paper' }}>Level</TableCell>
-                        <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', bgcolor: 'background.paper' }}>Message</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {logs.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={3} sx={{ py: 6, textClassName: 'empty', textAlign: 'center', color: 'text.secondary' }}>
-                            <HelpCircle size={24} style={{ opacity: 0.3, marginBottom: 4 }} />
-                            <Typography variant="caption" sx={{ display: 'block' }}>Connect bridge to print messages.</Typography>
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        logs.map((e, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell sx={{ py: 1, color: 'text.secondary', fontFamily: 'monospace', fontSize: '0.75rem' }}>{e.time}</TableCell>
-                            <TableCell sx={{ py: 1, fontWeight: 'bold', color: getLevelColor(e.level), fontSize: '0.75rem' }}>
-                              {e.level}
-                            </TableCell>
-                            <TableCell sx={{ py: 1, fontFamily: 'monospace', fontSize: '0.75rem' }}>{e.msg}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+                {!trading ? (
+                  <Button variant="contained" color="success" fullWidth onClick={handleStartAlgo} disabled={!connected || startingAlgo} startIcon={<Play size={18} />}>Start Algo</Button>
+                ) : (
+                  <Button variant="contained" color="error" fullWidth onClick={handleStopAlgo} disabled={stoppingAlgo} startIcon={<Square size={18} />}>Stop Algo</Button>
+                )}
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            </Box>
+          </Box>
+        </Card>
+      </Modal>
     </Box>
   );
 };

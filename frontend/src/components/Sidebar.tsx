@@ -19,8 +19,8 @@ export const Sidebar: React.FC = () => {
     { name: 'Promo & Gift Codes', path: '/admin?tab=gift-codes', icon: <Ticket size={20} /> },
     { name: 'System Admin & Settings', path: '/admin?tab=system-admin', icon: <Settings size={20} /> },
   ] : [
-    { name: 'Portfolio', path: '/portfolio', icon: <Briefcase size={20} /> },
-    { name: 'Live Trading', path: '/live', icon: <Zap size={20} /> },
+    { name: 'Performance Dashboard', path: '/portfolio', icon: <Briefcase size={20} /> },
+    { name: 'Trading Terminal', path: '/live', icon: <Zap size={20} /> },
     { name: 'Journal', path: '/journal', icon: <BookOpen size={20} /> },
     { name: 'Markets', path: '/markets', icon: <BarChart2 size={20} /> },
     { name: 'Research', path: '/research', icon: <Search size={20} /> },
