@@ -1,97 +1,140 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChartWidget } from '../components/ChartWidget';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, Typography, Grid, Card, CardContent, CircularProgress, 
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Chip
+  Table, TableBody, TableCell, TableContainer, TableRow,
+  Paper, Chip, Divider, Button
 } from '@mui/material';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
+import { 
+  TrendingUp, TrendingDown, Clock, Globe, CircleDollarSign, 
+  Layers, Database, Landmark, Radio, Newspaper, Calendar, Star 
+} from 'lucide-react';
 import { apiFetch } from '../utils/api';
 
-interface Mover {
-  ticker: string;
+interface MarketAsset {
   name: string;
+  symbol: string;
   price: number;
+  change: number;
   change_pct: number;
-  volume: string;
+  sparkline: number[];
+  isUp: boolean;
+  market_cap?: string;
+  volume?: string;
 }
 
-interface IndexItem {
-  name: string;
-  price: string;
-  change: string;
-  pts: string;
-  isUp: boolean;
+interface SentimentData {
+  fear_greed_score: number;
+  vix: number;
+  vix_change: number;
+  vix_isUp: boolean;
+  market_breadth_advancing: number;
+  market_breadth_declining: number;
+  bullish_ratio: number;
+  overall_sentiment: string;
+}
+
+interface PerformanceKPI {
+  markets_open: boolean;
+  assets_advancing: number;
+  assets_declining: number;
+  total_volume: string;
+  avg_daily_change: string;
+  most_volatile_asset: string;
+  best_performing_sector: string;
+}
+
+interface NewsItem {
+  id: string;
+  title: string;
+  source: string;
+  published: number;
+  link: string;
+  category: string;
+  thumbnail?: string;
+}
+
+interface MacroEvent {
+  time: string;
+  title: string;
+  country: string;
+  impact: 'high' | 'medium' | 'low';
+  forecast: string;
+  previous: string;
 }
 
 export const MarketDashboard: React.FC = () => {
-  const [movers, setMovers] = useState<Mover[]>([]);
-  const [indices, setIndices] = useState<IndexItem[]>([]);
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const heatmapContainer = useRef<HTMLDivElement>(null);
+  const [indices, setIndices] = useState<MarketAsset[]>([]);
+  const [forex, setForex] = useState<MarketAsset[]>([]);
+  const [commodities, setCommodities] = useState<MarketAsset[]>([]);
+  const [crypto, setCrypto] = useState<MarketAsset[]>([]);
+  const [bonds, setBonds] = useState<MarketAsset[]>([]);
+  const [sentiment, setSentiment] = useState<SentimentData | null>(null);
+  const [gainers, setGainers] = useState<any[]>([]);
+  const [losers, setLosers] = useState<any[]>([]);
+  const [performance, setPerformance] = useState<PerformanceKPI | null>(null);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [watchlist, setWatchlist] = useState<any[]>([]);
+  const [macroEvents, setMacroEvents] = useState<MacroEvent[]>([]);
+
   const tickerTapeContainer = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchMovers = async () => {
-      try {
-        const json = await apiFetch('/api/market/movers');
-        if (json.ok) {
-          const fetched: Mover[] = (json.movers || []).map((m: any) => ({
-            ticker: m.ticker,
-            name: m.ticker === 'NVDA' ? 'NVIDIA Corp.' :
-                  m.ticker === 'TSLA' ? 'Tesla Inc.' :
-                  m.ticker === 'AAPL' ? 'Apple Inc.' :
-                  m.ticker === 'META' ? 'Meta Platforms' :
-                  m.ticker === 'MSFT' ? 'Microsoft Corp.' : 
-                  m.ticker === 'AMZN' ? 'Amazon.com Inc.' :
-                  m.ticker === 'GOOGL' ? 'Alphabet Inc.' :
-                  m.ticker === 'NFLX' ? 'Netflix Inc.' :
-                  m.ticker === 'AMD' ? 'Advanced Micro Devices' :
-                  m.ticker === 'JPM' ? 'JPMorgan Chase' : 'Instrument',
-            price: m.price || 0,
-            change_pct: m.change_pct || 0,
-            volume: m.volume ? `${(m.volume / 1000000).toFixed(1)}M` : '—'
-          }));
-          setMovers(fetched);
-          if (json.indices) {
-            setIndices(json.indices);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch market movers:', err);
-      } finally {
-        setLoading(false);
+  const fetchOverview = async () => {
+    try {
+      const data = await apiFetch('/api/market/overview');
+      if (data.ok) {
+        setIndices(data.indices || []);
+        setForex(data.forex || []);
+        setCommodities(data.commodities || []);
+        setCrypto(data.crypto || []);
+        setBonds(data.bonds || []);
+        setSentiment(data.sentiment || null);
+        setGainers(data.gainers || []);
+        setLosers(data.losers || []);
+        setPerformance(data.performance || null);
+        setNews(data.news || []);
       }
-    };
-    fetchMovers();
-  }, []);
 
-  // Inject Heatmap Widget
-  useEffect(() => {
-    if (heatmapContainer.current) {
-      heatmapContainer.current.innerHTML = '';
-      const script = document.createElement("script");
-      script.src = "https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js";
-      script.type = "text/javascript";
-      script.async = true;
-      script.innerHTML = JSON.stringify({
-        "exchanges": [],
-        "dataSource": "SPX500",
-        "grouping": "sector",
-        "blockSize": "market_cap_basic",
-        "blockColor": "change",
-        "locale": "en",
-        "symbolUrl": "",
-        "colorTheme": "dark",
-        "hasTopBar": false,
-        "isDataSetEnabled": false,
-        "isZoomEnabled": true,
-        "hasSymbolTooltip": true,
-        "isMonoSize": false,
-        "width": "100%",
-        "height": "400"
-      });
-      heatmapContainer.current.appendChild(script);
+      // Fetch watchlist
+      const watchData = await apiFetch('/api/watchlist');
+      if (watchData.ok) {
+        setWatchlist(watchData.symbols || []);
+      }
+
+      // Fetch upcoming macro calendar events
+      const calendarData = await apiFetch('/api/calendar/macro');
+      if (calendarData && calendarData.length > 0) {
+        setMacroEvents(calendarData.slice(0, 4).map((e: any) => ({
+          time: e.time || '14:30',
+          title: e.event || 'FOMC Interest Rate Decision',
+          country: e.country || 'USD',
+          impact: e.impact === 'High' ? 'high' : e.impact === 'Medium' ? 'medium' : 'low',
+          forecast: e.forecast || '—',
+          previous: e.previous || '—'
+        })));
+      } else {
+        // Fallback robust events if api returns empty
+        setMacroEvents([
+          { time: '15:30', title: 'Core CPI (MoM) (Jul)', country: 'USD', impact: 'high', forecast: '0.2%', previous: '0.1%' },
+          { time: '17:00', title: 'Crude Oil Inventories', country: 'USD', impact: 'medium', forecast: '-1.2M', previous: '-3.4M' },
+          { time: '21:00', title: 'FOMC Meeting Minutes', country: 'USD', impact: 'high', forecast: '—', previous: '—' },
+          { time: '04:30', title: 'Employment Change (Jul)', country: 'AUD', impact: 'high', forecast: '25.0K', previous: '32.1K' }
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to load market overview:', err);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchOverview();
+    const timer = setInterval(fetchOverview, 30000);
+    return () => clearInterval(timer);
   }, []);
 
   // Inject TradingView Ticker Tape Widget
@@ -122,47 +165,37 @@ export const MarketDashboard: React.FC = () => {
     }
   }, []);
 
-  const staticIndices = [
-    { name: 'S&P 500', price: '5,308.15', change: '+0.51%', pts: '+27.02 pts', isUp: true },
-    { name: 'NASDAQ 100', price: '16,742.39', change: '+0.78%', pts: '+129.61 pts', isUp: true },
-    { name: 'DOW JONES', price: '38,996.39', change: '-0.12%', pts: '-47.68 pts', isUp: false },
-    { name: 'VIX (Fear Index)', price: '14.82', change: '-3.21%', pts: 'Low volatility', isUp: false }
-  ];
+  if (loading && indices.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh', gap: 2 }}>
+        <CircularProgress size={32} />
+        <Typography variant="body2" color="text.secondary">Loading comprehensive market overview...</Typography>
+      </Box>
+    );
+  }
 
-  const sectorPerformance = [
-    { name: 'Technology', change: '+1.42%', isUp: true },
-    { name: 'Communication', change: '+0.98%', isUp: true },
-    { name: 'Consumer Disc.', change: '-0.34%', isUp: false },
-    { name: 'Healthcare', change: '+0.21%', isUp: true },
-    { name: 'Financials', change: '-0.62%', isUp: false },
-    { name: 'Industrials', change: '+0.15%', isUp: true },
-    { name: 'Energy', change: '-0.88%', isUp: false },
-    { name: 'Materials', change: '+0.07%', isUp: true },
-    { name: 'Real Estate', change: '-1.14%', isUp: false }
-  ];
-
-  const staticGainers = [
-    { ticker: 'NVDA', name: 'NVIDIA Corp.', price: 875.40, change_pct: 3.12, volume: '42.1M' },
-    { ticker: 'META', name: 'Meta Platforms', price: 512.30, change_pct: 2.87, volume: '18.3M' },
-    { ticker: 'AAPL', name: 'Apple Inc.', price: 189.30, change_pct: 1.24, volume: '56.7M' },
-    { ticker: 'GOOGL', name: 'Alphabet Inc.', price: 168.45, change_pct: 0.91, volume: '22.5M' },
-    { ticker: 'MSFT', name: 'Microsoft Corp.', price: 415.32, change_pct: 0.64, volume: '19.8M' }
-  ];
-
-  const staticLosers = [
-    { ticker: 'TSLA', name: 'Tesla Inc.', price: 177.46, change_pct: -2.31, volume: '81.2M' },
-    { ticker: 'AMZN', name: 'Amazon.com Inc.', price: 182.01, change_pct: -1.08, volume: '35.4M' },
-    { ticker: 'JPM', name: 'JPMorgan Chase', price: 196.22, change_pct: -0.87, volume: '12.1M' },
-    { ticker: 'XOM', name: 'Exxon Mobil', price: 112.44, change_pct: -0.73, volume: '14.9M' },
-    { ticker: 'BAC', name: 'Bank of America', price: 37.92, change_pct: -0.54, volume: '38.6M' }
-  ];
-
-  const gainers = movers.length > 0 ? movers.filter(m => m.change_pct >= 0) : staticGainers;
-  const losers = movers.length > 0 ? movers.filter(m => m.change_pct < 0) : staticLosers;
-  const activeIndices = indices.length > 0 ? indices : staticIndices;
+  const renderSparkline = (sparkline: number[], isUp: boolean) => {
+    if (!sparkline || sparkline.length === 0) return null;
+    return (
+      <Box sx={{ width: 80, height: 24 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={sparkline.map((v, i) => ({ value: v, index: i }))}>
+            <Line 
+              type="monotone" 
+              dataKey="value" 
+              stroke={isUp ? '#10b981' : '#f43f5e'} 
+              strokeWidth={1.5} 
+              dot={false} 
+              isAnimationActive={false} 
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+    );
+  };
 
   return (
-    <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <Box sx={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, pb: 6 }}>
       
       {/* TradingView Ticker Tape Widget */}
       <Box sx={{ 
@@ -176,115 +209,434 @@ export const MarketDashboard: React.FC = () => {
         <div className="tradingview-widget-container__widget w-full h-full" style={{ height: '46px' }}></div>
       </Box>
 
-      {/* Page Title & Heading */}
-      <Box sx={{ px: { xs: 2, md: 6 } }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-          Market Overview
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          Live indices, sector performances, top movers and market sentiment.
-        </Typography>
+      {/* Header Bar */}
+      <Box sx={{ px: { xs: 2, md: 6 }, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            Markets
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Comprehensive overview of global indices, commodities, currencies, fixed income, and crypto.
+          </Typography>
+        </Box>
+        <Chip 
+          label={performance?.markets_open ? "MARKETS OPEN" : "MARKETS CLOSED"} 
+          color={performance?.markets_open ? "success" : "default"} 
+          variant="filled" 
+          icon={<Clock size={14} />} 
+          sx={{ fontWeight: 'bold' }} 
+        />
       </Box>
 
       <Box sx={{ px: { xs: 2, md: 6 }, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {/* Live indicator banner */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Chip label="LIVE FEED" color="success" size="small" sx={{ fontWeight: 'bold', height: 18, fontSize: '0.65rem' }} />
-          <Typography variant="caption" color="text.secondary">
-            Real-time feed streaming major indices, volume spikes, and technical metrics indicators.
-          </Typography>
-        </Box>
+        
+        {/* TOP KPI Performance Cards */}
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 6, md: 2.4 }}>
+            <Card sx={{ bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>ADVANCING ASSETS</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                  {performance?.assets_advancing || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 6, md: 2.4 }}>
+            <Card sx={{ bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>DECLINING ASSETS</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                  {performance?.assets_declining || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 6, md: 2.4 }}>
+            <Card sx={{ bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>AGGREGATE VOLUME</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  {performance?.total_volume || '—'}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 6, md: 2.4 }}>
+            <Card sx={{ bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>MOST VOLATILE</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                  {performance?.most_volatile_asset || '—'}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 2.4 }}>
+            <Card sx={{ bgcolor: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)' }}>
+              <CardContent sx={{ p: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>BEST PERFORMER</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                  {performance?.best_performing_sector || '—'}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
 
-        {/* Global Indices cards Grid */}
+        {/* Major Asset Classes Section */}
         <Grid container spacing={3}>
-          {activeIndices.map((idx) => (
-            <Grid key={idx.name} size={{ xs: 12, sm: 6, md: 3 }}>
-              <Card sx={{ 
-                borderLeft: idx.isUp ? '3px solid #10b981' : '3px solid #ef4444',
-                transition: 'border-color 0.15s',
-                '&:hover': { borderColor: 'primary.main' }
-              }}>
-                <CardContent sx={{ p: 2.5 }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    {idx.name}
-                  </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 0.5 }}>
-                    {idx.price}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        fontWeight: 'bold', 
-                        color: idx.isUp ? 'success.main' : 'error.main',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      {idx.isUp ? '▲' : '▼'} {idx.change}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {idx.pts}
-                    </Typography>
+          
+          {/* Global Indices */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Globe size={16} color="#3b82f6" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Global Indices</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {indices.map((idx) => (
+                        <TableRow key={idx.name} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{idx.name}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>{idx.price.toLocaleString()}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', color: idx.isUp ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                            {idx.isUp ? '+' : ''}{idx.change_pct}%
+                          </TableCell>
+                          <TableCell sx={{ width: 100, py: 1 }}>
+                            {renderSparkline(idx.sparkline, idx.isUp)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Forex Grid */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Landmark size={16} color="#10b981" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Forex Overview</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {forex.map((fx) => (
+                        <TableRow key={fx.name} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{fx.name}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>{fx.price}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', color: fx.isUp ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                            {fx.isUp ? '+' : ''}{fx.change_pct}%
+                          </TableCell>
+                          <TableCell sx={{ width: 100, py: 1 }}>
+                            {renderSparkline(fx.sparkline, fx.isUp)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Commodities */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircleDollarSign size={16} color="#eab308" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Commodities</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {commodities.map((comm) => (
+                        <TableRow key={comm.name} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{comm.name}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>${comm.price}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', color: comm.isUp ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                            {comm.isUp ? '+' : ''}{comm.change_pct}%
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Cryptocurrencies */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Layers size={16} color="#8b5cf6" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Cryptocurrencies</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {crypto.map((coin) => (
+                        <TableRow key={coin.name} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ py: 1.2 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{coin.name}</Typography>
+                            <Typography variant="caption" color="text.secondary">Cap: {coin.market_cap}</Typography>
+                          </TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>${coin.price.toLocaleString()}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', color: coin.isUp ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                            {coin.isUp ? '+' : ''}{coin.change_pct}%
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Fixed Income / Bonds */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Database size={16} color="#f43f5e" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Treasury Bonds</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {bonds.map((bond) => (
+                        <TableRow key={bond.name} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ fontWeight: 'bold' }}>{bond.name}</TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>{bond.price}%</TableCell>
+                          <TableCell sx={{ textAlign: 'right', color: bond.isUp ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                            {bond.isUp ? '▲' : '▼'} {bond.change}%
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+        </Grid>
+
+        {/* Sentiment Overview & Market Movers */}
+        <Grid container spacing={3}>
+          
+          {/* Sentiment Section */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Radio size={16} color="#ec4899" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Market Sentiment</Typography>
+              </Box>
+              <CardContent sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                
+                {/* Fear & Greed Slider */}
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>FEAR & GREED INDEX</Typography>
+                    <Chip label="Greed" color="success" size="small" sx={{ fontWeight: 'bold' }} />
                   </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 900, color: 'success.main' }}>
+                      {sentiment?.fear_greed_score || 62}
+                    </Typography>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Box sx={{ 
+                        height: 8, 
+                        borderRadius: 4, 
+                        background: 'linear-gradient(to right, #ef4444, #eab308, #10b981)',
+                        position: 'relative'
+                      }}>
+                        <Box sx={{ 
+                          position: 'absolute',
+                          width: 14,
+                          height: 14,
+                          borderRadius: '50%',
+                          bgcolor: 'white',
+                          top: -3,
+                          left: `${sentiment?.fear_greed_score || 62}%`,
+                          transform: 'translateX(-50%)',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                        }} />
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Divider sx={{ borderStyle: 'dashed' }} />
+
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>VOLATILITY INDEX (VIX)</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: sentiment?.vix_isUp ? 'error.main' : 'success.main' }}>
+                      {sentiment?.vix || '—'} ({sentiment?.vix_change || '0.00'})
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>BULLISH RATIO</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                      {sentiment?.bullish_ratio || 57}%
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>ADVANCING BREADTH</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                      {sentiment?.market_breadth_advancing || 0} Assets
+                    </Typography>
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'medium' }}>DECLINING BREADTH</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                      {sentiment?.market_breadth_declining || 0} Assets
+                    </Typography>
+                  </Grid>
+                </Grid>
+
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Movers (Gainers vs Losers) */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Top Movers</Typography>
+              </Box>
+              <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                
+                {/* Gainers */}
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold', textTransform: 'uppercase' }}>TOP GAINERS</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
+                    {gainers.map((g) => (
+                      <Paper key={g.symbol} sx={{ p: 1.5, minWidth: 100, bgcolor: 'rgba(16,185,129,0.02)', border: '1px solid rgba(16,185,129,0.1)', flexShrink: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{g.symbol}</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 0.5 }}>${g.price}</Typography>
+                        <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TrendingUp size={12} /> +{g.change_pct}%
+                        </Typography>
+                      </Paper>
+                    ))}
+                  </Box>
+                </Box>
+
+                {/* Losers */}
+                <Box>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 'bold', textTransform: 'uppercase' }}>TOP LOSERS</Typography>
+                  <Box sx={{ display: 'flex', gap: 1, overflowX: 'auto', pb: 1 }}>
+                    {losers.map((l) => (
+                      <Paper key={l.symbol} sx={{ p: 1.5, minWidth: 100, bgcolor: 'rgba(244,63,94,0.02)', border: '1px solid rgba(244,63,94,0.1)', flexShrink: 0 }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{l.symbol}</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 0.5 }}>${l.price}</Typography>
+                        <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <TrendingDown size={12} /> {l.change_pct}%
+                        </Typography>
+                      </Paper>
+                    ))}
+                  </Box>
+                </Box>
+
+              </CardContent>
+            </Card>
+          </Grid>
+
         </Grid>
 
-        {/* TradingView Main Chart Widget */}
-        <Card>
-          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              Live Market Chart, S&P 500 Index
-            </Typography>
-          </Box>
-          <Box sx={{ p: 1 }}>
-            <ChartWidget symbol="FOREXCOM:SPXUSD" />
-          </Box>
-        </Card>
-
-        {/* Movers Section: Gainers vs Losers */}
+        {/* Economic Calendar & Watchlist Summary */}
         <Grid container spacing={3}>
-          {/* Gainers */}
+          
+          {/* Economic Calendar */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Card sx={{ height: '100%' }}>
-              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Top Gainers
-                </Typography>
-                <Chip label="Today" color="success" size="small" sx={{ fontWeight: 'bold', height: 18 }} />
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Calendar size={16} color="#eab308" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Economic Calendar</Typography>
               </Box>
               <CardContent sx={{ p: 0 }}>
-                {loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={24} /></Box>
+                <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+                  <Table size="small">
+                    <TableBody>
+                      {macroEvents.map((evt, idx) => (
+                        <TableRow key={idx} hover sx={{ '&:last-child td': { border: 0 } }}>
+                          <TableCell sx={{ py: 1.5 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>{evt.time}</Typography>
+                              <Chip label={evt.country} size="small" variant="outlined" sx={{ height: 18, fontSize: '0.65rem', fontWeight: 'bold' }} />
+                            </Box>
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 'medium' }}>{evt.title}</TableCell>
+                          <TableCell sx={{ textAlign: 'right' }}>
+                            <Chip 
+                              label={evt.impact.toUpperCase()} 
+                              color={evt.impact === 'high' ? 'error' : evt.impact === 'medium' ? 'warning' : 'default'} 
+                              size="small" 
+                              variant="outlined"
+                              sx={{ height: 18, fontSize: '0.6rem', fontWeight: 'bold' }}
+                            />
+                          </TableCell>
+                          <TableCell sx={{ textAlign: 'right', fontWeight: 'bold', color: 'text.secondary' }}>
+                            F: {evt.forecast} | P: {evt.previous}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Watchlist summary with navigation link */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Star size={16} color="#3b82f6" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>My Watchlist</Typography>
+              </Box>
+              <CardContent sx={{ p: 0 }}>
+                {watchlist.length === 0 ? (
+                  <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary' }}>
+                    <Typography variant="body2" sx={{ mb: 2 }}>No active watchlists found.</Typography>
+                    <Button variant="outlined" size="small" onClick={() => navigate('/live')}>Go to Live Trading</Button>
+                  </Box>
                 ) : (
                   <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
                     <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Symbol</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Price</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'right' }}>Change</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'right' }}>Volume</TableCell>
-                        </TableRow>
-                      </TableHead>
                       <TableBody>
-                        {gainers.map((row) => (
-                          <TableRow key={row.ticker} sx={{ '&:last-child td': { border: 0 } }}>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>{row.ticker}</Typography>
-                              <Typography variant="caption" color="text.secondary">{row.name}</Typography>
+                        {watchlist.slice(0, 5).map((w) => (
+                          <TableRow key={w.ticker} hover sx={{ '&:last-child td': { border: 0 } }}>
+                            <TableCell sx={{ fontWeight: 'bold', py: 1.5 }}>
+                              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{w.ticker}</Typography>
+                              <Typography variant="caption" color="text.secondary">{w.name || 'Personal Asset'}</Typography>
                             </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', fontWeight: 'medium' }}>
-                              ${row.price.toFixed(2)}
+                            <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>
+                              ${w.price || '—'}
                             </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', color: 'success.main', fontWeight: 'bold', textAlign: 'right' }}>
-                              +{row.change_pct.toFixed(2)}%
-                            </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', color: 'text.secondary', textAlign: 'right' }}>
-                              {row.volume}
+                            <TableCell sx={{ textAlign: 'right' }}>
+                              <Button 
+                                size="small" 
+                                variant="outlined" 
+                                color="primary" 
+                                sx={{ py: 0.2, px: 1, textTransform: 'none', fontSize: '0.75rem', fontWeight: 'bold' }}
+                                onClick={() => navigate('/live')}
+                              >
+                                Trade Terminal
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -296,157 +648,68 @@ export const MarketDashboard: React.FC = () => {
             </Card>
           </Grid>
 
-          {/* Losers */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card sx={{ height: '100%' }}>
-              <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'space-between' }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
-                  Top Losers
-                </Typography>
-                <Chip label="Today" color="error" size="small" sx={{ fontWeight: 'bold', height: 18 }} />
-              </Box>
-              <CardContent sx={{ p: 0 }}>
-                {loading ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress size={24} /></Box>
-                ) : (
-                  <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Symbol</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Price</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'right' }}>Change</TableCell>
-                          <TableCell sx={{ color: 'text.secondary', fontWeight: 'bold', borderBottom: '1px solid rgba(255,255,255,0.05)', textAlign: 'right' }}>Volume</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {losers.map((row) => (
-                          <TableRow key={row.ticker} sx={{ '&:last-child td': { border: 0 } }}>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                              <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>{row.ticker}</Typography>
-                              <Typography variant="caption" color="text.secondary">{row.name}</Typography>
-                            </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', fontWeight: 'medium' }}>
-                              ${row.price.toFixed(2)}
-                            </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', color: 'error.main', fontWeight: 'bold', textAlign: 'right' }}>
-                              {row.change_pct.toFixed(2)}%
-                            </TableCell>
-                            <TableCell sx={{ py: 1.5, borderBottom: '1px solid rgba(255,255,255,0.03)', color: 'text.secondary', textAlign: 'right' }}>
-                              {row.volume}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
 
-        {/* Sector Performance Grid */}
-        <Card>
-          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              Sector Performance
-            </Typography>
+        {/* Global Market News Feed */}
+        <Card sx={{ mb: 4 }}>
+          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Newspaper size={16} color="#3b82f6" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>Global Market News</Typography>
           </Box>
           <CardContent sx={{ p: 3 }}>
-            <Grid container spacing={2}>
-              {sectorPerformance.map((sector) => (
-                <Grid key={sector.name} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between',
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: 'background.paper',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                  }}>
-                    <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'text.primary' }}>{sector.name}</Typography>
-                    <Typography 
-                      variant="body2" 
+            {news.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>No news available at the moment.</Typography>
+            ) : (
+              <Grid container spacing={3}>
+                {news.map((n) => (
+                  <Grid key={n.id} size={{ xs: 12, md: 6 }}>
+                    <Box 
+                      component="a" 
+                      href={n.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
                       sx={{ 
-                        fontWeight: 'bold', 
-                        color: sector.isUp ? 'success.main' : 'error.main' 
+                        display: 'flex', 
+                        gap: 2, 
+                        p: 1.5, 
+                        borderRadius: 2, 
+                        bgcolor: 'rgba(255,255,255,0.01)', 
+                        border: '1px solid rgba(255,255,255,0.03)',
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        transition: 'transform 0.15s, border-color 0.15s',
+                        '&:hover': { 
+                          transform: 'translateY(-2px)', 
+                          borderColor: 'primary.main',
+                          bgcolor: 'rgba(255,255,255,0.02)'
+                        }
                       }}
                     >
-                      {sector.change}
-                    </Typography>
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
+                      {n.thumbnail && (
+                        <Box 
+                          component="img" 
+                          src={n.thumbnail} 
+                          alt={n.title} 
+                          sx={{ width: 80, height: 80, borderRadius: 1.5, objectFit: 'cover', flexShrink: 0 }} 
+                        />
+                      )}
+                      <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', lineHeight: 1.4, mb: 1 }}>
+                          {n.title}
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                          <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 'bold' }}>{n.source}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(n.published * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
           </CardContent>
-        </Card>
-
-        {/* Fear & Greed / Sentiment Card */}
-        <Card>
-          <CardContent sx={{ p: 4 }}>
-            <Grid container spacing={4} sx={{ alignItems: 'center' }}>
-              <Grid size={{ xs: 12, md: 2 }} sx={{ textAlign: 'center' }}>
-                <Typography variant="h1" sx={{ fontWeight: 900, color: 'primary.main', fontSize: '3.8rem', lineHeight: 1 }}>
-                  62
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.primary', mb: 1 }}>
-                  Greed Index
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
-                  The CNN Fear & Greed Index measures market sentiment on a 0-100 scale. A score of 62 indicates moderate greed, investors are optimistic but not yet at extreme euphoria levels. Historically, readings above 75 precede short-term pullbacks.
-                </Typography>
-              </Grid>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block', textTransform: 'uppercase' }}>
-                  Fear & Greed Index Scale
-                </Typography>
-                
-                <Box sx={{ width: '100%', my: 2.5 }}>
-                  <Box sx={{ 
-                    height: 8, 
-                    borderRadius: 4, 
-                    background: 'linear-gradient(to right, #ef4444, #8b5cf6, #10b981)',
-                    position: 'relative'
-                  }}>
-                    <Box sx={{ 
-                      position: 'absolute',
-                      width: 14,
-                      height: 14,
-                      borderRadius: '50%',
-                      bgcolor: 'white',
-                      top: -3,
-                      left: '62%',
-                      transform: 'translateX(-50%)',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
-                      border: '1px solid rgba(0,0,0,0.2)'
-                    }} />
-                  </Box>
-                </Box>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>Extreme Fear</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>Neutral</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>Extreme Greed</Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        {/* Live Market Heatmap Widget */}
-        <Card sx={{ mb: 4 }}>
-          <Box sx={{ px: 3, py: 2, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              Market Heatmap (S&P 500 Components)
-            </Typography>
-          </Box>
-          <Box sx={{ p: 1, minHeight: 400 }} ref={heatmapContainer}>
-            <div className="tradingview-widget-container__widget w-full h-full" style={{ height: '400px' }}></div>
-          </Box>
         </Card>
 
       </Box>
