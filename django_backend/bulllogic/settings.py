@@ -95,10 +95,21 @@ if DATABASE_URL and dj_database_url:
                 parsed_db['ENGINE'] = 'django.db.backends.mysql'
                 parsed_db['OPTIONS'] = {'unix_socket': socket_path}
             elif os.getenv('K_SERVICE') is None:
-                options = parsed_db.get('OPTIONS', {})
-                options['connect_timeout'] = 60
-                options['init_command'] = "SET net_write_timeout=60, net_read_timeout=60;"
-                parsed_db['OPTIONS'] = options
+                # Test connection to local Cloud SQL proxy socket
+                import socket
+                host = parsed_db.get('HOST', '127.0.0.1')
+                port = int(parsed_db.get('PORT') or 3306)
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(2)
+                result = sock.connect_ex((host, port))
+                sock.close()
+                if result != 0:
+                    print(f"Cloud SQL proxy port {port} not responsive. Falling back to local SQLite database.")
+                    parsed_db = None
+                else:
+                    options = parsed_db.get('OPTIONS', {})
+                    options['connect_timeout'] = 10
+                    parsed_db['OPTIONS'] = options
         if parsed_db:
             engine = parsed_db.get('ENGINE', '')
             if 'sql_server' in engine or 'mssql' in engine:
