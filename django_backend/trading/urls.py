@@ -54,14 +54,12 @@ urlpatterns = [
     path('watchlist/add', views.WatchlistView.as_view(), name='api-watchlist-add'),
     path('watchlist/remove', views.WatchlistView.as_view(), name='api-watchlist-remove'),
 
-    # ── Portfolio (Manual Positions) ──────────────────────────────
-    path('portfolio', views.PortfolioView.as_view(), name='api-portfolio'),
-    path('portfolio/analytics', portfolio_views.PortfolioAnalyticsView.as_view(), name='api-portfolio-analytics'),
-    path('portfolio/positions', portfolio_views.PortfolioPositionsView.as_view(), name='api-portfolio-positions'),
-    path('portfolio/open', portfolio_views.PortfolioOpenView.as_view(), name='api-portfolio-open'),
-    path('portfolio/close', portfolio_views.PortfolioCloseView.as_view(), name='api-portfolio-close'),
-    path('portfolio/delete', portfolio_views.PortfolioDeleteView.as_view(), name='api-portfolio-delete'),
-    path('risk/calculate', portfolio_views.RiskCalculateView.as_view(), name='api-risk-calculate'),
+    # ── Portfolio Management Service (Enterprise Multi-Portfolio Engine) ──────────
+    path('portfolios', portfolio_views.PortfolioListCreateView.as_view(), name='api-portfolios-list-create'),
+    path('portfolios/<int:pk>', portfolio_views.PortfolioDetailView.as_view(), name='api-portfolios-detail'),
+    path('portfolios/transaction', portfolio_views.TransactionExecuteView.as_view(), name='api-portfolios-transaction-execute'),
+    path('portfolios/<int:portfolio_id>/transactions', portfolio_views.TransactionHistoryView.as_view(), name='api-portfolios-transactions-history'),
+    path('portfolios/watchlist', portfolio_views.WatchlistListCreateView.as_view(), name='api-portfolios-watchlist'),
 
     # ── Predictions & Accuracy ────────────────────────────────────
     path('health', prediction_views.HealthView.as_view(), name='api-health'),

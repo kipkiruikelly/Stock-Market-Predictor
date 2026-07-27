@@ -1,277 +1,300 @@
-import yfinance as yf
-from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication
+from users.jwt_auth import JWTAuthentication
+from users.permissions import HasRolePermission
+from users.responses import StandardAPIResponse
+from users.models import Portfolio, Holding, Transaction, Watchlist
+from .portfolio_service import PortfolioService, PortfolioServiceError
+import yfinance as yf
+from concurrent.futures import ThreadPoolExecutor
 
-from users.models import PortfolioPosition
-
-
-class PortfolioPositionsView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+class PortfolioListCreateView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    allowed_roles = ['free', 'plus', 'pro', 'admin']
 
     def get(self, request):
-        positions = PortfolioPosition.objects.filter(user=request.user).order_by("-opened_at")
-        open_tickers = list({p.ticker for p in positions if p.status == "open"})
-        
-        live_prices = {}
-        if open_tickers:
-            def _px(t):
-                try:
-                    return t, float(yf.Ticker(t).fast_info.last_price or 0)
-                except Exception:
-                    return t, 0.0
-            with ThreadPoolExecutor(max_workers=min(len(open_tickers), 6)) as ex:
-                live_prices = dict(ex.map(_px, open_tickers))
-
-        rows = []
-        for p in positions:
-            ep, qty = p.entry_price, p.quantity
-            if p.status == "open":
-                lp = live_prices.get(p.ticker, ep)
-            else:
-                lp = p.exit_price or ep
-            
-            pnl = (lp - ep) * qty if p.side.lower() == "long" else (ep - lp) * qty
-            pnl_pct = (pnl / (ep * qty) * 100) if ep * qty else 0
-            
-            rows.append({
+        """
+        List all active portfolios for the authenticated user.
+        """
+        portfolios = Portfolio.objects.filter(owner=request.user, status='active').order_by('-created_at')
+        data = []
+        for p in portfolios:
+            data.append({
                 "id": p.id,
-                "ticker": p.ticker,
-                "side": p.side,
-                "entry_price": ep,
-                "quantity": qty,
-                "live_price": round(lp, 4),
-                "exit_price": p.exit_price,
-                "pnl": round(pnl, 2),
-                "pnl_pct": round(pnl_pct, 2),
-                "status": p.status,
-                "opened_at": p.opened_at.strftime("%Y-%m-%d") if p.opened_at else "",
-                "closed_at": p.closed_at.strftime("%Y-%m-%d") if p.closed_at else None,
-                "note": p.note or "",
+                "name": p.name,
+                "description": p.description,
+                "base_currency": p.base_currency,
+                "initial_balance": p.initial_balance,
+                "current_balance": p.current_balance,
+                "total_equity": p.total_equity,
+                "total_profit_loss": p.total_profit_loss,
+                "realized_profit_loss": p.realized_profit_loss,
+                "unrealized_profit_loss": p.unrealized_profit_loss,
+                "total_return_percentage": p.total_return_percentage,
+                "created_at": p.created_at.isoformat()
             })
-        return Response({"ok": True, "positions": rows})
-
-
-class PortfolioOpenView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+        return StandardAPIResponse(data=data, message="Portfolios retrieved successfully.")
 
     def post(self, request):
-        ticker = request.data.get("ticker", "").upper().strip()
-        side = request.data.get("side", "long").lower()
-        entry_price = request.data.get("entry_price")
-        quantity = request.data.get("quantity")
-        note = request.data.get("note", "")[:200]
+        """
+        Create a new investment portfolio.
+        """
+        name = request.data.get("name", "My Investment Portfolio").strip()
+        description = request.data.get("description", "").strip()
+        base_currency = request.data.get("base_currency", "USD").strip().upper()
+        initial_balance = request.data.get("initial_balance", 10000.0)
 
-        if not ticker or entry_price is None or quantity is None:
-            return Response({"ok": False, "error": "ticker, entry_price, quantity required"}, status=400)
-        if side not in ("long", "short"):
-            return Response({"ok": False, "error": "side must be long or short"}, status=400)
-        
         try:
-            entry_price = float(entry_price)
-            quantity = float(quantity)
-        except (TypeError, ValueError):
-            return Response({"ok": False, "error": "entry_price and quantity must be numbers"}, status=400)
+            initial_balance = float(initial_balance)
+        except (ValueError, TypeError):
+            return StandardAPIResponse(success=False, status=400, message="Initial balance must be a number.")
 
-        pos = PortfolioPosition.objects.create(
-            user=request.user,
-            ticker=ticker,
-            side=side,
-            entry_price=entry_price,
-            quantity=quantity,
-            note=note
-        )
-        return Response({"ok": True, "id": pos.id}, status=201)
+        if not name:
+            return StandardAPIResponse(success=False, status=400, message="Portfolio name is required.")
+
+        try:
+            portfolio = PortfolioService.create_portfolio(
+                owner=request.user,
+                name=name,
+                description=description,
+                base_currency=base_currency,
+                initial_balance=initial_balance
+            )
+            return StandardAPIResponse(
+                data={
+                    "id": portfolio.id,
+                    "name": portfolio.name,
+                    "base_currency": portfolio.base_currency,
+                    "current_balance": portfolio.current_balance
+                },
+                status=201,
+                message="Portfolio successfully created."
+            )
+        except PortfolioServiceError as e:
+            return StandardAPIResponse(success=False, status=400, message=str(e))
 
 
-class PortfolioCloseView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+class PortfolioDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    allowed_roles = ['free', 'plus', 'pro', 'admin']
+
+    def get(self, request, pk):
+        """
+        Retrieve portfolio detail, dynamically updating market valuations.
+        """
+        try:
+            portfolio = Portfolio.objects.get(id=pk, owner=request.user)
+        except Portfolio.DoesNotExist:
+            return StandardAPIResponse(success=False, status=404, message="Portfolio not found.")
+
+        holdings = Holding.objects.filter(portfolio=portfolio)
+        symbols = [h.symbol for h in holdings]
+
+        # Fetch live prices concurrently
+        live_prices = {}
+        if symbols:
+            def _fetch_price(s):
+                try:
+                    return s, float(yf.Ticker(s).fast_info.last_price or 0.0)
+                except Exception:
+                    return s, None
+            with ThreadPoolExecutor(max_workers=min(len(symbols), 8)) as ex:
+                live_prices = {s: px for s, px in ex.map(_fetch_price, symbols) if px is not None}
+
+        # Dynamic valuation sweep
+        portfolio = PortfolioService.recalculate_portfolio_valuations(portfolio.id, live_prices)
+
+        # Build holding objects array
+        holdings_data = []
+        for h in holdings:
+            holdings_data.append({
+                "id": h.id,
+                "symbol": h.symbol,
+                "asset_class": h.asset_class,
+                "quantity": h.quantity,
+                "average_entry_price": h.average_entry_price,
+                "current_market_price": h.current_market_price,
+                "market_value": h.market_value,
+                "unrealized_profit_loss": h.unrealized_profit_loss,
+                "allocation_percentage": h.allocation_percentage,
+                "last_updated": h.last_updated.isoformat()
+            })
+
+        data = {
+            "id": portfolio.id,
+            "name": portfolio.name,
+            "description": portfolio.description,
+            "base_currency": portfolio.base_currency,
+            "initial_balance": portfolio.initial_balance,
+            "current_balance": portfolio.current_balance,
+            "total_equity": portfolio.total_equity,
+            "total_profit_loss": portfolio.total_profit_loss,
+            "realized_profit_loss": portfolio.realized_profit_loss,
+            "unrealized_profit_loss": portfolio.unrealized_profit_loss,
+            "total_return_percentage": portfolio.total_return_percentage,
+            "status": portfolio.status,
+            "created_at": portfolio.created_at.isoformat(),
+            "holdings": holdings_data
+        }
+        return StandardAPIResponse(data=data, message="Portfolio valuations updated and retrieved.")
+
+    def delete(self, request, pk):
+        """
+        Soft-delete / archive an investment portfolio.
+        """
+        try:
+            portfolio = Portfolio.objects.get(id=pk, owner=request.user)
+        except Portfolio.DoesNotExist:
+            return StandardAPIResponse(success=False, status=404, message="Portfolio not found.")
+
+        portfolio.status = 'archived'
+        portfolio.save()
+        return StandardAPIResponse(message="Portfolio successfully archived.")
+
+
+class TransactionExecuteView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    allowed_roles = ['free', 'plus', 'pro', 'admin']
 
     def post(self, request):
-        pos_id = request.data.get("position_id")
-        exit_price = request.data.get("exit_price")
-        
+        """
+        Execute a ledger transaction (Buy, Sell, Deposit, Withdrawal).
+        """
+        portfolio_id = request.data.get("portfolio_id")
+        transaction_type = request.data.get("transaction_type", "").strip().capitalize()
+
+        if not portfolio_id or not transaction_type:
+            return StandardAPIResponse(success=False, status=400, message="portfolio_id and transaction_type are required.")
+
         try:
-            pos = PortfolioPosition.objects.get(id=pos_id, user=request.user, status="open")
-        except PortfolioPosition.DoesNotExist:
-            return Response({"ok": False, "error": "Position not found"}, status=404)
+            portfolio = Portfolio.objects.get(id=portfolio_id, owner=request.user)
+        except Portfolio.DoesNotExist:
+            return StandardAPIResponse(success=False, status=404, message="Portfolio not found.")
 
-        if exit_price is None:
-            return Response({"ok": False, "error": "exit_price required"}, status=400)
-
-        pos.exit_price = float(exit_price)
-        pos.status = "closed"
-        pos.closed_at = datetime.utcnow()
-        pos.save()
-        return Response({"ok": True})
-
-
-class PortfolioDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
-
-    def post(self, request):
-        pos_id = request.data.get("position_id")
         try:
-            pos = PortfolioPosition.objects.get(id=pos_id, user=request.user)
-        except PortfolioPosition.DoesNotExist:
-            return Response({"ok": False, "error": "Position not found"}, status=404)
+            if transaction_type == 'Deposit':
+                amount = float(request.data.get("amount", 0.0))
+                notes = request.data.get("notes", "")
+                tx = PortfolioService.deposit_cash(portfolio.id, amount, notes)
+            elif transaction_type == 'Withdrawal':
+                amount = float(request.data.get("amount", 0.0))
+                notes = request.data.get("notes", "")
+                tx = PortfolioService.withdraw_cash(portfolio.id, amount, notes)
+            elif transaction_type in ('Buy', 'Sell'):
+                symbol = request.data.get("symbol", "").strip().upper()
+                asset_class = request.data.get("asset_class", "stock").strip().lower()
+                quantity = float(request.data.get("quantity", 0.0))
+                execution_price = float(request.data.get("execution_price", 0.0))
+                fees = float(request.data.get("fees", 0.0))
+                notes = request.data.get("notes", "")
 
-        pos.delete()
-        return Response({"ok": True})
+                if not symbol:
+                    return StandardAPIResponse(success=False, status=400, message="Symbol is required for asset trades.")
+
+                if transaction_type == 'Buy':
+                    tx = PortfolioService.execute_buy(portfolio.id, symbol, asset_class, quantity, execution_price, fees, notes)
+                else:
+                    tx = PortfolioService.execute_sell(portfolio.id, symbol, quantity, execution_price, fees, notes)
+            else:
+                return StandardAPIResponse(success=False, status=400, message=f"Unsupported transaction type: {transaction_type}.")
+
+            return StandardAPIResponse(
+                data={
+                    "transaction_id": tx.transaction_id,
+                    "transaction_type": tx.transaction_type,
+                    "asset": tx.asset,
+                    "quantity": tx.quantity,
+                    "total_amount": tx.total_amount,
+                    "timestamp": tx.timestamp.isoformat()
+                },
+                status=201,
+                message=f"Transaction '{transaction_type}' recorded successfully."
+            )
+        except (ValueError, TypeError):
+            return StandardAPIResponse(success=False, status=400, message="Invalid numerical input.")
+        except PortfolioServiceError as e:
+            return StandardAPIResponse(success=False, status=400, message=str(e))
 
 
-class RiskCalculateView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+class TransactionHistoryView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    allowed_roles = ['free', 'plus', 'pro', 'admin']
 
-    def post(self, request):
+    def get(self, request, portfolio_id):
+        """
+        Retrieve standard transaction history for a portfolio.
+        """
         try:
-            account = float(request.data.get("account", 10000))
-            risk_pct = float(request.data.get("risk_pct", 1.0))
-            entry = float(request.data.get("entry", 100))
-            stop_loss = float(request.data.get("stop_loss", 95))
-            target = float(request.data.get("target", 110))
-        except (TypeError, ValueError):
-            return Response({"ok": False, "error": "All parameters must be valid numbers"}, status=400)
+            portfolio = Portfolio.objects.get(id=portfolio_id, owner=request.user)
+        except Portfolio.DoesNotExist:
+            return StandardAPIResponse(success=False, status=404, message="Portfolio not found.")
 
-        if entry <= 0 or stop_loss <= 0:
-            return Response({"ok": False, "error": "Invalid prices"}, status=400)
-
-        risk_amount = account * risk_pct / 100
-        risk_per_sh = abs(entry - stop_loss)
-        if risk_per_sh == 0:
-            return Response({"ok": False, "error": "Entry and stop loss cannot be equal"}, status=400)
-
-        shares = risk_amount / risk_per_sh
-        position_val = shares * entry
-        rr_ratio = abs(target - entry) / risk_per_sh if risk_per_sh else 0
-        potential_pnl = (target - entry) * shares
-        win_rate_est = 0.55
-        kelly_fraction = win_rate_est - (1 - win_rate_est) / rr_ratio if rr_ratio > 0 else 0
-        kelly_shares = max(0, account * kelly_fraction / entry)
-
-        return Response({
-            "ok": True,
-            "shares": round(shares, 4),
-            "position_val": round(position_val, 2),
-            "risk_amount": round(risk_amount, 2),
-            "risk_per_sh": round(risk_per_sh, 4),
-            "rr_ratio": round(rr_ratio, 2),
-            "potential_pnl": round(potential_pnl, 2),
-            "kelly_shares": round(kelly_shares, 4),
-            "kelly_pct": round(kelly_fraction * 100, 2),
-        })
+        txs = Transaction.objects.filter(portfolio=portfolio).order_by('-timestamp')
+        data = []
+        for t in txs:
+            data.append({
+                "transaction_id": t.transaction_id,
+                "transaction_type": t.transaction_type,
+                "asset": t.asset,
+                "quantity": t.quantity,
+                "execution_price": t.execution_price,
+                "total_amount": t.total_amount,
+                "fees": t.fees,
+                "notes": t.notes,
+                "timestamp": t.timestamp.isoformat()
+            })
+        return StandardAPIResponse(data=data, message="Transaction ledger history retrieved.")
 
 
-class PortfolioAnalyticsView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [SessionAuthentication]
+class WatchlistListCreateView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated, HasRolePermission]
+    allowed_roles = ['free', 'plus', 'pro', 'admin']
 
     def get(self, request):
-        from users.models import PaperTrade, UserPaperAccount
-        from datetime import datetime, timedelta
-        import numpy as np
+        """
+        Retrieve watchlists for the user.
+        """
+        watchlists = Watchlist.objects.filter(user=request.user)
+        data = []
+        for w in watchlists:
+            data.append({
+                "id": w.id,
+                "name": w.name,
+                "symbols": w.symbols,
+                "created_at": w.created_at.isoformat()
+            })
+        return StandardAPIResponse(data=data, message="Watchlists retrieved successfully.")
 
-        trades = PaperTrade.objects.filter(user=request.user, status="closed").order_by("exit_time")
-        acct = UserPaperAccount.objects.filter(user=request.user).first()
-        
-        balance = acct.balance if acct else 10000.0
-        equity = acct.equity if acct else 10000.0
+    def post(self, request):
+        """
+        Create or update a watchlist.
+        """
+        name = request.data.get("name", "My Watchlist").strip()
+        symbols = request.data.get("symbols", [])
 
-        # Calculate real stats
-        wins = [t for t in trades if t.pnl and t.pnl > 0]
-        losses = [t for t in trades if t.pnl and t.pnl <= 0]
-        net_profit = sum(t.pnl or 0 for t in trades)
-        
-        overview = {
-            "balance": balance,
-            "equity": equity,
-            "buying_power": balance * 4, # assuming 4x leverage
-            "unrealized_pnl": equity - balance,
-            "realized_pnl": net_profit
-        }
-        
-        performance = {
-            "net_profit": net_profit,
-            "win_rate": round(len(wins) / len(trades) * 100, 1) if trades else 0,
-            "total_trades": len(trades),
-            "profit_factor": round(sum(t.pnl for t in wins) / abs(sum(t.pnl for t in losses) or 1), 2) if losses else round(sum(t.pnl for t in wins), 2)
-        }
-        
-        # Calculate daily percentage returns to extract advanced risk statistics
-        daily_returns = []
-        equity_curve = []
-        curr = balance if acct else 10000.0
-        
-        for t in trades:
-            if t.exit_time:
-                pnl_pct = (t.pnl / curr) if t.pnl else 0.0
-                curr += (t.pnl or 0)
-                daily_returns.append(pnl_pct)
-                equity_curve.append({"date": t.exit_time.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
+        if not isinstance(symbols, list):
+            return StandardAPIResponse(success=False, status=400, message="Symbols must be a list of strings.")
 
-        # Compute Risk Ratios
-        volatility = round(float(np.std(daily_returns) * np.sqrt(252)) * 100, 2) if daily_returns else 0.0
-        mean_return = float(np.mean(daily_returns)) if daily_returns else 0.0
-        
-        # Risk-free rate (approx 4.0% annualized)
-        rf_daily = 0.04 / 252
-        excess_returns = [r - rf_daily for r in daily_returns]
-        
-        # Sharpe Ratio
-        sharpe = round(float(np.mean(excess_returns) / np.std(daily_returns) * np.sqrt(252)), 2) if daily_returns and np.std(daily_returns) > 0 else 0.0
-        
-        # Sortino Ratio
-        downside_returns = [r for r in daily_returns if r < 0]
-        sortino = round(float(np.mean(excess_returns) / np.std(downside_returns) * np.sqrt(252)), 2) if downside_returns and np.std(downside_returns) > 0 else 0.0
-        
-        # Calmar & Maximum Drawdown
-        pnl_array = [e["equity"] for e in equity_curve]
-        peak = pnl_array[0] if pnl_array else curr
-        drawdowns = []
-        for val in pnl_array:
-            if val > peak:
-                peak = val
-            drawdown = (peak - val) / peak
-            drawdowns.append(drawdown)
-        max_dd = round(max(drawdowns) * 100, 2) if drawdowns else 0.0
-        
-        # Value at Risk (95% Confidence VaR)
-        var_95 = round(float(np.percentile(daily_returns, 5) * -100), 2) if daily_returns else 0.0
+        symbols = [str(s).upper().strip() for s in symbols if s]
 
-        return Response({
-            "ok": True,
-            "is_demo": False,
-            "overview": overview,
-            "performance": performance,
-            "risk": {
-                "max_drawdown": max_dd,
-                "sharpe_ratio": sharpe,
-                "sortino_ratio": sortino,
-                "volatility": volatility,
-                "value_at_risk_95": var_95,
-                "calmar_ratio": round(mean_return * 252 / (max_dd / 100), 2) if max_dd > 0 else 0.0
+        # Use update_or_create logic on watchlist name
+        watchlist, created = Watchlist.objects.update_or_create(
+            user=request.user,
+            name=name,
+            defaults={"symbols": symbols}
+        )
+
+        return StandardAPIResponse(
+            data={
+                "id": watchlist.id,
+                "name": watchlist.name,
+                "symbols": watchlist.symbols
             },
-            "charts": {
-                "equity_curve": equity_curve,
-                "daily_pnl": [{"date": e["date"], "pnl": 0.0} for e in equity_curve],
-                "asset_allocation": [
-                    {"name": "Equities", "value": 0},
-                    {"name": "Forex Pairs", "value": 0},
-                    {"name": "Cryptocurrencies", "value": 0},
-                    {"name": "Cash Reserve", "value": 100}
-                ] if not trades else [
-                    {"name": "Equities", "value": 45},
-                    {"name": "Forex Pairs", "value": 25},
-                    {"name": "Cryptocurrencies", "value": 15},
-                    {"name": "Cash Reserve", "value": 15}
-                ]
-            }
-        })
+            status=201 if created else 200,
+            message="Watchlist updated successfully."
+        )
