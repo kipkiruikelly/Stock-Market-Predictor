@@ -165,6 +165,8 @@ class PredictionHistory(models.Model):
 
     class Meta:
         db_table = 'prediction_history'
+        verbose_name = 'Prediction History'
+        verbose_name_plural = 'Prediction Histories'
 
 
 # ── Watchlist Item ────────────────────────────────────────────────────────────
@@ -239,6 +241,8 @@ class PredictionAccuracy(models.Model):
 
     class Meta:
         db_table = 'prediction_accuracy'
+        verbose_name = 'Prediction Accuracy Record'
+        verbose_name_plural = 'Prediction Accuracy Records'
 
 
 # ── Password Reset Token ──────────────────────────────────────────────────────
@@ -645,6 +649,8 @@ class UserPreferences(models.Model):
 
     class Meta:
         db_table = 'user_preferences'
+        verbose_name = 'User Preferences'
+        verbose_name_plural = 'User Preferences Records'
 
 
 # ── User Portfolio ────────────────────────────────────────────────────────────
@@ -703,6 +709,8 @@ class CompetitionEntry(models.Model):
     class Meta:
         db_table = 'competition_entry'
         unique_together = [('competition', 'user')]
+        verbose_name = 'Competition Entry'
+        verbose_name_plural = 'Competition Entries'
 
 
 # ── Model Version ─────────────────────────────────────────────────────────────
