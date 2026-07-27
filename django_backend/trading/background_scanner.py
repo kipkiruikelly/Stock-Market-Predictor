@@ -119,19 +119,17 @@ def run_market_scan_cycle() -> dict:
 
 def _scanner_worker_loop(interval_seconds: int = 900):
     """Background loop that runs every 15 minutes (900s)."""
-    logger.info("Background 15-minute market scanner thread initialized. Delaying first run by 30s to allow clean boot.")
-    
-    # Delay first execution cycle to prevent blocking Gunicorn binding during Cloud Run startup
-    time.sleep(30)
+    logger.info("Background 15-minute market scanner thread initialized. Sleeping first to guarantee responsive container boot.")
 
     while True:
         try:
+            # Sleep first before any active execution to keep startup entirely lightweight
+            time.sleep(interval_seconds)
+
             if _SCANNER_ENABLED:
                 run_market_scan_cycle()
             else:
                 logger.info("Background market scanner is currently paused.")
-
-            time.sleep(interval_seconds)
 
         except Exception as e:
             logger.error("Scanner worker loop encountered error: %s. Retrying in 60s…", e)
