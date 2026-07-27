@@ -486,9 +486,12 @@ class NotificationsListView(APIView):
             "ok": True,
             "notifications": [
                 {
-                    "id": n.id, "channel": n.channel, "title": n.title,
-                    "message": n.message, "read": n.read,
-                    "created_at": n.created_at.isoformat() if n.created_at else ""
+                    "id": n.id,
+                    "channel": getattr(n, "type", "info") or getattr(n, "channel", "info"),
+                    "title": getattr(n, "title", ""),
+                    "message": getattr(n, "body", "") or getattr(n, "message", ""),
+                    "read": getattr(n, "read", False),
+                    "created_at": n.created_at.isoformat() if getattr(n, "created_at", None) else ""
                 }
                 for n in notes
             ]
