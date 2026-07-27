@@ -1036,6 +1036,15 @@ class EmbeddedAiAssistantView(APIView):
             return "documentation", None
 
         # 7. Trading Analysis Ticker Extraction
+        company_map = {
+            "APPLE": "AAPL",
+            "MICROSOFT": "MSFT",
+            "TESLA": "TSLA",
+            "BITCOIN": "BTC",
+            "ETHEREUM": "ETH",
+            "EURO": "EURUSD",
+        }
+
         ticker_match = re.search(r"\b[A-Z]{3,6}\b", prompt)
         extracted_ticker = None
         if ticker_match:
@@ -1044,7 +1053,10 @@ class EmbeddedAiAssistantView(APIView):
             # Check for common lowercase indicators
             for word in prompt.split():
                 clean_word = re.sub(r"[^\w]", "", word).upper()
-                if clean_word in {"AAPL", "MSFT", "TSLA", "BTC", "ETH", "SPY", "QQQ", "EURUSD", "NASDAQ"}:
+                if clean_word in company_map:
+                    extracted_ticker = company_map[clean_word]
+                    break
+                elif clean_word in {"AAPL", "MSFT", "TSLA", "BTC", "ETH", "SPY", "QQQ", "EURUSD", "NASDAQ"}:
                     extracted_ticker = clean_word
                     break
 
@@ -1074,7 +1086,10 @@ class EmbeddedAiAssistantView(APIView):
                 else:
                     for word in prompt.split():
                         clean_word = re.sub(r"[^\w]", "", word).upper()
-                        if clean_word in {"AAPL", "MSFT", "TSLA", "BTC", "ETH", "SPY", "QQQ", "EURUSD", "NASDAQ"}:
+                        if clean_word in company_map:
+                            new_ticker = company_map[clean_word]
+                            break
+                        elif clean_word in {"AAPL", "MSFT", "TSLA", "BTC", "ETH", "SPY", "QQQ", "EURUSD", "NASDAQ"}:
                             new_ticker = clean_word
                             break
                 if new_ticker:
