@@ -852,7 +852,7 @@ SystemConfig = AppSetting
 
 class Portfolio(models.Model):
     owner                     = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='portfolios', db_column='owner_id')
-    name                      = models.CharField(max_length=100)
+    name                      = models.CharField(max_length=100, default='New Portfolio')
     description               = models.TextField(null=True, blank=True)
     base_currency             = models.CharField(max_length=10, default='USD')
     initial_balance           = models.FloatField(default=10000.0)
@@ -878,7 +878,7 @@ class Portfolio(models.Model):
 
 class Holding(models.Model):
     portfolio                 = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='holdings')
-    symbol                    = models.CharField(max_length=20)
+    symbol                    = models.CharField(max_length=20, default='')
     asset_class               = models.CharField(max_length=20, default='stock') # stock, crypto, forex
     quantity                  = models.FloatField(default=0.0)
     average_entry_price       = models.FloatField(default=0.0)
@@ -901,7 +901,7 @@ class Holding(models.Model):
 class Transaction(models.Model):
     transaction_id            = models.CharField(max_length=64, unique=True, default=uuid.uuid4)
     portfolio                 = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='transactions')
-    transaction_type          = models.CharField(max_length=20) # Deposit, Withdrawal, Buy, Sell, Dividend, Fee, Interest, Adjustment
+    transaction_type          = models.CharField(max_length=20, default='Deposit') # Deposit, Withdrawal, Buy, Sell, Dividend, Fee, Interest, Adjustment
     asset                     = models.CharField(max_length=20, null=True, blank=True)
     quantity                  = models.FloatField(default=0.0)
     execution_price           = models.FloatField(default=0.0)
@@ -921,7 +921,7 @@ class Transaction(models.Model):
 
 class Watchlist(models.Model):
     user                      = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='watchlists', db_column='user_id')
-    name                      = models.CharField(max_length=100)
+    name                      = models.CharField(max_length=100, default='My Watchlist')
     symbols                   = models.JSONField(default=list) # List of symbols e.g. ["AAPL", "BTC", "EURUSD"]
     created_at                = models.DateTimeField(default=datetime.utcnow)
 
