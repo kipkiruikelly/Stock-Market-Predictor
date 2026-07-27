@@ -847,3 +847,90 @@ class SmartOrderExecution(models.Model):
 # Alias SystemConfig to AppSetting for backward compatibility
 SystemConfig = AppSetting
 
+
+# ── Portfolio Management Service Models ───────────────────────────────────────
+
+class Portfolio(models.Model):
+    owner                     = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='portfolios', db_column='owner_id')
+    name                      = models.CharField(max_length=100)
+    description               = models.TextField(null=True, blank=True)
+    base_currency             = models.CharField(max_length=10, default='USD')
+    initial_balance           = models.FloatField(default=10000.0)
+    current_balance           = models.FloatField(default=10000.0)
+    total_equity              = models.FloatField(default=10000.0)
+    total_profit_loss         = models.FloatField(default=0.0)
+    realized_profit_loss      = models.FloatField(default=0.0)
+    unrealized_profit_loss    = models.FloatField(default=0.0)
+    total_return_percentage   = models.FloatField(default=0.0)
+    status                    = models.CharField(max_length=20, default='active') # active, archived
+    created_at                = models.DateTimeField(default=datetime.utcnow)
+    updated_at                = models.DateTimeField(default=datetime.utcnow)
+    archived_at               = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'portfolio'
+        verbose_name = 'User Investment Portfolio'
+        verbose_name_plural = 'User Investment Portfolios'
+
+    def __str__(self):
+        return f"{self.name} ({self.owner.email})"
+
+
+class Holding(models.Model):
+    portfolio                 = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='holdings')
+    symbol                    = models.CharField(max_length=20)
+    asset_class               = models.CharField(max_length=20, default='stock') # stock, crypto, forex
+    quantity                  = models.FloatField(default=0.0)
+    average_entry_price       = models.FloatField(default=0.0)
+    current_market_price      = models.FloatField(default=0.0)
+    market_value              = models.FloatField(default=0.0)
+    unrealized_profit_loss    = models.FloatField(default=0.0)
+    allocation_percentage     = models.FloatField(default=0.0)
+    last_updated              = models.DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        db_table = 'portfolio_holding'
+        unique_together = [('portfolio', 'symbol')]
+        verbose_name = 'Portfolio Holding'
+        verbose_name_plural = 'Portfolio Holdings'
+
+    def __str__(self):
+        return f"{self.symbol} in {self.portfolio.name}"
+
+
+class Transaction(models.Model):
+    transaction_id            = models.CharField(max_length=64, unique=True, default=uuid.uuid4)
+    portfolio                 = models.ForeignKey(Portfolio, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type          = models.CharField(max_length=20) # Deposit, Withdrawal, Buy, Sell, Dividend, Fee, Interest, Adjustment
+    asset                     = models.CharField(max_length=20, null=True, blank=True)
+    quantity                  = models.FloatField(default=0.0)
+    execution_price           = models.FloatField(default=0.0)
+    total_amount              = models.FloatField(default=0.0)
+    fees                      = models.FloatField(default=0.0)
+    timestamp                 = models.DateTimeField(default=datetime.utcnow)
+    notes                     = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'portfolio_transaction'
+        verbose_name = 'Portfolio Transaction'
+        verbose_name_plural = 'Portfolio Transactions'
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.asset} in {self.portfolio.name}"
+
+
+class Watchlist(models.Model):
+    user                      = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='watchlists', db_column='user_id')
+    name                      = models.CharField(max_length=100)
+    symbols                   = models.JSONField(default=list) # List of symbols e.g. ["AAPL", "BTC", "EURUSD"]
+    created_at                = models.DateTimeField(default=datetime.utcnow)
+
+    class Meta:
+        db_table = 'portfolio_watchlist'
+        verbose_name = 'User Watchlist'
+        verbose_name_plural = 'User Watchlists'
+
+    def __str__(self):
+        return f"{self.name} ({self.user.email})"
+
+
