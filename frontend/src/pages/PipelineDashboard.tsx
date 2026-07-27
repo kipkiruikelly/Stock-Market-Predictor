@@ -255,15 +255,31 @@ export const PipelineDashboard: React.FC = () => {
                     <Typography variant="caption" sx={{ fontWeight: 'bold', mb: 1.5, display: 'block', color: 'primary.main', letterSpacing: 1, textTransform: 'uppercase' }}>
                       📊 ML Feature Distribution & Model Drift
                     </Typography>
-                    <Grid container spacing={2}>
-                      {driftData.drift_detection?.features?.slice(0, 3).map((feat: any, idx: number) => (
-                        <Grid size={{ xs: 4 }} key={idx}>
-                          <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{feat.feature_name}</Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: feat.drift_detected ? 'error.main' : 'success.main' }}>
-                            {feat.drift_detected ? 'DRIFT ⚠️' : 'STABLE ✓'} ({feat.p_value !== undefined && feat.p_value !== null ? Number(feat.p_value).toFixed(3) : 'N/A'})
-                          </Typography>
-                        </Grid>
-                      ))}
+                     <Grid container spacing={2}>
+                      {(() => {
+                        const feats = driftData.drift_detection?.features;
+                        if (!feats) return null;
+                        
+                        if (Array.isArray(feats)) {
+                          return feats.slice(0, 3).map((feat: any, idx: number) => (
+                            <Grid size={{ xs: 4 }} key={idx}>
+                              <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{feat.feature_name || 'Feature'}</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 'bold', color: feat.drift_detected ? 'error.main' : 'success.main' }}>
+                                {feat.drift_detected ? 'DRIFT ⚠️' : 'STABLE ✓'} ({feat.p_value !== undefined && feat.p_value !== null ? Number(feat.p_value).toFixed(3) : 'N/A'})
+                              </Typography>
+                            </Grid>
+                          ));
+                        }
+                        
+                        return Object.entries(feats).slice(0, 3).map(([key, val]: [string, any], idx: number) => (
+                          <Grid size={{ xs: 4 }} key={idx}>
+                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase' }}>{key.replace('_drift_pct', '')}</Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 'bold', color: val > 3.0 ? 'error.main' : 'success.main' }}>
+                              {val > 3.0 ? 'DRIFT ⚠️' : 'STABLE ✓'} ({val}%)
+                            </Typography>
+                          </Grid>
+                        ));
+                      })()}
                     </Grid>
                   </CardContent>
                 </Card>
