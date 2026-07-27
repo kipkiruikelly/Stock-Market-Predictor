@@ -2,8 +2,21 @@ from django.urls import path
 from . import views
 from . import auth_views
 from . import reset_views
+from . import auth_views_v1
 
 urlpatterns = [
+    # ── V1 Production IAM Endpoints ───────────────────────────────
+    path('v1/auth/register', auth_views_v1.RegisterView.as_view(), name='v1-auth-register'),
+    path('v1/auth/login', auth_views_v1.LoginView.as_view(), name='v1-auth-login'),
+    path('v1/auth/logout', auth_views_v1.LogoutView.as_view(), name='v1-auth-logout'),
+    path('v1/auth/refresh', auth_views_v1.RefreshView.as_view(), name='v1-auth-refresh'),
+    path('v1/auth/me', auth_views_v1.MeView.as_view(), name='v1-auth-me'),
+    path('v1/auth/forgot-password', auth_views_v1.ForgotPasswordView.as_view(), name='v1-auth-forgot-password'),
+    path('v1/auth/reset-password', auth_views_v1.ResetPasswordView.as_view(), name='v1-auth-reset-password'),
+    path('v1/auth/verify-email', auth_views_v1.VerifyEmailView.as_view(), name='v1-auth-verify-email'),
+    path('v1/auth/resend-verification', auth_views_v1.ResendVerificationView.as_view(), name='v1-auth-resend-verification'),
+    path('v1/auth/change-password', auth_views_v1.ChangePasswordView.as_view(), name='v1-auth-change-password'),
+
     # ── JWT & OAuth Authentication ────────────────────────────────
     path('auth/jwt/login', auth_views.JwtLoginView.as_view(), name='api-jwt-login'),
     path('auth/jwt/refresh', auth_views.JwtRefreshView.as_view(), name='api-jwt-refresh'),

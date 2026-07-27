@@ -6,6 +6,7 @@ models.py imports from here.
 """
 
 from datetime import date, datetime
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 
