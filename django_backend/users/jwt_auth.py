@@ -1,16 +1,19 @@
 """
 django_backend/users/jwt_auth.py
-JWT Token Generation, Signing, and Verification Utility.
+JWT Token Generation, Signing, and Verification Utility, and custom DRF Authentication class.
 """
 
 import os
 import time
 import jwt
 from typing import Dict, Any
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+from django.contrib.auth import get_user_model
 
 JWT_SECRET = os.environ.get("JWT_SECRET", "django-insecure-change-this-in-production-now")
 JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_LIFETIME = 86400 * 1  # 24 hours
+ACCESS_TOKEN_LIFETIME = 15 * 60  # 15 minutes as requested
 REFRESH_TOKEN_LIFETIME = 86400 * 7 # 7 days
 
 def generate_jwt_tokens(user) -> Dict[str, Any]:
@@ -20,7 +23,6 @@ def generate_jwt_tokens(user) -> Dict[str, Any]:
     access_payload = {
         "token_type": "access",
         "user_id": user.id,
-        "username": user.username,
         "email": user.email,
         "role": user.role,
         "plan": user.plan,
@@ -85,3 +87,58 @@ def decode_jwt_token(token: str) -> Dict[str, Any]:
         raise ValueError("JWT token has expired.")
     except jwt.InvalidTokenError as exc:
         raise ValueError(f"Invalid JWT token: {exc}")
+
+class JWTAuthentication(BaseAuthentication):
+    """Custom DRF Authentication Backend that decodes secure JWT Bearer tokens."""
+    
+    def authenticate(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return None
+            
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return None
+            
+        token = parts[1]
+        try:
+            payload = decode_jwt_token(token)
+            if payload.get("token_type") != "access":
+                raise AuthenticationFailed("Invalid token type (must be access token).")
+                
+            User = get_user_model()
+            user = User.objects.filter(id=payload.get("user_id")).first()
+            if not user:
+                raise AuthenticationFailed("User not found.")
+            if user.status != "active" or user.is_deleted:
+                raise AuthenticationFailed("User account is inactive or has been deleted.")
+                
+            return (user, token)
+        except ValueError as exc:
+            raise AuthenticationFailed(str(exc))
+
+def log_auth_event(user, action: str, detail: str = None, request = None):
+    """Utility to seamlessly log any Identity and Access Management (IAM) events into ActivityLog."""
+    try:
+        from users.models import ActivityLog
+        ip = None
+        ua = None
+        if request:
+            # Extract client IP
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0].strip()
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            # Extract User Agent
+            ua = request.META.get('HTTP_USER_AGENT', '')[:200]
+            
+        ActivityLog.objects.create(
+            user=user,
+            action=action,
+            detail=detail[:200] if detail else None,
+            ip=ip,
+            ua=ua
+        )
+    except Exception:
+        pass

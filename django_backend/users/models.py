@@ -29,8 +29,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     handled transparently by WerkzeugPBKDF2Hasher).
     """
 
-    username                = models.CharField(max_length=80, unique=True)
-    email                   = models.CharField(max_length=120, unique=True)
+    username                = models.CharField(max_length=80, unique=True, null=True, blank=True)
+    email                   = models.EmailField(max_length=120, unique=True)
+    first_name              = models.CharField(max_length=50, null=True, blank=True)
+    last_name               = models.CharField(max_length=50, null=True, blank=True)
+    phone_number            = models.CharField(max_length=20, null=True, blank=True)
+    country                 = models.CharField(max_length=50, null=True, blank=True)
+    timezone                = models.CharField(max_length=50, default='UTC')
+    preferred_language      = models.CharField(max_length=10, default='en')
+    is_deleted              = models.BooleanField(default=False)
     # 'password' field inherited from AbstractBaseUser; we store the raw
     # Werkzeug hash here on import; Django will upgrade it on next login.
 
@@ -83,8 +90,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD  = 'username'
-    REQUIRED_FIELDS = ['email']
+    USERNAME_FIELD  = 'email'
+    REQUIRED_FIELDS = []
 
     class Meta:
         db_table = 'users_user'
