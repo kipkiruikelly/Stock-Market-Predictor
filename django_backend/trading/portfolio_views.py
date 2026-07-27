@@ -208,56 +208,47 @@ class PortfolioAnalyticsView(APIView):
         # Calculate daily percentage returns to extract advanced risk statistics
         daily_returns = []
         equity_curve = []
-        curr = 10000.0
+        curr = balance if acct else 10000.0
         
-        if not trades:
-            # Benchmark simulation curves for authentic premium Bloomberg dashboards
-            sim_dates = [datetime.now() - timedelta(days=i) for i in range(15, 0, -1)]
-            for idx, d in enumerate(sim_dates):
-                ret_val = float(np.sin(idx * 0.4) * 0.015 + np.random.normal(0, 0.005))
-                curr *= (1 + ret_val)
-                daily_returns.append(ret_val)
-                equity_curve.append({"date": d.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
-        else:
-            for t in trades:
-                if t.exit_time:
-                    pnl_pct = (t.pnl / curr) if t.pnl else 0.0
-                    curr += (t.pnl or 0)
-                    daily_returns.append(pnl_pct)
-                    equity_curve.append({"date": t.exit_time.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
+        for t in trades:
+            if t.exit_time:
+                pnl_pct = (t.pnl / curr) if t.pnl else 0.0
+                curr += (t.pnl or 0)
+                daily_returns.append(pnl_pct)
+                equity_curve.append({"date": t.exit_time.strftime("%Y-%m-%d"), "equity": round(curr, 2)})
 
         # Compute Risk Ratios
-        volatility = round(float(np.std(daily_returns) * np.sqrt(252)) * 100, 2) if daily_returns else 12.5
-        mean_return = float(np.mean(daily_returns)) if daily_returns else 0.015
+        volatility = round(float(np.std(daily_returns) * np.sqrt(252)) * 100, 2) if daily_returns else 0.0
+        mean_return = float(np.mean(daily_returns)) if daily_returns else 0.0
         
         # Risk-free rate (approx 4.0% annualized)
         rf_daily = 0.04 / 252
         excess_returns = [r - rf_daily for r in daily_returns]
         
         # Sharpe Ratio
-        sharpe = round(float(np.mean(excess_returns) / np.std(daily_returns) * np.sqrt(252)), 2) if daily_returns and np.std(daily_returns) > 0 else 1.82
+        sharpe = round(float(np.mean(excess_returns) / np.std(daily_returns) * np.sqrt(252)), 2) if daily_returns and np.std(daily_returns) > 0 else 0.0
         
         # Sortino Ratio
         downside_returns = [r for r in daily_returns if r < 0]
-        sortino = round(float(np.mean(excess_returns) / np.std(downside_returns) * np.sqrt(252)), 2) if downside_returns and np.std(downside_returns) > 0 else 2.14
+        sortino = round(float(np.mean(excess_returns) / np.std(downside_returns) * np.sqrt(252)), 2) if downside_returns and np.std(downside_returns) > 0 else 0.0
         
         # Calmar & Maximum Drawdown
         pnl_array = [e["equity"] for e in equity_curve]
-        peak = pnl_array[0] if pnl_array else 10000.0
+        peak = pnl_array[0] if pnl_array else curr
         drawdowns = []
         for val in pnl_array:
             if val > peak:
                 peak = val
             drawdown = (peak - val) / peak
             drawdowns.append(drawdown)
-        max_dd = round(max(drawdowns) * 100, 2) if drawdowns else 4.2
+        max_dd = round(max(drawdowns) * 100, 2) if drawdowns else 0.0
         
         # Value at Risk (95% Confidence VaR)
-        var_95 = round(float(np.percentile(daily_returns, 5) * -100), 2) if daily_returns else 1.85
+        var_95 = round(float(np.percentile(daily_returns, 5) * -100), 2) if daily_returns else 0.0
 
         return Response({
             "ok": True,
-            "is_demo": not bool(trades),
+            "is_demo": False,
             "overview": overview,
             "performance": performance,
             "risk": {
@@ -266,12 +257,17 @@ class PortfolioAnalyticsView(APIView):
                 "sortino_ratio": sortino,
                 "volatility": volatility,
                 "value_at_risk_95": var_95,
-                "calmar_ratio": round(mean_return * 252 / (max_dd / 100), 2) if max_dd > 0 else 1.5
+                "calmar_ratio": round(mean_return * 252 / (max_dd / 100), 2) if max_dd > 0 else 0.0
             },
             "charts": {
                 "equity_curve": equity_curve,
-                "daily_pnl": [{"date": e["date"], "pnl": round(e["equity"] * float(np.random.normal(0, 0.005)), 2)} for e in equity_curve],
+                "daily_pnl": [{"date": e["date"], "pnl": 0.0} for e in equity_curve],
                 "asset_allocation": [
+                    {"name": "Equities", "value": 0},
+                    {"name": "Forex Pairs", "value": 0},
+                    {"name": "Cryptocurrencies", "value": 0},
+                    {"name": "Cash Reserve", "value": 100}
+                ] if not trades else [
                     {"name": "Equities", "value": 45},
                     {"name": "Forex Pairs", "value": 25},
                     {"name": "Cryptocurrencies", "value": 15},
