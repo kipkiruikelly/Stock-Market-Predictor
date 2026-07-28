@@ -18,6 +18,7 @@ from . import production_views
 from . import enterprise_views
 from . import saas_views
 from . import ai_fos_views
+from . import institutional_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -257,4 +258,18 @@ urlpatterns = [
     path('ai-fos/governance/policy', ai_fos_views.AiFosGovernancePolicyView.as_view(), name='api-ai-fos-governance'),
     path('ai-fos/executive/intelligence', ai_fos_views.AiFosExecutiveIntelligenceView.as_view(), name='api-ai-fos-executive'),
     path('ai-fos/certification/review', ai_fos_views.AiFosCertificationReviewView.as_view(), name='api-ai-fos-certification'),
+
+    # ── Version 4.1 Institutional Financial Intelligence Platform Endpoints ──
+    path('institutional/collaboration/workspaces', institutional_views.InstitutionalCollaborationWorkspaceView.as_view(), name='api-inst-workspaces'),
+    path('institutional/model-governance/registry', institutional_views.InstitutionalModelGovernanceView.as_view(), name='api-inst-governance'),
+    path('institutional/decision-intelligence/reason', institutional_views.InstitutionalDecisionIntelligenceView.as_view(), name='api-inst-decision-reason'),
+    path('institutional/workflow/orchestrate', institutional_views.InstitutionalWorkflowOrchestrateView.as_view(), name='api-inst-workflow'),
+    path('institutional/market-twin/simulate', institutional_views.InstitutionalMarketTwinSimulateView.as_view(), name='api-inst-market-twin'),
+    path('institutional/data-fabric/lineage', institutional_views.InstitutionalDataFabricLineageView.as_view(), name='api-inst-data-fabric'),
+    path('institutional/risk/portfolio-reports', institutional_views.InstitutionalRiskPortfolioReportsView.as_view(), name='api-inst-risk-reports'),
+    path('institutional/aiops/operations', institutional_views.InstitutionalAiOpsView.as_view(), name='api-inst-aiops'),
+    path('institutional/executive/dashboard', institutional_views.InstitutionalExecutiveDashboardView.as_view(), name='api-inst-executive'),
+    path('institutional/developer/api-explorer', institutional_views.InstitutionalDeveloperApiExplorerView.as_view(), name='api-inst-api-explorer'),
+    path('institutional/compliance/dashboard', institutional_views.InstitutionalComplianceDashboardView.as_view(), name='api-inst-compliance'),
+    path('institutional/optimization/benchmarks', institutional_views.InstitutionalOptimizationBenchmarksView.as_view(), name='api-inst-optimizations'),
 ]
