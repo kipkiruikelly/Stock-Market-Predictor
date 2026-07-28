@@ -260,8 +260,8 @@
     </div>
     <div class="col-md-4 text-md-end">
         <div class="d-inline-flex align-items-center bg-dark border border-secondary rounded-pill px-3 py-1">
-            <span class="pulse-indicator pulse-green me-2"></span>
-            <span class="small text-white-50">System Status: Normal</span>
+            <span id="telemetryPulseDot" class="pulse-indicator pulse-green me-2"></span>
+            <span class="small text-white-50" id="telemetryStatusLabel">System Status: Normal</span>
         </div>
     </div>
 </div>
@@ -287,7 +287,7 @@
     <!-- Live Metrics KPI Section -->
     <div class="row mb-4">
         <!-- Latencies / Oracle -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4" onclick="window.location.hash='#operations-center';" style="cursor: pointer;">
             <div class="card glass-card h-100 border-0">
                 <div class="horizon-metric-card">
                     <div class="horizon-icon-wrapper" style="background-color: rgba(0, 242, 254, 0.1); color: #00f2fe;">
@@ -305,7 +305,7 @@
         </div>
 
         <!-- ML Performance -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4" onclick="window.location.hash='#ml-center';" style="cursor: pointer;">
             <div class="card glass-card h-100 border-0">
                 <div class="horizon-metric-card">
                     <div class="horizon-icon-wrapper" style="background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
@@ -323,7 +323,7 @@
         </div>
 
         <!-- Algorithmic Bots -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4" onclick="window.location.hash='#trading-ops';" style="cursor: pointer;">
             <div class="card glass-card h-100 border-0">
                 <div class="horizon-metric-card">
                     <div class="horizon-icon-wrapper" style="background-color: rgba(5, 150, 105, 0.1); color: #059669;">
@@ -341,7 +341,7 @@
         </div>
 
         <!-- AUM -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-md-6 mb-4" onclick="window.location.hash='#portfolio-intel';" style="cursor: pointer;">
             <div class="card glass-card h-100 border-0">
                 <div class="horizon-metric-card">
                     <div class="horizon-icon-wrapper" style="background-color: rgba(217, 119, 6, 0.1); color: #d97706;">
@@ -384,8 +384,8 @@
                 <div class="card-body d-flex flex-column align-items-center justify-content-center">
                     <canvas id="resourceGaugeCockpit" height="180"></canvas>
                     <div class="text-center mt-3">
-                        <span class="small text-white-50 block d-block">Celery Worker Pools: <strong>Active</strong></span>
-                        <span class="small text-white-50 block d-block">Redis Queue depth: <strong>0 tasks</strong></span>
+                        <span class="small text-white-50 block d-block">Celery Worker Pools: <strong class="text-success">Active</strong></span>
+                        <span class="small text-white-50 block d-block">Redis Queue depth: <strong class="text-white" id="telemetryQueueText">0 tasks</strong></span>
                     </div>
                 </div>
             </div>
@@ -428,82 +428,82 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 2: OPERATIONS CENTER -->
+<!-- TAB 2: OPERATIONS CENTER (SSE OBSERVABILITY & SERVICE CONTROLS) -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="operations-center">
     <div class="row">
-        <!-- Server Statuses -->
+        <!-- Live Telemetry & Status Badges -->
         <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-heartbeat text-success me-2"></i> Service Status Dashboard</div>
+                <div class="card-header border-0"><i class="fas fa-heartbeat text-success me-2"></i> Real-Time Service Health Telemetry (SSE)</div>
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
                         <span>Django REST API (Gunicorn)</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Operational (100% uptime)</span>
+                        <span id="statusDjango" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> UP</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
-                        <span>FastAPI Execution Service</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Operational (99.98% uptime)</span>
+                        <span>FastAPI Inference Engine</span>
+                        <span id="statusFastapi" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> UP</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
                         <span>Celery Task Worker pool</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Active (4 workers)</span>
+                        <span id="statusCelery" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> ACTIVE (4 Workers)</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
                         <span>Redis Message Broker</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Online (0 queue depth)</span>
+                        <span id="statusRedis" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> UP</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-dark rounded">
-                        <span>Google Cloud SQL (PostgreSQL)</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Connected (Latency: 2ms)</span>
+                        <span>Google Cloud SQL Database</span>
+                        <span id="statusSql" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> CONNECTED</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center p-2 bg-dark rounded">
-                        <span>MT5 MetaApi Bridge</span>
-                        <span class="badge bg-success-soft text-success"><i class="fas fa-check-circle me-1"></i> Online (Channel active)</span>
+                        <span>MetaTrader 5 MetaApi Bridge</span>
+                        <span id="statusMt5" class="badge bg-success text-white"><i class="fas fa-check-circle me-1"></i> CONNECTED</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Live Server Telemetry -->
+        <!-- Hardware Resources Live Meters -->
         <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-server text-info me-2"></i> Hardware Resources</div>
+                <div class="card-header border-0"><i class="fas fa-server text-info me-2"></i> Real-Time Infrastructure Loads</div>
                 <div class="card-body">
                     <div class="mb-4">
                         <div class="d-flex justify-content-between small text-white-50 mb-1">
-                            <span>Google Cloud Run CPU Load</span>
-                            <strong>42% (Normal)</strong>
+                            <span>Google Cloud Run CPU Capacity</span>
+                            <strong id="telemetryCpuText">34.2% (Normal)</strong>
                         </div>
                         <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.05);">
-                            <div class="progress-bar bg-info" role="progressbar" style="width: 42%;" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div id="telemetryCpuBar" class="progress-bar bg-info" role="progressbar" style="width: 34%;" aria-valuenow="34" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                     <div class="mb-4">
                         <div class="d-flex justify-content-between small text-white-50 mb-1">
                             <span>Memory Utilization</span>
-                            <strong>68% (Allocated: 5.44 GB / 8.00 GB)</strong>
+                            <strong id="telemetryMemText">65.8% (Allocated: 5.26 GB / 8.00 GB)</strong>
                         </div>
                         <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.05);">
-                            <div class="progress-bar bg-warning" role="progressbar" style="width: 68%;" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div id="telemetryMemBar" class="progress-bar bg-warning" role="progressbar" style="width: 66%;" aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                     <div class="mb-4">
                         <div class="d-flex justify-content-between small text-white-50 mb-1">
-                            <span>Storage Volume</span>
-                            <strong>14.2% (128 GB of 1.0 TB utilized)</strong>
+                            <span>Active Client WebSocket Connections</span>
+                            <strong id="telemetrySocketText">51 Open channels</strong>
                         </div>
                         <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.05);">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 14.2%;" aria-valuenow="14.2" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 51%;" aria-valuenow="51" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                     <div>
                         <div class="d-flex justify-content-between small text-white-50 mb-1">
-                            <span>Network I/O Rate</span>
-                            <strong>2.1 Gbps In / 1.4 Gbps Out</strong>
+                            <span>Inbound Network Throughput</span>
+                            <strong>142 req/sec</strong>
                         </div>
                         <div class="progress" style="height: 8px; background-color: rgba(255,255,255,0.05);">
-                            <div class="progress-bar bg-primary" role="progressbar" style="width: 55%;" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
@@ -511,8 +511,58 @@
         </div>
     </div>
 
+    <!-- Interactive Service Control Center (Phase 27.2) -->
+    <div class="card glass-card mt-3">
+        <div class="card-header border-0"><i class="fas fa-sliders-h text-primary me-2"></i> Service Action Control Panel</div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-danger w-100 py-3" onclick="triggerServiceControl('flush_redis')">
+                        <i class="fas fa-trash-alt mb-2 fa-lg d-block"></i>
+                        Flush Redis Cache
+                    </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-warning w-100 py-3" onclick="triggerServiceControl('restart_celery')">
+                        <i class="fas fa-sync mb-2 fa-lg d-block"></i>
+                        Restart Celery Workers
+                    </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-warning w-100 py-3" onclick="triggerServiceControl('restart_fastapi')">
+                        <i class="fas fa-microchip mb-2 fa-lg d-block"></i>
+                        Restart FastAPI Nodes
+                    </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-warning w-100 py-3" onclick="triggerServiceControl('restart_mt5')">
+                        <i class="fas fa-network-wired mb-2 fa-lg d-block"></i>
+                        Restart MT5 Bridge
+                    </button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button class="btn btn-outline-info w-100 py-2" onclick="triggerServiceControl('run_health_checks')">
+                        <i class="fas fa-stethoscope me-2"></i> Run Health Diagnostics
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-success w-100 py-2" onclick="triggerServiceControl('refresh_market_data')">
+                        <i class="fas fa-sync-alt me-2"></i> Refresh Market Data Feeds
+                    </button>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-outline-primary w-100 py-2" onclick="triggerServiceControl('trigger_retraining')">
+                        <i class="fas fa-brain me-2"></i> Manual LSTM Retraining
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Infrastructure Latencies Chart -->
-    <div class="card glass-card">
+    <div class="card glass-card mt-3">
         <div class="card-header border-0"><i class="fas fa-network-wired text-primary me-2"></i> Endpoint API Latencies Over Past 24h</div>
         <div class="card-body">
             <canvas id="latencyChart" height="220"></canvas>
@@ -521,95 +571,57 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 3: MACHINE LEARNING CENTER -->
+<!-- TAB 3: MLOps CONTROL ROOM & MODEL GOVERNANCE -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="ml-center">
     <div class="row">
-        <!-- Model Promotion and Cron Toggles -->
-        <div class="col-xl-4">
-            <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-brain text-violet me-2"></i> MLOps Command Panel</div>
-                <div class="card-body">
-                    <form action="{% url 'admin-api-cron-retrain' %}" method="POST" class="mb-4">
-                        {% csrf_token %}
-                        <h5 class="text-white mb-2">Automated Training Pipeline</h5>
-                        <p class="text-white-50 small mb-3">Instruct the pipeline optimizer to initiate automatic retraining of the predictive model ensemble using newly compiled dataset records.</p>
-                        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="fas fa-sync-alt me-1"></i> Trigger Pipeline Retrain</button>
-                    </form>
-                    <hr class="border-secondary mb-4">
-                    <h5 class="text-white mb-3">Model Parameters Override</h5>
-                    <div class="mb-3">
-                        <label class="form-label small text-white-50">Ensemble Voting Threshold</label>
-                        <input type="range" class="form-range" min="50" max="100" value="75">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-white-50">LSTMPredictor Decay Factor</label>
-                        <input type="text" class="form-control form-control-sm" value="0.9942">
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="small text-white-50">Enable Model Drift Alerting</span>
-                        <label class="switch">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Production vs challenger candidate models -->
+        <!-- Model version tables -->
         <div class="col-xl-8">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-layer-group text-warning me-2"></i> Model Register Statuses</div>
+                <div class="card-header border-0"><i class="fas fa-layer-group text-primary me-2"></i> Enterprise Model Lineage & Approval Registry</div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Model Key</th>
+                                    <th>Version Tag</th>
                                     <th>Framework</th>
+                                    <th>Dataset</th>
                                     <th>Accuracy</th>
-                                    <th>Drift Status</th>
-                                    <th>Trained At</th>
                                     <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="modelGovernanceRows">
                                 <tr>
-                                    <td><strong>XGBoost-Ensemble-v3.0</strong></td>
-                                    <td><span class="badge bg-purple">XGBoost/LSTM</span></td>
-                                    <td>87.42%</td>
-                                    <td><span class="badge bg-success">0.02 (Stable)</span></td>
-                                    <td>2026-07-28 04:00</td>
-                                    <td><span class="badge bg-success">In Production</span></td>
+                                    <td><strong>v3.0.1-LSTM-PROD</strong></td>
+                                    <td>TensorFlow v2.15</td>
+                                    <td>dataset-v3.0-2026Q2</td>
+                                    <td><strong class="text-success">87.42%</strong></td>
+                                    <td><span class="badge bg-success">Production</span></td>
+                                    <td><button class="btn btn-sm btn-outline-secondary" disabled>Active</button></td>
                                 </tr>
                                 <tr>
-                                    <td>PyTorch-GRU-Challenger</td>
-                                    <td><span class="badge bg-info">PyTorch</span></td>
-                                    <td>86.95%</td>
-                                    <td><span class="badge bg-success">0.03 (Stable)</span></td>
-                                    <td>2026-07-27 12:00</td>
-                                    <td><span class="badge bg-secondary">Candidate</span></td>
-                                </tr>
-                                <tr>
-                                    <td>Keras-DeepRegressor-v2</td>
-                                    <td><span class="badge bg-primary">TensorFlow</span></td>
-                                    <td>84.15%</td>
-                                    <td><span class="badge bg-danger">0.14 (Drifting)</span></td>
-                                    <td>2026-07-15 08:00</td>
-                                    <td><span class="badge bg-secondary">Archived</span></td>
+                                    <td><strong>v3.0.2-LSTM-CANDIDATE</strong></td>
+                                    <td>TensorFlow v2.15</td>
+                                    <td>dataset-v3.1-2026Q3</td>
+                                    <td><strong class="text-success">89.10%</strong></td>
+                                    <td><span class="badge bg-warning text-dark">Candidate</span></td>
+                                    <td><button class="btn btn-sm btn-outline-success" onclick="executeModelAction('promote', 'v3.0.2-LSTM-CANDIDATE')">Promote</button></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            
-            <!-- Feature Importance Plot -->
+        </div>
+
+        <!-- SHAP horizontal plot -->
+        <div class="col-xl-4">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-chart-bar text-primary me-2"></i> Feature Importance Metrics (SHAP analysis)</div>
+                <div class="card-header border-0"><i class="fas fa-project-diagram text-warning me-2"></i> Model Feature SHAP Importance</div>
                 <div class="card-body">
-                    <canvas id="featureImportanceChart" height="150"></canvas>
+                    <canvas id="featureImportanceChart" height="200"></canvas>
                 </div>
             </div>
         </div>
@@ -621,94 +633,74 @@
 <!-- ======================================================================= -->
 <div class="tab-pane" id="trading-ops">
     <div class="row">
-        <!-- Active Strategies -->
-        <div class="col-xl-4">
+        <!-- Active trading bots -->
+        <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-shield-alt text-danger me-2"></i> Supervisor / Algorithmic Settings</div>
+                <div class="card-header border-0"><i class="fas fa-robot text-success me-2"></i> Active Strategy Robots Status</div>
                 <div class="card-body">
-                    <div class="p-3 bg-dark rounded mb-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold">Global Master Kill Switch</span>
-                            <span class="badge bg-success">ARMED</span>
-                        </div>
-                        <p class="text-white-50 small mb-2">Instantly shuts down all automated API orders on MT5 across all users.</p>
-                        <button class="btn btn-danger btn-sm w-100">FORCE PAUSE ALL BOTS</button>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-white-50">Maximum Leverage Allowed</label>
-                        <select class="form-select form-select-sm">
-                            <option>1:10 (Conservative)</option>
-                            <option selected>1:30 (Moderate)</option>
-                            <option>1:100 (Aggressive)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small text-white-50">Slippage Tolerance (Pips)</label>
-                        <input type="number" class="form-control form-control-sm" value="3.5">
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="small text-white-50">Enforce Hedging Limits</span>
-                        <label class="switch">
-                            <input type="checkbox" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
+                    <table class="table table-sm text-white-50">
+                        <thead>
+                            <tr>
+                                <th>Bot Identifier</th>
+                                <th>Asset Class</th>
+                                <th>Interval</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>LSTM Trend Follower</strong></td>
+                                <td>Crypto / Tickers</td>
+                                <td>15 min</td>
+                                <td><span class="badge bg-success text-white">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>XGBoost Arbitrage</strong></td>
+                                <td>Forex / Majors</td>
+                                <td>1 min</td>
+                                <td><span class="badge bg-success text-white">Active</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Pyth Hedging Engine</strong></td>
+                                <td>Commodities</td>
+                                <td>5 min</td>
+                                <td><span class="badge bg-success text-white">Active</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Simulated open positions -->
-        <div class="col-xl-8">
+        <!-- Simulated positions PnL -->
+        <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-exchange-alt text-success me-2"></i> Simulated Open Positions (Real-time MetaApi Feed)</span>
-                    <span class="badge bg-success">Total Floating P/L: +$14,240.15</span>
-                </div>
+                <div class="card-header border-0"><i class="fas fa-exchange-alt text-info me-2"></i> Simulated Active Open Positions</div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Ticket ID</th>
-                                    <th>Symbol</th>
-                                    <th>Side</th>
-                                    <th>Volume</th>
-                                    <th>Entry Price</th>
-                                    <th>Current Price</th>
-                                    <th>Floating P/L</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><code>#8420194</code></td>
-                                    <td><strong>EURUSD</strong></td>
-                                    <td><span class="badge bg-success">BUY</span></td>
-                                    <td>2.5 Lots</td>
-                                    <td>1.08412</td>
-                                    <td>1.08745</td>
-                                    <td class="text-success fw-bold">+$832.50</td>
-                                </tr>
-                                <tr>
-                                    <td><code>#8420195</code></td>
-                                    <td><strong>XAUUSD</strong></td>
-                                    <td><span class="badge bg-success">BUY</span></td>
-                                    <td>1.0 Lots</td>
-                                    <td>2,342.15</td>
-                                    <td>2,354.80</td>
-                                    <td class="text-success fw-bold">+$12,650.00</td>
-                                </tr>
-                                <tr>
-                                    <td><code>#8420198</code></td>
-                                    <td><strong>GBPUSD</strong></td>
-                                    <td><span class="badge bg-danger">SELL</span></td>
-                                    <td>1.5 Lots</td>
-                                    <td>1.26850</td>
-                                    <td>1.26345</td>
-                                    <td class="text-success fw-bold">+$757.50</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Ticker</th>
+                                <th>Side</th>
+                                <th>Qty</th>
+                                <th>Floating Profit/Loss</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>BINANCE:BTCUSD</strong></td>
+                                <td><span class="text-success fw-bold">BUY</span></td>
+                                <td>1.50</td>
+                                <td class="text-success fw-bold">+$1,452.20</td>
+                            </tr>
+                            <tr>
+                                <td><strong>FOREXCOM:EURUSD</strong></td>
+                                <td><span class="text-danger fw-bold">SELL</span></td>
+                                <td>500,000</td>
+                                <td class="text-danger fw-bold">-$120.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -720,65 +712,37 @@
 <!-- ======================================================================= -->
 <div class="tab-pane" id="portfolio-intel">
     <div class="row">
-        <!-- Ratios and exposure indicators -->
-        <div class="col-xl-4">
+        <!-- Exposure ratios and sectors -->
+        <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-sliders-h text-primary me-2"></i> Risk & Portfolio Ratios</div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
-                        <span>Average Sharpe Ratio</span>
-                        <strong class="text-success">2.84 (Excellent)</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
-                        <span>Average Sortino Ratio</span>
-                        <strong class="text-success">3.12</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
-                        <span>Value at Risk (VaR 95%)</span>
-                        <strong class="text-warning">1.42% ($14,200 max loss/day)</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
-                        <span>Maximum Drawdown (Peak-to-Trough)</span>
-                        <strong class="text-success">4.12%</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
-                        <span>Portfolio Beta vs S&P500</span>
-                        <strong>0.42 (Low correlation)</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>Active Portfolio Holdings</span>
-                        <strong>{{ total_portfolios }} total pools</strong>
-                    </div>
+                <div class="card-header border-0"><i class="fas fa-chart-pie text-warning me-2"></i> Asset Category Sector Exposure</div>
+                <div class="card-body d-flex justify-content-center">
+                    <canvas id="sectorAllocationChart" height="220"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Sector Allocations -->
-        <div class="col-xl-8">
+        <!-- Risk analytics card -->
+        <div class="col-xl-6">
             <div class="card glass-card">
-                <div class="card-header border-0"><i class="fas fa-chart-pie text-success me-2"></i> Portfolio Sector Allocation</div>
+                <div class="card-header border-0"><i class="fas fa-shield-alt text-danger me-2"></i> Portfolio Analytics & Risk Metrics</div>
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <canvas id="sectorAllocationChart" height="200"></canvas>
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <span class="text-white-50 small d-block">Sharpe Ratio</span>
+                            <h2 class="text-white fw-bold">2.84</h2>
                         </div>
-                        <div class="col-md-6">
-                            <div class="p-2 mb-2 bg-dark rounded d-flex justify-content-between">
-                                <span><i class="fas fa-coins text-warning me-2"></i> Crypto Assets</span>
-                                <strong>40%</strong>
-                            </div>
-                            <div class="p-2 mb-2 bg-dark rounded d-flex justify-content-between">
-                                <span><i class="fas fa-dollar-sign text-primary me-2"></i> Forex (FX Pairs)</span>
-                                <strong>30%</strong>
-                            </div>
-                            <div class="p-2 mb-2 bg-dark rounded d-flex justify-content-between">
-                                <span><i class="fas fa-landmark text-info me-2"></i> Commodities & Gold</span>
-                                <strong>20%</strong>
-                            </div>
-                            <div class="p-2 bg-dark rounded d-flex justify-content-between">
-                                <span><i class="fas fa-chart-line text-success me-2"></i> Global Equities</span>
-                                <strong>10%</strong>
-                            </div>
+                        <div class="col-6 mb-3">
+                            <span class="text-white-50 small d-block">Sortino Ratio</span>
+                            <h2 class="text-white fw-bold">3.12</h2>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-white-50 small d-block">Max Peak Drawdown</span>
+                            <h2 class="text-danger fw-bold">4.2%</h2>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-white-50 small d-block">Win-Rate Ratio</span>
+                            <h2 class="text-success fw-bold">68.2%</h2>
                         </div>
                     </div>
                 </div>
@@ -788,120 +752,183 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 6: EXECUTIVE ANALYTICS -->
+<!-- TAB 6: EXECUTIVE GROWTH ANALYTICS -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="executive-analytics">
-    <div class="row">
-        <!-- Performance Indicators -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card glass-card border-0">
-                <div class="horizon-metric-card">
-                    <div class="horizon-icon-wrapper" style="background-color: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="horizon-metric-info">
-                        <div class="horizon-metric-label">Total Signups</div>
-                        <div class="horizon-metric-val">{{ total_users }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card glass-card border-0">
-                <div class="horizon-metric-card">
-                    <div class="horizon-icon-wrapper" style="background-color: rgba(5, 150, 105, 0.1); color: #059669;">
-                        <i class="fas fa-user-shield"></i>
-                    </div>
-                    <div class="horizon-metric-info">
-                        <div class="horizon-metric-label">Premium Subscribers</div>
-                        <div class="horizon-metric-val">{{ pro_users }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card glass-card border-0">
-                <div class="horizon-metric-card">
-                    <div class="horizon-icon-wrapper" style="background-color: rgba(217, 119, 6, 0.1); color: #d97706;">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="horizon-metric-info">
-                        <div class="horizon-metric-label">Processed Payments</div>
-                        <div class="horizon-metric-val">{{ total_payments_count }} transactions</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card glass-card border-0">
-                <div class="horizon-metric-card">
-                    <div class="horizon-icon-wrapper" style="background-color: rgba(16, 185, 129, 0.1); color: #10b981;">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="horizon-metric-info">
-                        <div class="horizon-metric-label">Total Revenue</div>
-                        <div class="horizon-metric-val">${{ total_revenue|floatformat:2 }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Revenue Growth and user metrics curves -->
     <div class="card glass-card">
-        <div class="card-header border-0"><i class="fas fa-hand-holding-usd text-success me-2"></i> Monthly Platform Revenue & Subscriber Growth Trends</div>
+        <div class="card-header border-0 d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-chart-line text-success me-2"></i> Platform Revenue & Renewal Metrics</span>
+            <button class="btn btn-sm btn-outline-success" onclick="triggerReportModal('revenue')">
+                <i class="fas fa-download me-1"></i> Generate Revenue Report
+            </button>
+        </div>
         <div class="card-body">
-            <canvas id="revenueChart" height="220"></canvas>
+            <canvas id="revenueChart" height="240"></canvas>
         </div>
     </div>
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 7: NOTIFICATIONS CENTER -->
+<!-- TAB 7: CENTRALIZED ALERTS PANEL -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="notifications-panel">
     <div class="card glass-card">
-        <div class="card-header border-0 d-flex justify-content-between align-items-center">
-            <span><i class="fas fa-bell text-warning me-2"></i> System Alerts & Broadcast logs</span>
-            <div class="btn-group">
-                <button class="btn btn-outline-secondary btn-sm" onclick="filterAlerts('all')">Show All</button>
-                <button class="btn btn-outline-danger btn-sm" onclick="filterAlerts('critical')">Critical</button>
-                <button class="btn btn-outline-warning btn-sm" onclick="filterAlerts('warning')">Warnings</button>
-            </div>
-        </div>
+        <div class="card-header border-0"><i class="fas fa-bell text-warning me-2"></i> Central Operations Alerts Feed</div>
         <div class="card-body">
-            <div id="alertsContainer">
-                <div class="alert-item d-flex justify-content-between align-items-center p-3 mb-2 bg-danger-soft border-start border-danger border-4 rounded" data-severity="critical">
-                    <div>
-                        <span class="badge bg-danger me-2">CRITICAL</span>
-                        <strong class="text-white">Pyth Oracle Latency Spike</strong>
-                        <span class="text-white-50 block d-block small">Feed ID 'BTC/USD' latency exceeded SLA warning thresholds (94ms recorded).</span>
-                    </div>
-                    <span class="text-muted small">2 mins ago</span>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-dark border border-danger rounded">
+                <div>
+                    <span class="badge bg-danger text-white me-2">Critical</span>
+                    <strong class="text-white">MT5 Connection Timeout during NY opening</strong>
+                    <span class="text-white-50 d-block small">MetaApi gateway port timeout exceeded default limit of 5000ms. Ref: INC-3081.</span>
                 </div>
-                <div class="alert-item d-flex justify-content-between align-items-center p-3 mb-2 bg-warning-soft border-start border-warning border-4 rounded" data-severity="warning">
-                    <div>
-                        <span class="badge bg-warning text-dark me-2">WARNING</span>
-                        <strong class="text-white">Model Drift Detected on LSTM_Forecaster_v2</strong>
-                        <span class="text-white-50 block d-block small">Population Stability Index (PSI) shifted to 0.14 against benchmark datasets.</span>
-                    </div>
-                    <span class="text-muted small">1 hour ago</span>
+                <button class="btn btn-sm btn-outline-danger">Dismiss</button>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-dark border border-warning rounded">
+                <div>
+                    <span class="badge bg-warning text-dark me-2">Warning</span>
+                    <strong class="text-white">LSTM Prediction Drift detected on EURUSD model</strong>
+                    <span class="text-white-50 d-block small">SHAP feature values deviated by 14% from training baseline indicators. Retraining advised.</span>
                 </div>
-                <div class="alert-item d-flex justify-content-between align-items-center p-3 bg-info-soft border-start border-primary border-4 rounded" data-severity="info">
-                    <div>
-                        <span class="badge bg-primary me-2">INFO</span>
-                        <strong class="text-white">System Backup Concluded Successfully</strong>
-                        <span class="text-white-50 block d-block small">Cloud database snapshot written to GCP Cloud Storage bucket 'bulllogic-db-snaps'.</span>
-                    </div>
-                    <span class="text-muted small">4 hours ago</span>
-                </div>
+                <button class="btn btn-sm btn-outline-warning">Acknowledge</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 8: DOCUMENTATION HUB -->
+<!-- TAB 8: INCIDENT MANAGEMENT CENTER (Phase 27.4) -->
+<!-- ======================================================================= -->
+<div class="tab-pane" id="incidents-center">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card glass-card text-center p-3">
+                <span class="text-white-50 small d-block">Open Incident tickets</span>
+                <h1 class="text-white fw-bold mb-0" id="incidentsOpenText">1</h1>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card glass-card text-center p-3">
+                <span class="text-white-50 small d-block">Mean Time To Detect (MTTD)</span>
+                <h1 class="text-info fw-bold mb-0">14 Mins</h1>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card glass-card text-center p-3">
+                <span class="text-white-50 small d-block">Mean Time To Resolve (MTTR)</span>
+                <h1 class="text-success fw-bold mb-0">42 Mins</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active incidents table -->
+    <div class="card glass-card">
+        <div class="card-header border-0 d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-fire-extinguisher text-danger me-2"></i> Active Platform Incidents Ledger</span>
+            <button class="btn btn-sm btn-outline-danger" onclick="openCreateIncidentModal()">
+                <i class="fas fa-plus me-1"></i> Report New Incident
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Incident ID</th>
+                            <th>Description Summary</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Assignee</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incidentsTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- TAB 9: CELERY TASK OPERATIONS (Phase 27.6) -->
+<!-- ======================================================================= -->
+<div class="tab-pane" id="celery-center">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card glass-card">
+                <div class="card-header border-0">Celery Worker Backlog</div>
+                <div class="card-body text-center">
+                    <h3 class="text-white">Queue Backlog: <strong class="text-success">0 tasks</strong></h3>
+                    <p class="text-white-50 small">All celery daemon queues are active with zero execution delay offsets.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card glass-card">
+                <div class="card-header border-0">Celery Worker Pools</div>
+                <div class="card-body text-center">
+                    <h3 class="text-white">Active Pools: <strong class="text-success">4 Workers</strong></h3>
+                    <p class="text-white-50 small">Utilization index: <strong>84.5%</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celery tasks list -->
+    <div class="card glass-card">
+        <div class="card-header border-0"><i class="fas fa-tasks text-primary me-2"></i> Celery Queue Inspector</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Task UUID</th>
+                            <th>Task Name</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="celeryTasksTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- TAB 10: ACTIVE SESSIONS EXECUTOR (Phase 27.9) -->
+<!-- ======================================================================= -->
+<div class="tab-pane" id="sessions-center">
+    <div class="card glass-card">
+        <div class="card-header border-0"><i class="fas fa-user-shield text-info me-2"></i> Enforced Active Authenticated Sessions</div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>User Account</th>
+                            <th>IP Address</th>
+                            <th>Physical Location</th>
+                            <th>Browser Agent</th>
+                            <th>Last Active</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sessionsTableBody">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================================= -->
+<!-- TAB 11: SYSTEM DOCUMENTATION HUB -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="docs-hub">
     <div class="row">
@@ -939,7 +966,7 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 9: DEVELOPER CENTER -->
+<!-- TAB 12: DEVELOPER DESK -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="developer-tools">
     <div class="row">
@@ -1009,7 +1036,7 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TAB 10: SECURITY CENTER -->
+<!-- TAB 13: SECURITY AUDIT & IMMUTABLE LEDGER -->
 <!-- ======================================================================= -->
 <div class="tab-pane" id="security-center">
     <div class="row">
@@ -1072,10 +1099,10 @@
 </div>
 
 <!-- ======================================================================= -->
-<!-- TIMELINE REAL-TIME UPDATE CAROUSEL PANEL -->
+<!-- UNIFIED TIMELINE LOOP PROCESS -->
 <!-- ======================================================================= -->
 <div class="row">
-    <div class="col-xl-8">
+    <div class="col-xl-12">
         <div class="card glass-card">
             <div class="card-header border-0 d-flex justify-content-between align-items-center">
                 <span><i class="fas fa-history text-purple me-2"></i> Live Administrative Activity & Execution Feed (Syncing...)</span>
@@ -1097,114 +1124,441 @@
             </div>
         </div>
     </div>
-    
-    <div class="col-xl-4">
-        <div class="card glass-card">
-            <div class="card-header border-0"><i class="fas fa-exclamation-triangle text-rose me-2"></i> Latest Exception log Stream</div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm table-dark small">
-                        <tbody>
-                            {% for err in recent_errors|slice:":4" %}
-                            <tr>
-                                <td><span class="badge bg-danger">{{ err.severity }}</span></td>
-                                <td><code>{{ err.endpoint }}</code></td>
-                                <td class="text-white-50 text-truncate" style="max-width: 150px;">{{ err.message }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center text-success"><i class="fas fa-check-circle me-1"></i> No errors logged.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+</div>
+
+<!-- ======================================================================= -->
+<!-- SERVICE ACTIONS MODAL OVERLAY CONFIRMATION (Phase 27.2) -->
+<!-- ======================================================================= -->
+<div class="modal fade" id="serviceConfirmModal" tabindex="-1" aria-labelledby="serviceConfirmModalLabel" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary" style="border-radius: 16px;">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold" id="serviceConfirmModalLabel">Confirm Service Override Action</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <p id="serviceModalBodyText" class="mb-3">Are you sure you want to execute this service intervention action? This override will log a compliance audit trail.</p>
+                <div class="p-3 bg-secondary-soft text-warning rounded text-start mb-0">
+                    <span class="small d-block fw-bold"><i class="fas fa-user-shield me-1"></i> Identity Lock Verification:</span>
+                    <span class="small text-white-50">Executed as operator: <strong>{{ request.user.username }}</strong> from IP <strong>127.0.0.1</strong>.</span>
                 </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel Action</button>
+                <button type="button" class="btn btn-danger" id="serviceModalConfirmBtn" onclick="executeServiceControl()">Execute Interlock Override</button>
             </div>
         </div>
     </div>
 </div>
 
 <!-- ======================================================================= -->
-<!-- CHART & INTERACTIVE TAB SWITCH SCRIPT -->
+<!-- CREATE INCIDENT TICKET MODAL -->
 <!-- ======================================================================= -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    // Tab hash router function
-    function routeTab() {
-        const hash = window.location.hash || '#executive-cockpit';
-        const tabPanes = document.querySelectorAll('.tab-pane');
-        
-        // Tab titles and descriptions mapping
-        const tabTitles = {
-            '#executive-cockpit': 'BullLogic Master Console',
-            '#operations-center': 'Operations Center Dashboard',
-            '#ml-center': 'Machine Learning Operations (MLOps)',
-            '#trading-ops': 'Institutional Trading Operations',
-            '#portfolio-intel': 'Portfolio Risk & Intelligence',
-            '#executive-analytics': 'Executive Growth Analytics',
-            '#notifications-panel': 'Centralized Alert Center',
-            '#docs-hub': 'Developer & Operations Documentation',
-            '#developer-tools': 'Developer Center Tools',
-            '#security-center': 'Security Center Auditing'
-        };
-        const tabSubtitles = {
-            '#executive-cockpit': 'Enterprise Operations Admin & Machine Learning Control Cockpit',
-            '#operations-center': 'Real-time telemetry pings, system logs, hardware loads and service status',
-            '#ml-center': 'Models register, feature importance parameters, accuracy trends, pipeline training controls',
-            '#trading-ops': 'Simulated open trade positions, algorithmic MT5 bridge connections, master supervisor settings',
-            '#portfolio-intel': 'Sharpe ratios, Sortino metrics, Value-at-Risk (VaR), portfolio allocations',
-            '#executive-analytics': 'Aggregate subscriber renewals, processed transaction growth, platform revenue tracking',
-            '#notifications-panel': 'Read, categorize, search and archive infrastructure or drift alert streams',
-            '#docs-hub': 'Search deployment runbooks, DR disaster recovery protocols, system architecture guidelines',
-            '#developer-tools': 'OpenAPI specs, custom feature toggles, database variables, system environments',
-            '#security-center': 'IP subnet restriction policies, active admin sessions, MFA adoption rates, failed login audits'
-        };
+<div class="modal fade" id="createIncidentModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary" style="border-radius: 16px;">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Report New Platform Incident Ticket</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label text-white-50">Incident Summary Title</label>
+                    <input type="text" id="incInputTitle" class="form-control" placeholder="e.g. Memory leak on API routes" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white-50">Severity Classification</label>
+                    <select id="incInputSeverity" class="form-select">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-white-50">Assignee Team</label>
+                    <input type="text" id="incInputAssignee" class="form-control" value="Infrastructure Ops Team">
+                </div>
+                <div>
+                    <label class="form-label text-white-50">Root Cause Description Summary</label>
+                    <textarea id="incInputSummary" class="form-control" rows="3" placeholder="Provide system details..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="saveNewIncident()">Dispatch Incident</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        // Update headers
-        if (tabTitles[hash]) {
-            document.getElementById('tab-title').innerText = tabTitles[hash];
-            document.getElementById('tab-subtitle').innerText = tabSubtitles[hash];
+<!-- ======================================================================= -->
+<!-- REPORTS COMPILER CONFIG MODAL -->
+<!-- ======================================================================= -->
+<div class="modal fade" id="reportsConfigModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(10px);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary" style="border-radius: 16px;">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold">Generate Executive Intelligence Report</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <i class="fas fa-file-invoice-dollar fa-3x text-success mb-3"></i>
+                <p id="reportModalBodyText" class="mb-3">Select your format for compilation:</p>
+                <div class="row">
+                    <div class="col-4">
+                        <button class="btn btn-outline-info w-100" onclick="dispatchReportCompile('pdf')">
+                            <i class="fas fa-file-pdf fa-lg d-block mb-1"></i> PDF
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-outline-success w-100" onclick="dispatchReportCompile('excel')">
+                            <i class="fas fa-file-excel fa-lg d-block mb-1"></i> Excel
+                        </button>
+                    </div>
+                    <div class="col-4">
+                        <button class="btn btn-outline-primary w-100" onclick="dispatchReportCompile('csv')">
+                            <i class="fas fa-file-csv fa-lg d-block mb-1"></i> CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    var currentActionToExecute = null;
+    var currentReportToCompile = null;
+
+    function routeTab() {
+        var hash = window.location.hash || '#executive-cockpit';
+        document.querySelectorAll('.tab-pane').forEach(function(pane) {
+            pane.classList.remove('active');
+        });
+        var target = document.querySelector(hash);
+        if (target) {
+            target.classList.add('active');
         }
 
-        tabPanes.forEach(pane => {
-            if ('#' + pane.id === hash) {
-                pane.style.display = 'block';
-                pane.classList.add('active');
-            } else {
-                pane.style.display = 'none';
-                pane.classList.remove('active');
-            }
-        });
+        // Adjust document headers dynamically for visual polish
+        var titles = {
+            '#executive-cockpit': 'BullLogic Master Console',
+            '#operations-center': 'Platform Observability & controls',
+            '#ml-center': 'Algorithms & Research',
+            '#trading-ops': 'Trading Floor',
+            '#portfolio-intel': 'Portfolio Intelligence',
+            '#executive-analytics': 'Growth Analytics Dashboard',
+            '#notifications-panel': 'Central alerts Feed',
+            '#incidents-center': 'Incident management Desk',
+            '#celery-center': 'Celery task Supervisor',
+            '#sessions-center': 'Enforced sessions Desk',
+            '#docs-hub': 'Runbooks & Docs',
+            '#developer-tools': 'Diagnostics console',
+            '#security-center': 'System security audits'
+        };
 
-        // Toggle active style on custom sidebar links
-        const navLinks = document.querySelectorAll('.nav-link');
-        navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === hash) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
+        var subtitles = {
+            '#executive-cockpit': 'Enterprise Operations Admin & Control Cockpit',
+            '#operations-center': 'Real-time telemetry pings, system logs, hardware loads and service status',
+            '#ml-center': 'Machine learning versions, drift statistics, retraining form tools and SHAP plots',
+            '#trading-ops': 'Open trades monitor, strategy robot controllers, risk killswitches and broker pings',
+            '#portfolio-intel': 'Asset allocation pie charts, risk Sharpe factors, exposure drawdowns',
+            '#executive-analytics': 'Monthly revenue line plots, premium subscribers growth, converters counts',
+            '#notifications-panel': 'Failsafe warning timelines, system drifts alerts, compliance indicators',
+            '#incidents-center': 'Real-time incident ticket lifecycle lists and MTTR diagnostics metrics',
+            '#celery-center': 'Backlog counts, running celery queues, tasks cancellations and retries triggers',
+            '#sessions-center': 'Enforced active operator browser terminals with instant revocation triggers',
+            '#docs-hub': 'Deployment instructions, disaster recovery failovers, system architecture diagrams',
+            '#developer-tools': 'Interactive setting profiles explorer, features switches toggles',
+            '#security-center': 'Immutable logs audits timeline, security posture indicators'
+        };
+
+        document.getElementById('tab-title').innerText = titles[hash] || 'Master Console';
+        document.getElementById('tab-subtitle').innerText = subtitles[hash] || 'Enterprise Operations Admin';
+    }
+
+    // Helper to trigger service confirmation modals
+    function triggerServiceControl(action) {
+        currentActionToExecute = action;
+        var modal = new bootstrap.Modal(document.getElementById('serviceConfirmModal'));
+        modal.show();
+    }
+
+    function executeServiceControl() {
+        if (!currentActionToExecute) return;
+        var modalEl = document.getElementById('serviceConfirmModal');
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        
+        fetch('/admin/api/service-control/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: currentActionToExecute, confirmed: true })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            modal.hide();
+            alert(data.message + " (Correlation ID: " + data.correlation_id + ")");
+            // Refresh incident/celery tables if relevant
+            fetchCeleryTasks();
+        })
+        .catch(function(err) {
+            alert("Interlock intervention override failed.");
         });
     }
 
-    // Filter Alert center items
-    function filterAlerts(severity) {
-        const alerts = document.querySelectorAll('.alert-item');
-        alerts.forEach(alert => {
-            if (severity === 'all' || alert.getAttribute('data-severity') === severity) {
-                alert.style.display = 'flex';
-            } else {
-                alert.style.display = 'none';
-            }
+    function executeModelAction(action, version) {
+        fetch('/admin/api/model-governance/action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: action, version: version })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            alert(data.message);
+        });
+    }
+
+    // Incidents CRUD
+    function fetchIncidents() {
+        fetch('/admin/api/incidents/list')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            document.getElementById('incidentsOpenText').innerText = data.analytics.open_incidents;
+            var tbody = document.getElementById('incidentsTableBody');
+            tbody.innerHTML = '';
+            data.incidents.forEach(function(inc) {
+                var btn = inc.status === 'open' ? 
+                    `<button class="btn btn-sm btn-outline-success py-0" onclick="updateIncidentStatus('${inc.id}', 'resolved')">Resolve</button>` :
+                    `<button class="btn btn-sm btn-outline-secondary py-0" disabled>Resolved</button>`;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><code>${inc.id}</code></td>
+                        <td><strong>${inc.title}</strong><span class="text-white-50 d-block small">${inc.summary}</span></td>
+                        <td><span class="badge bg-${inc.severity === 'high' || inc.severity === 'critical' ? 'danger' : 'warning'}">${inc.severity}</span></td>
+                        <td><span class="badge bg-${inc.status === 'resolved' ? 'success' : 'danger'}">${inc.status}</span></td>
+                        <td>${inc.assignee}</td>
+                        <td>${btn}</td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    function openCreateIncidentModal() {
+        new bootstrap.Modal(document.getElementById('createIncidentModal')).show();
+    }
+
+    function saveNewIncident() {
+        var title = document.getElementById('incInputTitle').value;
+        var severity = document.getElementById('incInputSeverity').value;
+        var assignee = document.getElementById('incInputAssignee').value;
+        var summary = document.getElementById('incInputSummary').value;
+
+        fetch('/admin/api/incidents/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: 'create', title: title, severity: severity, assignee: assignee, summary: summary })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            bootstrap.Modal.getInstance(document.getElementById('createIncidentModal')).hide();
+            fetchIncidents();
+        });
+    }
+
+    function updateIncidentStatus(id, status) {
+        fetch('/admin/api/incidents/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ action: 'update', id: id, status: status })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            fetchIncidents();
+        });
+    }
+
+    // Celery task monitors
+    function fetchCeleryTasks() {
+        fetch('/admin/api/celery-ops/')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var tbody = document.getElementById('celeryTasksTableBody');
+            tbody.innerHTML = '';
+            data.tasks.forEach(function(task) {
+                var btn = '';
+                if (task.status === 'failed') {
+                    btn = `<button class="btn btn-sm btn-outline-warning py-0" onclick="triggerCeleryAction('${task.id}', 'retry')">Retry</button>`;
+                } else if (task.status === 'queued' || task.status === 'scheduled') {
+                    btn = `<button class="btn btn-sm btn-outline-danger py-0" onclick="triggerCeleryAction('${task.id}', 'cancel')">Cancel</button>`;
+                } else {
+                    btn = `<span class="spinner-border spinner-border-sm text-success" role="status"></span>`;
+                }
+                tbody.innerHTML += `
+                    <tr>
+                        <td><code>${task.id}</code></td>
+                        <td>${task.name}</td>
+                        <td><span class="badge bg-${task.status === 'running' ? 'info' : (task.status === 'failed' ? 'danger' : 'secondary')}">${task.status}</span></td>
+                        <td>${task.duration}</td>
+                        <td>${btn}</td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    function triggerCeleryAction(taskId, action) {
+        fetch('/admin/api/celery-ops/action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ task_id: taskId, action: action })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            fetchCeleryTasks();
+        });
+    }
+
+    // Sessions monitors
+    function fetchSessions() {
+        fetch('/admin/api/sessions/list')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var tbody = document.getElementById('sessionsTableBody');
+            tbody.innerHTML = '';
+            data.sessions.forEach(function(sess) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${sess.username}</strong></td>
+                        <td><code>${sess.ip_address}</code></td>
+                        <td>${sess.location}</td>
+                        <td>${sess.browser}</td>
+                        <td>${sess.last_active}</td>
+                        <td><button class="btn btn-sm btn-outline-danger py-0" onclick="terminateSession('${sess.session_key}')">Evict</button></td>
+                    </tr>
+                `;
+            });
+        });
+    }
+
+    function terminateSession(key) {
+        fetch('/admin/api/sessions/terminate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ session_key: key })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            fetchSessions();
+        });
+    }
+
+    // Reports compiler triggers
+    function triggerReportModal(type) {
+        currentReportToCompile = type;
+        new bootstrap.Modal(document.getElementById('reportsConfigModal')).show();
+    }
+
+    function dispatchReportCompile(format) {
+        if (!currentReportToCompile) return;
+        var modal = bootstrap.Modal.getInstance(document.getElementById('reportsConfigModal'));
+        
+        fetch('/admin/api/reports/generate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ report_type: currentReportToCompile, format: format })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            modal.hide();
+            alert(data.message);
         });
     }
 
     window.addEventListener('hashchange', routeTab);
     document.addEventListener('DOMContentLoaded', function() {
         routeTab();
+        fetchIncidents();
+        fetchCeleryTasks();
+        fetchSessions();
 
-        // 1. Accuracy Line Chart (Home Cockpit Tab)
+        // Server-Sent Events (SSE) live telemetry stream connection (Phase 27.1)
+        if (!!window.EventSource) {
+            var source = new EventSource('/admin/api/telemetry-stream/');
+            
+            source.addEventListener('message', function(e) {
+                var data = JSON.parse(e.data);
+                
+                // Update live counters and gauges
+                document.getElementById('telemetryCpuText').innerText = data.metrics.cpu_usage + '% (Normal)';
+                document.getElementById('telemetryCpuBar').style.width = data.metrics.cpu_usage + '%';
+                
+                document.getElementById('telemetryMemText').innerText = data.metrics.memory_usage + '% (Allocated: ' + (data.metrics.memory_usage*0.08).toFixed(2) + ' GB)';
+                document.getElementById('telemetryMemBar').style.width = data.metrics.memory_usage + '%';
+                
+                document.getElementById('telemetrySocketText').innerText = data.metrics.active_websockets + ' Open Channels';
+                document.getElementById('telemetryQueueText').innerText = data.metrics.queue_depth + ' tasks';
+                
+                // Toggle telemetry status dot color dynamically
+                var pulseDot = document.getElementById('telemetryPulseDot');
+                var statusLabel = document.getElementById('telemetryStatusLabel');
+                if (data.metrics.cpu_usage > 90.0) {
+                    pulseDot.className = 'pulse-indicator pulse-yellow';
+                    statusLabel.innerText = 'System Status: Degraded (CPU Spikes)';
+                } else {
+                    pulseDot.className = 'pulse-indicator pulse-green';
+                    statusLabel.innerText = 'System Status: Normal';
+                }
+
+                // Update services badges
+                var updateBadge = function(id, status) {
+                    var el = document.getElementById(id);
+                    if (el) {
+                        if (status === 'up') {
+                            el.className = 'badge bg-success text-white';
+                            el.innerHTML = '<i class="fas fa-check-circle me-1"></i> UP';
+                        } else {
+                            el.className = 'badge bg-warning text-dark';
+                            el.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i> DEGRADED';
+                        }
+                    }
+                };
+                updateBadge('statusDjango', data.services.django_api);
+                updateBadge('statusFastapi', data.services.fastapi_inference);
+                updateBadge('statusCelery', data.services.celery_workers);
+                updateBadge('statusRedis', data.services.redis_cache);
+                updateBadge('statusSql', data.services.cloud_sql);
+                updateBadge('statusMt5', data.services.mt5_bridge);
+            });
+        }
+
+        // Charts configuration
         var ctxAcc = document.getElementById("accuracyChartCockpit").getContext("2d");
         var gradAcc = ctxAcc.createLinearGradient(0, 0, 0, 300);
         gradAcc.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
@@ -1240,7 +1594,6 @@
             }
         });
 
-        // 2. Platform Server Allocation Doughnut (Home Cockpit Tab)
         var ctxRes = document.getElementById("resourceGaugeCockpit").getContext("2d");
         new Chart(ctxRes, {
             type: 'doughnut',
@@ -1260,7 +1613,6 @@
             }
         });
 
-        // 3. Infrastructure Latency Line Chart (Operations Tab)
         var ctxLat = document.getElementById("latencyChart").getContext("2d");
         new Chart(ctxLat, {
             type: 'line',
@@ -1294,7 +1646,6 @@
             }
         });
 
-        // 4. Feature Importance Horizontal Bar Chart (ML Tab)
         var ctxFeat = document.getElementById("featureImportanceChart").getContext("2d");
         new Chart(ctxFeat, {
             type: 'bar',
@@ -1320,7 +1671,6 @@
             }
         });
 
-        // 5. Sector Allocation Pie Chart (Portfolio Tab)
         var ctxSect = document.getElementById("sectorAllocationChart").getContext("2d");
         new Chart(ctxSect, {
             type: 'pie',
@@ -1340,7 +1690,6 @@
             }
         });
 
-        // 6. Revenue Growth Line Chart (Executive Analytics Tab)
         var ctxRev = document.getElementById("revenueChart").getContext("2d");
         var gradRev = ctxRev.createLinearGradient(0, 0, 0, 300);
         gradRev.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
@@ -1376,9 +1725,7 @@
         });
     });
 
-    // Real-time audit timeline update simulation
     setInterval(function() {
-        // Fetch new items asynchronously or rotate current item opacity for premium feel
         const timeline = document.getElementById('liveActivityTimeline');
         if (timeline && timeline.children.length > 0) {
             const first = timeline.children[0];

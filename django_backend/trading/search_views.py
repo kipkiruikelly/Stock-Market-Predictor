@@ -56,6 +56,34 @@ class AdminGlobalSearchView(AdminRoleRequiredMixin, View):
                 'keywords': ['ml', 'mlops', 'drift', 'shap', 'feature', 'retrain', 'pipeline', 'accuracy'],
                 'url': '/admin/#docs-hub',
                 'icon': 'fas fa-brain'
+            },
+            {
+                'name': 'Incident Management Desk',
+                'description': 'View active infrastructure incident logs, assign handlers, or close issues.',
+                'keywords': ['incident', 'inc', 'ticket', 'outage', 'mttd', 'mttr'],
+                'url': '/admin/#incidents-center',
+                'icon': 'fas fa-fire-extinguisher'
+            },
+            {
+                'name': 'Celery Task Supervisor',
+                'description': 'Monitor backlogged queues, running background training tasks, cancel or retry.',
+                'keywords': ['celery', 'task', 'queue', 'backlog', 'retry', 'daemon'],
+                'url': '/admin/#celery-center',
+                'icon': 'fas fa-tasks'
+            },
+            {
+                'name': 'Enforced Sessions Desk',
+                'description': 'See authenticated admin and staff browser sessions with force eviction tools.',
+                'keywords': ['session', 'evict', 'logout', 'terminal', 'device'],
+                'url': '/admin/#sessions-center',
+                'icon': 'fas fa-user-shield'
+            },
+            {
+                'name': 'Executive Reports Compiler',
+                'description': 'Generate downloadable PDF summaries, Excel templates, and strategy CSVs.',
+                'keywords': ['report', 'excel', 'pdf', 'csv', 'download', 'compile'],
+                'url': '/admin/#executive-analytics',
+                'icon': 'fas fa-file-invoice-dollar'
             }
         ]
 
