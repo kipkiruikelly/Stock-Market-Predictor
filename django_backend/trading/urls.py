@@ -272,4 +272,5 @@ urlpatterns = [
     path('institutional/developer/api-explorer', institutional_views.InstitutionalDeveloperApiExplorerView.as_view(), name='api-inst-api-explorer'),
     path('institutional/compliance/dashboard', institutional_views.InstitutionalComplianceDashboardView.as_view(), name='api-inst-compliance'),
     path('institutional/optimization/benchmarks', institutional_views.InstitutionalOptimizationBenchmarksView.as_view(), name='api-inst-optimizations'),
+    path('institutional/optimization/navigation-audit', institutional_views.InstitutionalNavigationAuditView.as_view(), name='api-inst-nav-audit'),
 ]

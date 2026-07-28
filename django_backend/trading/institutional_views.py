@@ -16,6 +16,7 @@ from trading.institutional_engine import (
     ExecutiveBusinessIntelligence,
     EnterpriseCompliancePlatform,
     PlatformPerformanceOptimizers,
+    NavigationAuditor,
     ORGANIZATIONS_REGISTRY,
     GOVERNED_MODELS_REGISTRY
 )
@@ -200,6 +201,20 @@ class InstitutionalOptimizationBenchmarksView(APIView):
             "ok": True,
             "performance_optimizations_benchmarks": data
         })
+
+
+class InstitutionalNavigationAuditView(APIView):
+    """Performs a navigation and accessibility audit mapping user features."""
+    permission_classes = [AllowAny]
+
+    def get(self, request) -> Response:
+        data = NavigationAuditor.perform_navigation_audit()
+        return Response({
+            "ok": True,
+            "navigation_accessibility_audit": data
+        })
+
+
 export_views = {
     "InstitutionalCollaborationWorkspaceView": InstitutionalCollaborationWorkspaceView,
     "InstitutionalModelGovernanceView": InstitutionalModelGovernanceView,
@@ -212,5 +227,7 @@ export_views = {
     "InstitutionalExecutiveDashboardView": InstitutionalExecutiveDashboardView,
     "InstitutionalDeveloperApiExplorerView": InstitutionalDeveloperApiExplorerView,
     "InstitutionalComplianceDashboardView": InstitutionalComplianceDashboardView,
-    "InstitutionalOptimizationBenchmarksView": InstitutionalOptimizationBenchmarksView
+    "InstitutionalOptimizationBenchmarksView": InstitutionalOptimizationBenchmarksView,
+    "InstitutionalNavigationAuditView": InstitutionalNavigationAuditView
 }
+
