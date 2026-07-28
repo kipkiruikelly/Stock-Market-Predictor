@@ -24,7 +24,7 @@ class ProductionAPITests(TestCase):
     def test_prometheus_metrics_exposition(self):
         """Verify GET /metrics is unauthenticated and returns raw Prometheus exposition strings."""
         anon_client = APIClient()
-        response = anon_client.get('/metrics')
+        response = anon_client.get('/api/metrics')
         self.assertEqual(response.status_code, 200)
         self.assertIn("text/plain", response['Content-Type'])
         content = response.content.decode('utf-8')
