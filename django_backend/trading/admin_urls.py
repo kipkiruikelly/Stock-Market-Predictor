@@ -1,6 +1,7 @@
 from django.urls import path
 from . import admin_views
 from . import pipeline_views
+from . import search_views
 
 urlpatterns = [
     path('overview', admin_views.AdminOverviewView.as_view(), name='admin-api-overview'),
@@ -8,6 +9,7 @@ urlpatterns = [
     path('users/', admin_views.AdminUsersHtmlView.as_view(), name='admin-users'),
     path('users/<int:user_id>/toggle-status/', admin_views.AdminUserToggleStatusView.as_view(), name='admin-user-toggle-status'),
     path('users/<int:user_id>/update-plan/', admin_views.AdminUserUpdatePlanView.as_view(), name='admin-user-update-plan'),
+    path('global-search/', search_views.AdminGlobalSearchView.as_view(), name='admin-api-global-search'),
     
     # JSON APIs for React frontend
     path('users/list', admin_views.AdminUsersApiView.as_view(), name='admin-api-users-list'),
