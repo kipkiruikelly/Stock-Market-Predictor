@@ -14,6 +14,7 @@ from . import analytics_views
 from . import recommender_views
 from . import execution_views
 from . import v22_views
+from . import production_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -181,4 +182,22 @@ urlpatterns = [
     # ── Live Portfolio Summary ───────────────────────────────────
     path('live/summary', mt5_views.LiveSummaryView.as_view(), name='api-live-summary'),
     path('live/trades', mt5_views.LiveTradesView.as_view(), name='api-live-trades'),
+
+    # ── Phase 31 Advanced Production & Distributed Observability ──
+    path('metrics', production_views.PrometheusMetricsView.as_view(), name='api-prometheus-metrics'),
+    path('operations/observability/traces', production_views.ObservabilityTracesView.as_view(), name='api-observability-traces'),
+    path('operations/observability/servicemap', production_views.ObservabilityServiceMapView.as_view(), name='api-observability-servicemap'),
+    path('operations/metrics/dashboard', production_views.MetricsDashboardView.as_view(), name='api-metrics-dashboard'),
+    path('operations/slo', production_views.SloComplianceView.as_view(), name='api-slo-compliance'),
+    path('operations/autoscaling', production_views.AutoscalingSimView.as_view(), name='api-autoscaling-sim'),
+    path('operations/deployments', production_views.DeploymentsManagerView.as_view(), name='api-deployments-manager'),
+    path('operations/secrets', production_views.SecretsAuditorView.as_view(), name='api-secrets-auditor'),
+    path('operations/secrets/rotate', production_views.SecretsRotatorView.as_view(), name='api-secrets-rotator'),
+    path('operations/chaos/trigger-advanced', production_views.AdvancedChaosTriggerView.as_view(), name='api-advanced-chaos-trigger'),
+    path('operations/load-test', production_views.ConcurrencyBenchmarkView.as_view(), name='api-concurrency-benchmark'),
+    path('operations/security/compliance', production_views.SecurityComplianceView.as_view(), name='api-security-compliance'),
+    path('operations/dr', production_views.DisasterRecoveryView.as_view(), name='api-disaster-recovery'),
+    path('operations/dr/trigger', production_views.DisasterRecoveryView.as_view(), name='api-disaster-recovery-trigger'),
+    path('operations/production-readiness', production_views.ProductionReadinessView.as_view(), name='api-production-readiness'),
+    path('operations/documentation', production_views.OperationalDocumentationView.as_view(), name='api-operations-documentation'),
 ]
