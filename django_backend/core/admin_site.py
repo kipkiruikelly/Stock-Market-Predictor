@@ -8,6 +8,70 @@ class EnterpriseAdminSite(admin.AdminSite):
     index_title = "Triple-Fusion-Engine v3.0 Master Console"
     index_template = "admin/index.html"
 
+    def index(self, request, extra_context=None):
+        from django.db.models import Sum
+        from users.models import (
+            User, PredictionHistory, Payment, TradingBot, ErrorLog,
+            Portfolio, PaperTrade, AdminAuditLog,
+            UserPaperPosition, ModelVersion
+        )
+
+        extra_context = extra_context or {}
+
+        # Fetch aggregated platform data safely
+        total_users = User.objects.count()
+        active_users = User.objects.filter(status='active').count()
+        pro_users = User.objects.filter(plan__in=['pro', 'enterprise']).count()
+        total_payments_count = Payment.objects.count()
+        total_revenue = Payment.objects.filter(status='paid').aggregate(sum=Sum('amount'))['sum'] or 0.0
+
+        total_portfolios = Portfolio.objects.count()
+        total_aum = Portfolio.objects.aggregate(sum=Sum('total_equity'))['sum'] or 0.0
+
+        total_predictions = PredictionHistory.objects.count()
+        active_bots = TradingBot.objects.filter(is_active=True).count()
+        
+        # Guard against uncreated paper trade tables or foreign key mismatches
+        try:
+            open_positions = UserPaperPosition.objects.count()
+        except Exception:
+            open_positions = 0
+            
+        try:
+            total_trades = PaperTrade.objects.count()
+        except Exception:
+            total_trades = 0
+
+        # Fetch recent security/audit events
+        try:
+            recent_audits = AdminAuditLog.objects.order_by('-created_at')[:15]
+        except Exception:
+            recent_audits = []
+            
+        try:
+            recent_errors = ErrorLog.objects.order_by('-created_at')[:15]
+        except Exception:
+            recent_errors = []
+
+        # Structure of context payload
+        extra_context.update({
+            'total_users': total_users,
+            'active_users': active_users,
+            'pro_users': pro_users,
+            'total_payments_count': total_payments_count,
+            'total_revenue': float(total_revenue),
+            'total_portfolios': total_portfolios,
+            'total_aum': float(total_aum),
+            'total_predictions': total_predictions,
+            'active_bots': active_bots,
+            'open_positions': open_positions,
+            'total_trades': total_trades,
+            'recent_audits': recent_audits,
+            'recent_errors': recent_errors,
+        })
+
+        return super().index(request, extra_context=extra_context)
+
     def get_app_list(self, request, app_label=None):
         """
         Group models into logical enterprise business categories instead of standard Django apps.
