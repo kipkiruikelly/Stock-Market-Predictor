@@ -77,21 +77,20 @@ class WatchlistAdmin(OptimizeQueryMixin, admin.ModelAdmin):
     select_related_fields = ['user']
 
 # ── 2. Auxiliary Trading & Execution ModelAdmins ──────────────────────────────
-class TradingBotAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'name', 'strategy', 'status', 'is_active', 'created_at')
-    list_filter = ('strategy', 'status', 'is_active')
-    search_fields = ('user__username', 'name')
-    select_related_fields = ['user']
+class TradingBotAdmin(admin.ModelAdmin):
+    list_display = ('id', 'slug', 'name', 'asset_class', 'interval', 'is_active', 'created_at')
+    list_filter = ('asset_class', 'interval', 'is_active')
+    search_fields = ('slug', 'name')
 
 class UserPaperAccountAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'balance', 'margin', 'equity', 'currency', 'status', 'created_at')
-    list_filter = ('currency', 'status')
+    list_display = ('id', 'user', 'starting_balance', 'balance', 'equity', 'created_at', 'updated_at')
+    list_filter = ('created_at', 'updated_at')
     search_fields = ('user__username', 'user__email')
     select_related_fields = ['user']
 
 class UserPaperOrderAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'account', 'ticker', 'side', 'type', 'quantity', 'price', 'status', 'created_at')
-    list_filter = ('side', 'type', 'status', 'created_at')
+    list_display = ('id', 'account', 'ticker', 'side', 'order_type', 'quantity', 'target_price', 'status', 'created_at')
+    list_filter = ('side', 'order_type', 'status', 'created_at')
     search_fields = ('account__user__username', 'ticker')
     select_related_fields = ['account', 'account__user']
 
@@ -114,14 +113,14 @@ class PaperTradeAdmin(AuditLoggingAdminMixin, OptimizeQueryMixin, admin.ModelAdm
         self.message_user(request, f"Successfully forced closed {rows} paper positions.")
 
 class PaperTradeEventAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'trade', 'event_type', 'details', 'created_at')
-    list_filter = ('event_type', 'created_at')
-    search_fields = ('user__username', 'details')
+    list_display = ('id', 'user', 'trade', 'event', 'detail', 'created_at')
+    list_filter = ('event', 'created_at')
+    search_fields = ('user__username', 'detail')
     select_related_fields = ['user', 'trade']
 
 class PaperEquitySnapshotAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'balance', 'equity', 'timestamp')
-    list_filter = ('timestamp',)
+    list_display = ('id', 'user', 'strategy', 'equity', 'open_count', 'taken_at')
+    list_filter = ('strategy', 'taken_at')
     search_fields = ('user__username', 'user__email')
     select_related_fields = ['user']
 
@@ -139,14 +138,14 @@ class PriceAlertAdmin(OptimizeQueryMixin, admin.ModelAdmin):
     select_related_fields = ['user']
 
 class TickerConfigAdmin(admin.ModelAdmin):
-    list_display = ('ticker', 'name', 'asset_class', 'is_active', 'last_polled')
-    list_filter = ('asset_class', 'is_active')
-    search_fields = ('ticker', 'name')
+    list_display = ('id', 'symbol', 'name', 'enabled', 'added_at')
+    list_filter = ('enabled', 'added_at')
+    search_fields = ('symbol', 'name')
 
 class PythFeedAdmin(admin.ModelAdmin):
-    list_display = ('feed_id', 'ticker', 'price_account', 'exponent', 'is_active')
-    list_filter = ('is_active',)
-    search_fields = ('ticker', 'feed_id')
+    list_display = ('id', 'symbol', 'feed_id', 'pyth_symbol', 'active', 'updated_at')
+    list_filter = ('active', 'updated_at')
+    search_fields = ('symbol', 'feed_id', 'pyth_symbol')
 
 class ResourceLinkAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'category', 'url', 'created_at')
@@ -155,8 +154,8 @@ class ResourceLinkAdmin(admin.ModelAdmin):
 
 # ── 4. Machine Learning & Forecasting ModelAdmins ─────────────────────────────
 class ModelVersionAdmin(AuditLoggingAdminMixin, admin.ModelAdmin):
-    list_display = ('version_tag', 'name', 'framework', 'accuracy', 'is_active', 'trained_at')
-    list_filter = ('framework', 'is_active', 'trained_at')
+    list_display = ('version', 'ticker', 'model_type', 'is_active', 'trained_at')
+    list_filter = ('model_type', 'is_active', 'trained_at')
     search_fields = ('version_tag', 'name')
     actions = ['promote_to_production']
 
@@ -178,62 +177,62 @@ class PredictionAccuracyAdmin(OptimizeQueryMixin, admin.ModelAdmin):
 
 # ── 5. Notifications & Alerts ModelAdmins ─────────────────────────────────────
 class NotificationAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'title', 'channel', 'status', 'created_at')
-    list_filter = ('channel', 'status', 'created_at')
+    list_display = ('id', 'user', 'title', 'type', 'read', 'created_at')
+    list_filter = ('type', 'read', 'created_at')
     search_fields = ('user__username', 'title')
     select_related_fields = ['user']
 
 class BroadcastAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'target_audience', 'sent', 'sent_at')
-    list_filter = ('target_audience', 'sent', 'sent_at')
-    search_fields = ('title', 'message')
+    list_display = ('id', 'title', 'segment', 'channel', 'sent_count', 'created_at')
+    list_filter = ('segment', 'channel', 'created_at')
+    search_fields = ('title', 'body')
 
 class TelegramConfigAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'chat_id', 'is_active', 'updated_at')
-    list_filter = ('is_active', 'updated_at')
+    list_display = ('id', 'user', 'chat_id', 'enabled')
+    list_filter = ('enabled',)
     search_fields = ('user__username', 'chat_id')
     select_related_fields = ['user']
 
 class WhatsappConfigAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'phone_number', 'is_active', 'updated_at')
-    list_filter = ('is_active', 'updated_at')
+    list_display = ('id', 'user', 'phone_number', 'enabled')
+    list_filter = ('enabled',)
     search_fields = ('user__username', 'phone_number')
     select_related_fields = ['user']
 
 class DiscordConfigAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'webhook_url', 'is_active', 'updated_at')
-    list_filter = ('is_active', 'updated_at')
+    list_display = ('id', 'user', 'webhook_url', 'enabled', 'created_at')
+    list_filter = ('enabled', 'created_at')
     search_fields = ('user__username', 'webhook_url')
     select_related_fields = ['user']
 
 class UserWebhookAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'name', 'url', 'is_active', 'created_at')
-    list_filter = ('is_active', 'created_at')
+    list_display = ('id', 'user', 'name', 'url', 'active', 'created_at')
+    list_filter = ('active', 'created_at')
     search_fields = ('user__username', 'name')
     select_related_fields = ['user']
 
 # ── 6. Billing & System Configurations ────────────────────────────────────────
 class PaymentAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'amount', 'currency', 'status', 'provider', 'transaction_id', 'created_at')
+    list_display = ('id', 'user', 'amount', 'currency', 'status', 'provider', 'reference', 'created_at')
     list_filter = ('status', 'provider', 'currency', 'created_at')
-    search_fields = ('user__username', 'transaction_id')
+    search_fields = ('user__username', 'reference')
     select_related_fields = ['user']
 
 class GiftCodeAdmin(AuditLoggingAdminMixin, OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('code', 'discount_pct', 'max_uses', 'times_used', 'is_active', 'used_by')
-    list_filter = ('is_active', 'times_used')
-    search_fields = ('code',)
+    list_display = ('code', 'days', 'used', 'used_by', 'created_at', 'used_at')
+    list_filter = ('used', 'created_at', 'used_at')
+    search_fields = ('code', 'note')
     select_related_fields = ['used_by']
 
 class AppSettingAdmin(AuditLoggingAdminMixin, admin.ModelAdmin):
-    list_display = ('key', 'value', 'description', 'updated_at')
-    search_fields = ('key', 'description')
+    list_display = ('key', 'value', 'updated_at')
+    search_fields = ('key',)
 
 # ── 7. Audit Logging & Compliance ─────────────────────────────────────────────
 class ActivityLogAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'action', 'ip_address', 'timestamp')
-    list_filter = ('action', 'timestamp')
-    search_fields = ('user__username', 'action', 'ip_address')
+    list_display = ('id', 'user', 'action', 'ip', 'created_at')
+    list_filter = ('action', 'created_at')
+    search_fields = ('user__username', 'action', 'ip')
     select_related_fields = ['user']
 
 class AdminAuditLogAdmin(OptimizeQueryMixin, admin.ModelAdmin):
@@ -243,61 +242,62 @@ class AdminAuditLogAdmin(OptimizeQueryMixin, admin.ModelAdmin):
     select_related_fields = ['admin']
 
 class ErrorLogAdmin(admin.ModelAdmin):
-    list_display = ('id', 'exception_type', 'message', 'module', 'resolved', 'timestamp')
-    list_filter = ('exception_type', 'module', 'resolved', 'timestamp')
-    search_fields = ('exception_type', 'message', 'stack_trace')
+    list_display = ('id', 'severity', 'endpoint', 'method', 'message', 'created_at')
+    list_filter = ('severity', 'method', 'created_at')
+    search_fields = ('message', 'trace', 'endpoint', 'ip')
 
 # ── 8. Remaining Model Registrations ──────────────────────────────────────────
 class TwoFactorAuthAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'is_enabled', 'updated_at')
-    list_filter = ('is_enabled',)
+    list_display = ('id', 'user', 'enabled')
+    list_filter = ('enabled',)
     select_related_fields = ['user']
 
 class FeedbackAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'category', 'text', 'rating', 'created_at')
-    list_filter = ('category', 'rating', 'created_at')
+    list_display = ('id', 'user', 'page', 'comment', 'rating', 'sentiment', 'resolved', 'created_at')
+    list_filter = ('page', 'rating', 'resolved', 'created_at')
     search_fields = ('user__username', 'text')
     select_related_fields = ['user']
 
 class UserPreferencesAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'theme', 'notify_level')
+    list_display = ('id', 'user', 'theme', 'timezone', 'digest_enabled')
     select_related_fields = ['user']
 
 class UserPortfolioAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'created_at')
+    list_display = ('id', 'user', 'equity', 'balance', 'open_positions', 'snapshot_at')
     select_related_fields = ['user']
 
 class UserAchievementAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'achievement_name', 'unlocked_at')
-    list_filter = ('achievement_name', 'unlocked_at')
+    list_display = ('id', 'user', 'achievement_id', 'earned_at')
+    list_filter = ('achievement_id', 'earned_at')
     select_related_fields = ['user']
 
 class CompetitionModelAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'name', 'created_by', 'is_active', 'end_date')
-    list_filter = ('is_active', 'end_date')
+    list_display = ('id', 'name', 'created_by', 'status', 'start_date', 'end_date', 'created_at')
+    list_filter = ('status', 'start_date', 'end_date')
     select_related_fields = ['created_by']
 
 class CompetitionEntryAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'competition', 'user', 'score', 'submitted_at')
-    list_filter = ('submitted_at',)
+    list_display = ('id', 'competition', 'user', 'start_equity', 'current_equity', 'joined_at')
+    list_filter = ('joined_at',)
     select_related_fields = ['competition', 'user']
 
 class UserBotSubscriptionAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'bot', 'is_active', 'subscribed_at')
-    list_filter = ('is_active', 'subscribed_at')
+    list_display = ('id', 'user', 'bot', 'auto_trade_enabled', 'auto_trade_mode', 'created_at')
+    list_filter = ('auto_trade_enabled', 'auto_trade_mode', 'created_at')
     select_related_fields = ['user', 'bot']
 
 class SmartOrderExecutionAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'bot', 'execution_type', 'target_qty', 'filled_qty', 'status', 'created_at')
-    list_filter = ('execution_type', 'status', 'created_at')
-    select_related_fields = ['bot']
+    list_display = ('id', 'user', 'ticker', 'side', 'total_quantity', 'executed_quantity', 'execution_style', 'execution_mode', 'benchmark_price', 'avg_fill_price', 'status', 'created_at')
+    list_filter = ('side', 'execution_style', 'execution_mode', 'status', 'created_at')
+    search_fields = ('user__username', 'ticker')
+    select_related_fields = ['user']
 
 class TradeJournalAdmin(OptimizeQueryMixin, admin.ModelAdmin):
     list_display = ('id', 'user', 'title', 'created_at')
     select_related_fields = ['user']
 
 class PasswordResetTokenAdmin(OptimizeQueryMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'created_at')
+    list_display = ('id', 'user', 'expires_at', 'used')
     select_related_fields = ['user']
 
 # Register ALL custom model admins to the EnterpriseAdminSite
