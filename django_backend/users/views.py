@@ -74,15 +74,18 @@ class LoginView(APIView):
         if not identifier or not password:
             return Response({'ok': False, 'error': 'Username/email and password are required.'}, status=400)
 
-        # Support login by email
+        # Since USERNAME_FIELD is 'email', Django's authenticate() expects the email address in the 'username' parameter.
+        email = None
         if '@' in identifier:
+            email = identifier
+        else:
             try:
-                user_obj = User.objects.get(email__iexact=identifier)
-                identifier = user_obj.username
+                user_obj = User.objects.get(username__iexact=identifier)
+                email = user_obj.email
             except User.DoesNotExist:
                 return Response({'ok': False, 'error': 'Invalid credentials.'}, status=401)
 
-        user = authenticate(request, username=identifier, password=password)
+        user = authenticate(request, username=email, password=password)
         if user is None:
             return Response({'ok': False, 'error': 'Invalid credentials.'}, status=401)
 

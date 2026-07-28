@@ -33,7 +33,7 @@ class JwtLoginView(APIView):
 
         user = authenticate(request, username=username, password=password)
         if user is None and user_obj:
-            user = authenticate(request, username=user_obj.username, password=password)
+            user = authenticate(request, username=user_obj.email, password=password)
 
         if user is None:
             if user_obj:
