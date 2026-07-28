@@ -146,3 +146,42 @@ class InstitutionalAPITests(TestCase):
         self.assertTrue(response.data.get("ok"))
         bench = response.data["performance_optimizations_benchmarks"]
         self.assertLess(bench["post_optimization"]["average_api_latency_ms"], bench["pre_optimization"]["average_api_latency_ms"])
+
+    def test_navigation_accessibility_audit(self):
+        """Verify GET /api/institutional/optimization/navigation-audit catalogs all 8 core sidebar spaces."""
+        response = self.client.get('/api/institutional/optimization/navigation-audit')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        
+        audit = response.data["navigation_accessibility_audit"]
+        self.assertEqual(audit["status"], "COMPLETED")
+        
+        # Verify 8 sidebar spaces exist
+        sidebar = audit["sidebar_structure"]
+        self.assertIn("Dashboard", sidebar)
+        self.assertIn("Trading", sidebar)
+        self.assertIn("Portfolio", sidebar)
+        self.assertIn("Research Lab", sidebar)
+        self.assertIn("Machine Learning", sidebar)
+        self.assertIn("Operations", sidebar)
+        self.assertIn("Executive", sidebar)
+        self.assertIn("Administration", sidebar)
+        self.assertIn("Knowledge Center", sidebar)
+        
+        # Verify infrastructure-only components
+        infra = audit["infrastructure_only_backend_components"]
+        self.assertEqual(infra[0]["name"], "Celery worker task runner daemon")
+        
+        # Verify Cmd+K Search Registry
+        search_idx = audit["global_search_index_cmdk"]
+        self.assertGreater(len(search_idx), 5)
+        self.assertEqual(search_idx[0]["name"], "Assets")
+        
+        # Verify Cross-Linking mappings
+        cross_links = audit["cross_linking_mappings"]
+        self.assertEqual(cross_links[0]["source"], "Prediction")
+        
+        # Verify Contextual AI actions
+        ai_actions = audit["contextual_ai_action_triggers"]
+        self.assertEqual(ai_actions[0]["name"], "Explain this prediction")
+
