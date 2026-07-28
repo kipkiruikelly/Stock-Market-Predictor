@@ -857,6 +857,7 @@ class ModelHealthView(APIView):
     def get(self, request):
         from trading.autonomous_engine import get_db_connection
         import json
+        import random
         
         # Simulate active feature/data drift detection
         drift_metrics = {
@@ -877,21 +878,30 @@ class ModelHealthView(APIView):
                 from trading.celery_tasks import run_modular_pipeline_task
                 run_modular_pipeline_task.delay("train", "SPY", "1d")
                 
+                now_str = datetime.utcnow().isoformat()
+                inc_slug = f"INC-DRIFT-{random.randint(1000, 9999)}"
+                
                 # Write an audit trail to SRE local ledger
                 with get_db_connection() as conn:
                     cur = conn.cursor()
                     cur.execute("""
-                        INSERT INTO incidents (timestamp, title, affected_services, status, root_cause, recovery_action, duration_seconds, confidence_score)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        INSERT INTO incidents (
+                            timestamp, title, affected_services, status, root_cause, recovery_action, duration_seconds, confidence_score,
+                            incident_id, severity, category, source_service, detection_time, resolution_time, resolution_status,
+                            recovery_actions, operator_notes, ai_summary, linked_logs, linked_metrics, related_deployments, related_model_versions
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
-                        datetime.utcnow().isoformat(),
-                        "Data Drift Threshold Exceeded",
-                        "Ensemble Stacking Predictor",
-                        "PENDING_APPROVAL",
+                        now_str, "Data Drift Threshold Exceeded", "Ensemble Stacking Predictor", "PENDING_APPROVAL",
                         "Volume distribution shift exceeded 10% threshold limits (current drift: 12.8%)",
                         "Scheduled auto-retrain background loop; model is awaiting governance review before active deployment",
-                        0,
-                        0.92
+                        0, 0.92,
+                        inc_slug, "MEDIUM", "MLOPS", "models", now_str, None, "OPEN",
+                        "SCHEDULE_RETRAIN", "", 
+                        "AI root cause diagnostic indicates historical volume distribution shifts. Scheduled retraining launched.",
+                        '{"model_error": "volume_drift > 10.0%"}',
+                        '{"rsi_drift": 2.1, "volume_drift": 12.8}',
+                        '{"active_build_tag": "v3.1.0-RC1"}',
+                        '{"current_version": "v2.1.0"}'
                     ))
                     conn.commit()
             except Exception as e:
@@ -1357,6 +1367,7 @@ class ChaosTriggerView(APIView):
 
     def post(self, request):
         from trading.autonomous_engine import get_db_connection
+        import random
         scenario = request.data.get("scenario")
         if not scenario:
             return Response({"ok": False, "error": "chaos scenario is required"}, status=400)
