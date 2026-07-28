@@ -227,9 +227,9 @@ class PlatformHealthGraph:
             {"id": "gateway", "name": "API Gateway", "status": "healthy", "latency": 4.1, "error_rate": 0.0, "confidence": 0.99, "recovery_status": "stable"},
             {"id": "auth", "name": "Authentication", "status": "healthy", "latency": 6.3, "error_rate": 0.0, "confidence": 1.0, "recovery_status": "stable"},
             {"id": "portfolio", "name": "Portfolio Service", "status": "healthy", "latency": 22.4, "error_rate": 0.0, "confidence": 0.98, "recovery_status": "stable"},
-            {"id": "prediction", "name": "Prediction Service", "status": "healthy", "latency": 32.1, "error_rate": 0.0, "confidence": 0.95, "recovery_status": "stable"},
+            {"id": "prediction", "name": "Prediction Service (FastAPI)", "status": "healthy", "latency": 32.1, "error_rate": 0.0, "confidence": 0.95, "recovery_status": "stable"},
             {"id": "models", "name": "ML Models (RF/LR)", "status": "healthy", "latency": 12.8, "error_rate": 0.0, "confidence": 0.96, "recovery_status": "stable"},
-            {"id": "redis", "name": "Redis Memory Cache", "status": "healthy" if redis_healthy else "degraded", "latency": redis_latency, "error_rate": 0.0 if redis_healthy else 1.0, "confidence": 1.0 if redis_healthy else 0.2, "recovery_status": "stable" if redis_healthy else "self_healing"},
+            {"id": "redis", "name": "Redis Cache", "status": "healthy" if redis_healthy else "degraded", "latency": redis_latency, "error_rate": 0.0 if redis_healthy else 1.0, "confidence": 1.0 if redis_healthy else 0.2, "recovery_status": "stable" if redis_healthy else "self_healing"},
             {"id": "celery", "name": "Celery Worker Queue", "status": "healthy", "latency": 18.2, "error_rate": 0.0, "confidence": 0.97, "recovery_status": "stable"},
             {"id": "db", "name": "Postgres/SQL Database", "status": "healthy" if db_healthy else "unhealthy", "latency": db_latency, "error_rate": 0.0 if db_healthy else 1.0, "confidence": 1.0 if db_healthy else 0.0, "recovery_status": "stable" if db_healthy else "reconnecting"},
             {"id": "mt5", "name": "MetaTrader 5 Bridge", "status": "healthy", "latency": 45.3, "error_rate": 0.0, "confidence": 0.94, "recovery_status": "stable"}

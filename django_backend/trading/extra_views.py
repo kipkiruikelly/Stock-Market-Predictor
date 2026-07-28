@@ -1197,7 +1197,7 @@ class EmbeddedAiAssistantView(APIView):
 
         elif intent == "operations":
             h = PlatformHealthGraph.get_status()
-            statuses = "\n".join([f"- **{n['name']}**: Status is {n['status'].upper()} (Latency: {n['latency']}ms, Recovery: {n['recovery_status']})" for n in h["nodes"][:5]])
+            statuses = "\n".join([f"- **{n['name']}**: Status is {n['status'].upper()} (Latency: {n['latency']}ms, Recovery: {n['recovery_status']})" for n in h["nodes"]])
             response_text = (
                 "Real-Time **Operational Systems Health Check**:\n"
                 f"{statuses}\n"
