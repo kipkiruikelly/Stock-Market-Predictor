@@ -159,6 +159,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = []
 if FRONTEND_DIST.exists():
     STATICFILES_DIRS.append(FRONTEND_DIST)
+root_static = BASE_DIR.parent / 'static'
+if root_static.exists():
+    STATICFILES_DIRS.append(root_static)
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 WHITENOISE_ROOT = FRONTEND_DIST if FRONTEND_DIST.exists() else None
