@@ -2,6 +2,7 @@ from django.urls import path
 from . import admin_views
 from . import pipeline_views
 from . import search_views
+from . import control_views
 
 urlpatterns = [
     path('overview', admin_views.AdminOverviewView.as_view(), name='admin-api-overview'),
@@ -24,5 +25,18 @@ urlpatterns = [
     path('pillars/data', admin_views.AdminPillarsDataView.as_view(), name='admin-api-pillars-data'),
     path('pillars/action', admin_views.AdminPillarsActionView.as_view(), name='admin-api-pillars-action'),
     path('pipeline/cron-retrain', pipeline_views.CronRetrainView.as_view(), name='admin-api-cron-retrain'),
-]
 
+    # Phase 27 - Enterprise Operations & Telemetry Routes
+    path('api/telemetry-stream/', control_views.TelemetryStreamView.as_view(), name='admin-api-telemetry-stream'),
+    path('api/service-control/', control_views.ServiceControlView.as_view(), name='admin-api-service-control'),
+    path('api/incidents/list', control_views.IncidentManagerView.as_view(), name='admin-api-incidents-list'),
+    path('api/incidents/create', control_views.IncidentManagerView.as_view(), name='admin-api-incidents-create'),
+    path('api/incidents/update', control_views.IncidentManagerView.as_view(), name='admin-api-incidents-update'),
+    path('api/celery-ops/', control_views.CeleryOperationsView.as_view(), name='admin-api-celery-ops'),
+    path('api/celery-ops/action', control_views.CeleryOperationsView.as_view(), name='admin-api-celery-ops-action'),
+    path('api/sessions/list', control_views.ActiveSessionManagerView.as_view(), name='admin-api-sessions-list'),
+    path('api/sessions/terminate', control_views.ActiveSessionManagerView.as_view(), name='admin-api-sessions-terminate'),
+    path('api/model-governance/', control_views.ModelGovernanceView.as_view(), name='admin-api-model-governance'),
+    path('api/model-governance/action', control_views.ModelGovernanceView.as_view(), name='admin-api-model-governance-action'),
+    path('api/reports/generate/', control_views.ExecutiveReportsView.as_view(), name='admin-api-reports-generate'),
+]
