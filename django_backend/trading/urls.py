@@ -15,6 +15,7 @@ from . import recommender_views
 from . import execution_views
 from . import v22_views
 from . import production_views
+from . import enterprise_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -200,4 +201,26 @@ urlpatterns = [
     path('operations/dr/trigger', production_views.DisasterRecoveryView.as_view(), name='api-disaster-recovery-trigger'),
     path('operations/production-readiness', production_views.ProductionReadinessView.as_view(), name='api-production-readiness'),
     path('operations/documentation', production_views.OperationalDocumentationView.as_view(), name='api-operations-documentation'),
+
+    # ── Phase 32 Enterprise Production Upgrade Endpoints ──────────
+    path('enterprise/observability/traces', enterprise_views.EnterpriseTracesView.as_view(), name='api-enterprise-traces'),
+    path('enterprise/observability/servicemap', enterprise_views.EnterpriseServiceMapView.as_view(), name='api-enterprise-servicemap'),
+    path('enterprise/observability/dashboard', enterprise_views.EnterpriseObservabilityDashboardView.as_view(), name='api-enterprise-dashboard'),
+    path('enterprise/sre/incidents', enterprise_views.EnterpriseIncidentsView.as_view(), name='api-enterprise-incidents'),
+    path('enterprise/secrets', enterprise_views.EnterpriseSecretsView.as_view(), name='api-enterprise-secrets'),
+    path('enterprise/secrets/rotate', enterprise_views.EnterpriseSecretsRotateView.as_view(), name='api-enterprise-secrets-rotate'),
+    path('enterprise/deployments/canary', enterprise_views.EnterpriseCanaryDeploymentsView.as_view(), name='api-enterprise-canary'),
+    path('enterprise/feature-flags', enterprise_views.EnterpriseFeatureFlagsView.as_view(), name='api-enterprise-feature-flags'),
+    path('enterprise/mlops/registry', enterprise_views.EnterpriseMlopsRegistryView.as_view(), name='api-enterprise-mlops'),
+    path('enterprise/explainable-ai', enterprise_views.EnterpriseExplainableAiView.as_view(), name='api-enterprise-explainable-ai'),
+    path('enterprise/portfolio/optimization', enterprise_views.EnterprisePortfolioOptimizationView.as_view(), name='api-enterprise-portfolio-opt'),
+    path('enterprise/search', enterprise_views.EnterpriseSearchView.as_view(), name='api-enterprise-search'),
+    path('enterprise/notifications', enterprise_views.EnterpriseNotificationsView.as_view(), name='api-enterprise-notifications'),
+    path('enterprise/analytics/executive', enterprise_views.EnterpriseAnalyticsExecutiveView.as_view(), name='api-enterprise-analytics'),
+    path('enterprise/cloud-costs', enterprise_views.EnterpriseCloudCostsView.as_view(), name='api-enterprise-cloud-costs'),
+    path('enterprise/compliance', enterprise_views.EnterpriseComplianceView.as_view(), name='api-enterprise-compliance'),
+    path('enterprise/gateway/policy', enterprise_views.EnterpriseGatewayPolicyView.as_view(), name='api-enterprise-gateway'),
+    path('enterprise/dev-experience', enterprise_views.EnterpriseDevExperienceView.as_view(), name='api-enterprise-dev-experience'),
+    path('enterprise/documentation', enterprise_views.EnterpriseDocumentationView.as_view(), name='api-enterprise-documentation'),
+    path('enterprise/ui-modernization', enterprise_views.EnterpriseUiModernizationView.as_view(), name='api-enterprise-ui-tokens'),
 ]
