@@ -47,7 +47,7 @@ class PipelineConfigView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class PipelineRunView(APIView):
-    """API endpoint to execute pipeline steps via framework subprocesses."""
+    """API endpoint to execute pipeline steps asynchronously via Celery background tasks."""
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
     
@@ -59,69 +59,61 @@ class PipelineRunView(APIView):
         if mode not in ["ingest", "train", "predict"]:
             return Response({"ok": False, "error": f"Invalid mode: {mode}"}, status=400)
             
-        timeout_sec = 180 if mode == "train" else 90
         try:
-            cmd = [PYTHON_EXE, CLI_PATH, "--mode", mode, "--symbol", symbol, "--interval", interval]
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=timeout_sec,
-                cwd=os.path.dirname(CLI_PATH)
-            )
-            
-            logs = result.stdout + ("\n" + result.stderr if result.stderr else "")
-            ok = (result.returncode == 0)
-            
-            prediction_data = None
-            if mode == "predict" and ok:
-                try:
-                    prediction_data = {}
-                    lines = result.stdout.split("\n")
-                    for line in lines:
-                        if "Direction:" in line:
-                            prediction_data["direction"] = line.split("Direction:")[1].strip()
-                        elif "Entry Price:" in line:
-                            prediction_data["entry_price"] = line.split("Entry Price:")[1].strip().replace("$", "")
-                        elif "Stop Loss:" in line:
-                            prediction_data["stop_price"] = line.split("Stop Loss:")[1].strip().replace("$", "")
-                        elif "Take Profit:" in line:
-                            prediction_data["target_price"] = line.split("Take Profit:")[1].strip().replace("$", "")
-                        elif "Confidence:" in line:
-                            prediction_data["confidence"] = line.split("Confidence:")[1].strip()
-                except Exception:
-                    prediction_data = None
-
-            if not ok and not logs.strip():
-                logs = f"Subprocess returned exit code {result.returncode}"
-
+            from trading.celery_tasks import run_modular_pipeline_task
+            task = run_modular_pipeline_task.delay(mode, symbol, interval)
             return Response({
-                "ok": ok,
-                "logs": logs,
-                "prediction": prediction_data
+                "ok": True,
+                "task_id": task.id,
+                "status": "PENDING",
+                "message": "Pipeline execution task successfully dispatched to background Celery queue."
             })
-        except subprocess.TimeoutExpired:
-            # Fallback for predict mode if subprocess hits timeout limit
-            if mode == "predict":
-                try:
-                    from trading.extra_views import _get_live_price
-                    p = _get_live_price(symbol)
-                    return Response({
-                        "ok": True,
-                        "logs": f"Fallback Fast Serving Inference completed for {symbol} ({interval}).",
-                        "prediction": {
-                            "direction": "HOLD",
-                            "entry_price": str(p),
-                            "stop_price": str(round(p * 0.98, 2)),
-                            "target_price": str(round(p * 1.05, 2)),
-                            "confidence": "50.0%"
-                        }
-                    })
-                except Exception as fallback_err:
-                    return Response({"ok": False, "error": f"Execution timeout ({timeout_sec}s): {fallback_err}", "logs": "Timeout expired while executing subprocess pipeline."})
-            return Response({"ok": False, "error": f"Execution timeout expired ({timeout_sec}s limit)", "logs": "Timeout expired while executing subprocess pipeline."})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PipelineTaskStatusView(APIView):
+    """API endpoint to poll the status, cached subprocess outputs, and metrics of a pipeline Celery task."""
+    authentication_classes = [CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, task_id):
+        try:
+            from django.core.cache import cache
+            from celery.result import AsyncResult
+            
+            cache_key = f"pipeline_task_logs:{task_id}"
+            cached_data = cache.get(cache_key)
+            
+            res = AsyncResult(task_id)
+            status = res.status
+            
+            logs = ""
+            prediction = None
+            if cached_data:
+                status = cached_data.get("status", status)
+                logs = cached_data.get("logs", "")
+                prediction = cached_data.get("prediction", None)
+            else:
+                if status == "PENDING":
+                    logs = "Task is currently queued, waiting for free Celery worker...\n"
+                elif status == "SUCCESS":
+                    logs = "Task finished successfully.\n"
+                    if isinstance(res.result, dict):
+                        prediction = res.result.get("prediction")
+                elif status == "FAILURE":
+                    logs = f"Task failed.\nError: {str(res.result)}\n"
+            
+            return Response({
+                "ok": True,
+                "status": status,
+                "logs": logs,
+                "prediction": prediction
+            })
+        except Exception as e:
+            return Response({"ok": False, "error": str(e)}, status=500)
+
 
 
 

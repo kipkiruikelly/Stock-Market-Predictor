@@ -130,6 +130,7 @@ urlpatterns = [
     path('pipeline/retrain', tools_views.PipelineRetrainView.as_view(), name='api-pipeline-retrain'),
     path('pipeline/config', pipeline_views.PipelineConfigView.as_view(), name='api-pipeline-config'),
     path('pipeline/run', pipeline_views.PipelineRunView.as_view(), name='api-pipeline-run'),
+    path('pipeline/task/<str:task_id>', pipeline_views.PipelineTaskStatusView.as_view(), name='api-pipeline-task-status'),
     path('calendar/earnings', tools_views.CalendarEarningsView.as_view(), name='api-calendar-earnings'),
     path('calendar/macro', tools_views.CalendarMacroView.as_view(), name='api-calendar-macro'),
     path('resources', tools_views.ResourcesPublicView.as_view(), name='api-resources'),

@@ -131,3 +131,20 @@ class EndpointAPITests(TestCase):
         self.assertTrue(response.data.get('ok'))
         self.assertIn('business', response.data)
         self.assertIn('ai', response.data)
+
+    def test_pipeline_run_dispatches_celery_task(self):
+        """Verify POST /api/pipeline/run dispatches a non-blocking background task."""
+        response = self.client.post('/api/pipeline/run', {"mode": "ingest", "symbol": "AAPL", "interval": "1d"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertIn("task_id", response.data)
+        self.assertEqual(response.data.get("status"), "PENDING")
+
+    def test_pipeline_task_status_polling(self):
+        """Verify GET /api/pipeline/task/<task_id> returns proper polling structure."""
+        response = self.client.get('/api/pipeline/task/mock-task-id-123')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertIn("status", response.data)
+        self.assertIn("logs", response.data)
+

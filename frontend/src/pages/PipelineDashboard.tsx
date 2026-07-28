@@ -136,7 +136,7 @@ export const PipelineDashboard: React.FC = () => {
   const handleRunPipeline = async (mode: 'ingest' | 'train' | 'predict') => {
     setRunning(true);
     setActiveStep(mode);
-    setConsoleLogs(`Starting execution for mode: ${mode.toUpperCase()} on ${symbol} (${interval})...\n`);
+    setConsoleLogs(`Starting modular pipeline task execution for ${mode.toUpperCase()} on ${symbol} (${interval})...\n`);
     setPredictionResult(null);
     
     try {
@@ -146,20 +146,59 @@ export const PipelineDashboard: React.FC = () => {
         body: JSON.stringify({ mode, symbol, interval })
       });
       
-      if (res.ok) {
-        toast.success(`Pipeline step ${mode} completed successfully!`);
-        setConsoleLogs(prev => prev + "\n[EXECUTION LOGS]:\n" + (res.logs || 'No logs returned.'));
-        if (mode === 'predict' && res.prediction) {
-          setPredictionResult(res.prediction);
-        }
+      if (res.ok && res.task_id) {
+        toast.success(`Dispatched pipeline task successfully (ID: ${res.task_id.substring(0, 8)})`);
+        setConsoleLogs(prev => prev + `[STATUS]: Task dispatched to background worker (ID: ${res.task_id}). Polling progress...\n`);
+        
+        const taskId = res.task_id;
+        const pollInterval = window.setInterval(async () => {
+          try {
+            const statusRes = await apiFetch(`/api/pipeline/task/${taskId}`);
+            if (statusRes.ok) {
+              setConsoleLogs(statusRes.logs || '');
+              
+              if (statusRes.status === 'SUCCESS') {
+                window.clearInterval(pollInterval);
+                toast.success(`Pipeline step ${mode} completed successfully!`);
+                if (mode === 'predict' && statusRes.prediction) {
+                  setPredictionResult(statusRes.prediction);
+                }
+                setRunning(false);
+                setActiveStep('');
+              } else if (statusRes.status === 'REJECTED') {
+                window.clearInterval(pollInterval);
+                toast.error(`Model rejected: Evaluation Safety Gate Triggered!`, { duration: 6000 });
+                setRunning(false);
+                setActiveStep('');
+              } else if (statusRes.status === 'FAILURE') {
+                window.clearInterval(pollInterval);
+                toast.error(`Pipeline step ${mode} execution failed!`);
+                setRunning(false);
+                setActiveStep('');
+              }
+            } else {
+              window.clearInterval(pollInterval);
+              toast.error(statusRes.error || 'Failed to poll task status');
+              setRunning(false);
+              setActiveStep('');
+            }
+          } catch (pollErr) {
+            window.clearInterval(pollInterval);
+            toast.error('Connection error while polling task logs.');
+            setRunning(false);
+            setActiveStep('');
+          }
+        }, 1500);
+        
       } else {
-        toast.error(res.error || 'Pipeline execution failed');
-        setConsoleLogs(prev => prev + `\n[ERROR]: ${res.error}\n` + (res.logs || ''));
+        toast.error(res.error || 'Pipeline execution failed to dispatch');
+        setConsoleLogs(prev => prev + `\n[ERROR]: ${res.error || 'Failed to trigger task run'}\n`);
+        setRunning(false);
+        setActiveStep('');
       }
     } catch (err) {
-      toast.error('Error executing pipeline subprocess');
-      setConsoleLogs(prev => prev + '\n[CRITICAL ERROR]: Subprocess failed or connection timed out.');
-    } finally {
+      toast.error('Error executing pipeline background task');
+      setConsoleLogs(prev => prev + '\n[CRITICAL ERROR]: Task execution call failed.');
       setRunning(false);
       setActiveStep('');
     }
