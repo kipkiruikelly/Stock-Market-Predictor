@@ -15,7 +15,7 @@ Copyright © 2026 Kipkirui Kelly & Triple Fusion Engine.
 
 This codebase, software, algorithms, machine learning models, and proprietary indicators are strictly closed-source and confidential. Unauthorized copying, distribution, modification, reverse engineering, or public deployment of any part of this software is strictly prohibited without prior written consent. See [LICENSE](LICENSE) for full legal terms.
 
-An enterprise-grade, full-stack quantitative trading intelligence platform and MLOps engine powered by the **Triple Fusion Prediction Engine** (ICT Market Structure + Machine Learning Ensembles + Technical Analysis).
+An enterprise-grade, full-stack quantitative trading intelligence platform and MLOps engine powered by the **Triple Fusion Prediction Engine** (Market Structure + Machine Learning Ensembles + Technical Analysis).
 
 Built with Django REST Framework, FastAPI, Celery, Redis, React 18, Vite, and MetaTrader 5 (MT5) execution bridges.
 
@@ -55,7 +55,6 @@ Built with Django REST Framework, FastAPI, Celery, Redis, React 18, Vite, and Me
 ### 1. 🤖 Interactive AI Trading Robots & Strategy Suite
 Subscribers can activate, backtest, and automate signals across 6 specialized AI models:
 
-* **ICT Core Liquidity Raider** (`Forex/Indices`): Intraday price action trading Order Blocks, Displacement Candles, Fair Value Gaps (FVG), and Liquidity Sweeps.
 * **Stacking Meta-Ensemble** (`Stocks`): Ridge Regression meta-learner ensembling out-of-fold predictions from Random Forest, XGBoost, and LightGBM.
 * **XGBoost Directional Bot** (`Stocks`): Gradient boosted classifier predicting next-day price direction using lag returns and technical indicators.
 * **Random Forest Value Bot** (`Stocks`): Regressor targeting mean-reversion entries around custom alpha factors.
