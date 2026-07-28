@@ -228,15 +228,76 @@
                 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
                     <div class="sb-sidenav-menu">
                         <div class="nav">
-                            <div class="sb-sidenav-menu-heading">Main Console</div>
-                            <a class="nav-link" href="{% url 'admin-dashboard' %}">
+                            <!-- Section: Cockpit Control -->
+                            <div class="sb-sidenav-menu-heading">Executive Cockpit</div>
+                            <a class="nav-link" href="/admin/#executive-cockpit">
                                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                                Dashboard
+                                Master Dashboard
                             </a>
-                            <a class="nav-link" href="{% url 'admin-users' %}">
-                                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                                User Management
+                            <a class="nav-link" href="/admin/#operations-center">
+                                <div class="sb-nav-link-icon"><i class="fas fa-heartbeat"></i></div>
+                                Platform Health
                             </a>
+
+                            <!-- Section: Algorithms & AI -->
+                            <div class="sb-sidenav-menu-heading">Algorithms & Research</div>
+                            <a class="nav-link" href="/admin/#ml-center">
+                                <div class="sb-nav-link-icon"><i class="fas fa-brain"></i></div>
+                                ML Control Room
+                            </a>
+                            <a class="nav-link" href="/admin/#trading-ops">
+                                <div class="sb-nav-link-icon"><i class="fas fa-exchange-alt"></i></div>
+                                Trading Floor
+                            </a>
+                            <a class="nav-link" href="/admin/#portfolio-intel">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                                Portfolio Intel
+                            </a>
+
+                            <!-- Section: Corporate Business -->
+                            <div class="sb-sidenav-menu-heading">Corporate Operations</div>
+                            <a class="nav-link" href="/admin/#executive-analytics">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-line"></i></div>
+                                Growth Analytics
+                            </a>
+                            <a class="nav-link" href="/admin/#notifications-panel">
+                                <div class="sb-nav-link-icon"><i class="fas fa-bell"></i></div>
+                                Alert Center
+                            </a>
+                            <a class="nav-link" href="/admin/#security-center">
+                                <div class="sb-nav-link-icon"><i class="fas fa-shield-alt"></i></div>
+                                System Security
+                            </a>
+
+                            <!-- Section: Engineering Desk -->
+                            <div class="sb-sidenav-menu-heading">Engineering Desk</div>
+                            <a class="nav-link" href="/admin/#developer-tools">
+                                <div class="sb-nav-link-icon"><i class="fas fa-code"></i></div>
+                                Developer Tools
+                            </a>
+                            <a class="nav-link" href="/admin/#docs-hub">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                Runbooks & Docs
+                            </a>
+
+                            <!-- Section: Dynamic Database Tables -->
+                            {% if app_list %}
+                            <div class="sb-sidenav-menu-heading">Database Registries</div>
+                            {% for app in app_list %}
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapse{{ app.app_label }}" aria-expanded="false" aria-controls="collapse{{ app.app_label }}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>
+                                {{ app.name }}
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapse{{ app.app_label }}" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+                                    {% for model in app.models %}
+                                    <a class="nav-link py-1" style="font-size: 12px; font-weight: normal !important;" href="{{ model.admin_url }}">{{ model.name }}</a>
+                                    {% endfor %}
+                                </nav>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
 
                             <div class="sb-sidenav-menu-heading">External</div>
                             <a class="nav-link" href="/portfolio">
@@ -257,14 +318,17 @@
                         {% block content %}{% endblock %}
                     </div>
                 </main>
-                <footer class="py-4 bg-light mt-auto">
+                <footer class="py-3 bg-dark border-top border-secondary mt-auto text-white">
                     <div class="container-fluid px-4">
-                        <div class="d-flex align-items-center justify-content-between small">
-                            <div class="text-muted">Copyright &copy; BullLogic 2026</div>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between small text-white-50">
                             <div>
-                                <a href="#">Privacy Policy</a>
-                                &middot;
-                                <a href="#">Terms &amp; Conditions</a>
+                                <span class="fw-bold text-white">BullLogic TFE v3.0 Console</span> · Built: <span class="text-white">v3.0.4-release</span> · Node: <span class="text-white">gcp-run-prod-02</span>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <span>FastAPI: <strong class="text-success"><i class="fas fa-check-circle"></i> Up</strong></span>
+                                <span>Celery: <strong class="text-success"><i class="fas fa-check-circle"></i> Active</strong></span>
+                                <span>Redis: <strong class="text-success"><i class="fas fa-check-circle"></i> Up</strong></span>
+                                <span>Git: <code>df84a0c (master)</code></span>
                             </div>
                         </div>
                     </div>
