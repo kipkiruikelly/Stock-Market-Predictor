@@ -1017,14 +1017,14 @@ class EmbeddedAiAssistantView(APIView):
         if any(pk in prompt_lower for pk in portfolio_keywords):
             return "portfolio_analysis", None
 
-        mlops_keywords = {"retrain", "drift", "accuracy", "lstm", "random forest", "stacking", "production model", "model metrics"}
-        if any(mk in prompt_lower for mk in mlops_keywords):
-            return "model_mlops", None
-
-        # SRE & Local Incidents queries
+        # SRE & Local Incidents queries (High Priority)
         sre_keywords = {"incident", "rejected", "rejection", "why did redis restart", "explain incidents", "unhealthy", "why did model retrain", "what happened today", "latency", "redis status"}
         if any(sk in prompt_lower for sk in sre_keywords):
             return "operations_sre", None
+
+        mlops_keywords = {"retrain", "drift", "accuracy", "lstm", "random forest", "stacking", "production model", "model metrics"}
+        if any(mk in prompt_lower for mk in mlops_keywords):
+            return "model_mlops", None
 
         ops_keywords = {"healthy", "redis", "database connection", "uptime", "is mt5 connected", "server status", "mt5 status"}
         if any(ok in prompt_lower for ok in ops_keywords):
