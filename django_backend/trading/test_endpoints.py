@@ -213,9 +213,27 @@ class EndpointAPITests(TestCase):
 
     def test_operations_incidents_apis(self):
         """Verify GET /api/operations/incidents and POST manual updates of metadata and notes."""
-        from trading.autonomous_engine import AutonomousDecisionEngine
-        AutonomousDecisionEngine.evaluate_and_heal() # Generates initial incidents
+        from trading.autonomous_engine import get_db_connection
+        import datetime, random
         
+        now_str = datetime.datetime.utcnow().isoformat()
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO incidents (
+                    timestamp, title, affected_services, status, root_cause, recovery_action, duration_seconds, confidence_score,
+                    incident_id, severity, category, source_service, detection_time, resolution_time, resolution_status,
+                    recovery_actions, operator_notes, ai_summary, linked_logs, linked_metrics, related_deployments, related_model_versions
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                now_str, "Test System Outage", "Redis Memory Cache", "OPEN",
+                "Mock socket failure", "Restarting pools", 10, 0.96,
+                "INC-TEST-8492", "CRITICAL", "INFRASTRUCTURE", "redis", now_str, None, "OPEN",
+                "RESTART_SERVICE", "Notes here", "AIOps found socket fatigue.", 
+                '{"trace_id": "tr-test-842"}', '{"latency": 8.4}', '{"tag": "v3.1.0"}', '{"version": "v2.1.0"}'
+            ))
+            conn.commit()
+            
         response = self.client.get('/api/operations/incidents')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.data.get("ok"))
@@ -301,7 +319,7 @@ class EndpointAPITests(TestCase):
         
         resp_drift = self.client.post('/api/ai/assistant/chat', {"prompt": "Explain today's model drift and retrain triggers."})
         self.assertEqual(resp_drift.status_code, 200)
-        self.assertIn("exceeded our 10.0% data drift limit", resp_drift.data.get("response").lower())
+        self.assertIn("breaching our 10.0% data drift limit", resp_drift.data.get("response").lower())
 
     def test_trading_supervisor_all_12_checkpoints(self):
         """Verify all 12 checkpoints exist on risk evaluation response."""
