@@ -148,3 +148,67 @@ class EndpointAPITests(TestCase):
         self.assertIn("status", response.data)
         self.assertIn("logs", response.data)
 
+    def test_platform_health_graph(self):
+        """Verify GET /api/operations/health returns backward compatible services and the dependency graph."""
+        response = self.client.get('/api/operations/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertIn("services", response.data)
+        self.assertIn("nodes", response.data)
+        self.assertIn("links", response.data)
+        self.assertIn("overall_status", response.data)
+
+    def test_predictive_warnings(self):
+        """Verify GET /api/operations/performance returns stability scores and predictive failure forecasts."""
+        response = self.client.get('/api/operations/performance')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertIn("executive_stability_scores", response.data)
+        self.assertIn("predictive_forecast", response.data)
+        
+        forecast = response.data.get("predictive_forecast")
+        self.assertTrue(forecast.get("ok"))
+        self.assertIn("cpu_forecast", forecast)
+        self.assertIn("memory_forecast", forecast)
+
+    def test_model_drift_triggers_retraining_incident(self):
+        """Verify GET /api/model/health detects data drift, triggers retraining, and writes SRE SQLite ledger audits."""
+        from trading.autonomous_engine import get_db_connection
+        response = self.client.get('/api/model/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertTrue(response.data.get("drift_detection").get("exceeds_threshold"))
+        self.assertEqual(response.data.get("drift_detection").get("status"), "degraded")
+        
+        # Verify incident was logged in local SQLite DB
+        with get_db_connection() as conn:
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM incidents WHERE title='Data Drift Threshold Exceeded'")
+            row = cur.fetchone()
+            self.assertIsNotNone(row)
+            self.assertEqual(row["status"], "PENDING_APPROVAL")
+
+    def test_aiops_assistant_diagnostics(self):
+        """Verify POST /api/ai/assistant/chat resolves SRE queries by correlating local incident logs."""
+        response = self.client.post('/api/ai/assistant/chat', {"prompt": "explain current system incidents and why was my model retrained?"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertEqual(response.data.get("intent"), "operations_sre")
+        self.assertIn("AI Operations SRE Cognitive Correlation Diagnostic Report", response.data.get("response"))
+
+    def test_trading_supervisor_circuit_breaker(self):
+        """Verify AutonomousTradingSupervisor risk evaluations and circuit breakers."""
+        from trading.autonomous_engine import AutonomousTradingSupervisor
+        
+        # Scenario A: Normal trade passes
+        eval_ok = AutonomousTradingSupervisor.evaluate_trade("AAPL", "BUY", 10.0)
+        self.assertEqual(eval_ok["status"], "APPROVED")
+        self.assertTrue(eval_ok["checkpoints"]["portfolio_exposure_ok"])
+        
+        # Scenario B: Large size breaches allocation limit and blocks order
+        eval_blocked = AutonomousTradingSupervisor.evaluate_trade("AAPL", "BUY", 150.0)
+        self.assertEqual(eval_blocked["status"], "BLOCKED")
+        self.assertFalse(eval_blocked["checkpoints"]["portfolio_exposure_ok"])
+        self.assertIn("Portfolio risk allocation exceeded", eval_blocked["explanations"][0])
+
+
