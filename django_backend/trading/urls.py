@@ -17,6 +17,7 @@ from . import v22_views
 from . import production_views
 from . import enterprise_views
 from . import saas_views
+from . import ai_fos_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -239,4 +240,21 @@ urlpatterns = [
     path('saas/accessibility/wcag', saas_views.SaasAccessibilityWcagView.as_view(), name='api-saas-wcag'),
     path('saas/licensing/plans', saas_views.SaasLicensingPlansView.as_view(), name='api-saas-licensing-plans'),
     path('saas/certification/scorecard', saas_views.SaasCertificationScorecardView.as_view(), name='api-saas-certification'),
+
+    # ── Version 4.0 AI-Native Financial Operating System Endpoints ──
+    path('ai-fos/multi-agent/orchestrate', ai_fos_views.AiFosMultiAgentView.as_view(), name='api-ai-fos-multi-agent'),
+    path('ai-fos/knowledge-graph/query', ai_fos_views.AiFosKnowledgeGraphView.as_view(), name='api-ai-fos-knowledge-graph'),
+    path('ai-fos/memory/context', ai_fos_views.AiFosMemoryContextView.as_view(), name='api-ai-fos-memory'),
+    path('ai-fos/research/platform', ai_fos_views.AiFosResearchPlatformView.as_view(), name='api-ai-fos-research'),
+    path('ai-fos/workflow/engine', ai_fos_views.AiFosWorkflowEngineView.as_view(), name='api-ai-fos-workflow'),
+    path('ai-fos/quant/risk', ai_fos_views.AiFosQuantRiskView.as_view(), name='api-ai-fos-quant-risk'),
+    path('ai-fos/data/lineage', ai_fos_views.AiFosDataLineageView.as_view(), name='api-ai-fos-data-lineage'),
+    path('ai-fos/sdk/plugins', ai_fos_views.AiFosSdkPluginsView.as_view(), name='api-ai-fos-sdk'),
+    path('ai-fos/collaboration/feed', ai_fos_views.AiFosCollaborationFeedView.as_view(), name='api-ai-fos-collaboration'),
+    path('ai-fos/decision-intelligence', ai_fos_views.AiFosDecisionIntelligenceView.as_view(), name='api-ai-fos-decision-intelligence'),
+    path('ai-fos/autonomous-ops', ai_fos_views.AiFosAutonomousOpsView.as_view(), name='api-ai-fos-autonomous-ops'),
+    path('ai-fos/digital-twin/simulate', ai_fos_views.AiFosDigitalTwinSimulateView.as_view(), name='api-ai-fos-digital-twin'),
+    path('ai-fos/governance/policy', ai_fos_views.AiFosGovernancePolicyView.as_view(), name='api-ai-fos-governance'),
+    path('ai-fos/executive/intelligence', ai_fos_views.AiFosExecutiveIntelligenceView.as_view(), name='api-ai-fos-executive'),
+    path('ai-fos/certification/review', ai_fos_views.AiFosCertificationReviewView.as_view(), name='api-ai-fos-certification'),
 ]
