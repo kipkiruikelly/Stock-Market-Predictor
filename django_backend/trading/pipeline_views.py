@@ -86,8 +86,13 @@ class PipelineTaskStatusView(APIView):
             cache_key = f"pipeline_task_logs:{task_id}"
             cached_data = cache.get(cache_key)
             
-            res = AsyncResult(task_id)
-            status = res.status
+            res = None
+            status = "PENDING"
+            try:
+                res = AsyncResult(task_id)
+                status = res.status
+            except Exception:
+                pass
             
             logs = ""
             prediction = None
@@ -100,10 +105,11 @@ class PipelineTaskStatusView(APIView):
                     logs = "Task is currently queued, waiting for free Celery worker...\n"
                 elif status == "SUCCESS":
                     logs = "Task finished successfully.\n"
-                    if isinstance(res.result, dict):
+                    if res and isinstance(res.result, dict):
                         prediction = res.result.get("prediction")
                 elif status == "FAILURE":
-                    logs = f"Task failed.\nError: {str(res.result)}\n"
+                    err_msg = str(res.result) if res else "Unknown background process error"
+                    logs = f"Task failed.\nError: {err_msg}\n"
             
             return Response({
                 "ok": True,
