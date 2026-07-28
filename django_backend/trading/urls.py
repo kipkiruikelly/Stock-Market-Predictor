@@ -100,6 +100,17 @@ urlpatterns = [
     path('model/health', extra_views.ModelHealthView.as_view(), name='api-model-health'),
     path('strategy/marketplace', extra_views.StrategyMarketplaceView.as_view(), name='api-strategy-marketplace'),
     path('ai/assistant/chat', extra_views.EmbeddedAiAssistantView.as_view(), name='api-ai-assistant-chat'),
+    
+    # ── Phase 30 Advanced Autonomous SRE Operations ───────────────
+    path('operations/incidents', extra_views.IncidentsView.as_view(), name='api-operations-incidents'),
+    path('operations/incidents/<str:incident_id>/update', extra_views.IncidentsUpdateView.as_view(), name='api-operations-incidents-update'),
+    path('operations/predictive', extra_views.PredictiveForecastView.as_view(), name='api-operations-predictive'),
+    path('operations/policies', extra_views.PoliciesConfigView.as_view(), name='api-operations-policies'),
+    path('operations/policies/<str:policy_id>', extra_views.PoliciesConfigView.as_view(), name='api-operations-policies-update'),
+    path('operations/chaos/trigger', extra_views.ChaosTriggerView.as_view(), name='api-operations-chaos-trigger'),
+    path('operations/soc', extra_views.SocEventsView.as_view(), name='api-operations-soc'),
+    path('operations/executive-kpis', extra_views.ExecutiveKpisView.as_view(), name='api-operations-executive-kpis'),
+    path('operations/timeline', extra_views.OperationsTimelineView.as_view(), name='api-operations-timeline'),
 
     # ── Enterprise Quantitative Research Platform & AI OS (v2.2) ──
     path('market/events', v22_views.MarketEventView.as_view(), name='api-market-events'),

@@ -211,4 +211,110 @@ class EndpointAPITests(TestCase):
         self.assertFalse(eval_blocked["checkpoints"]["portfolio_exposure_ok"])
         self.assertIn("Portfolio risk allocation exceeded", eval_blocked["explanations"][0])
 
+    def test_operations_incidents_apis(self):
+        """Verify GET /api/operations/incidents and POST manual updates of metadata and notes."""
+        from trading.autonomous_engine import AutonomousDecisionEngine
+        AutonomousDecisionEngine.evaluate_and_heal() # Generates initial incidents
+        
+        response = self.client.get('/api/operations/incidents')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertGreater(len(response.data.get("incidents")), 0)
+        
+        inc_id = response.data.get("incidents")[0]["incident_id"]
+        # Post a comment / resolve
+        update_resp = self.client.post(f'/api/operations/incidents/{inc_id}/update', {
+            "operator_notes": "Manual audit verified. Recovery action took effect.",
+            "status": "RESOLVED"
+        })
+        self.assertEqual(update_resp.status_code, 200)
+        self.assertTrue(update_resp.data.get("ok"))
+
+    def test_predictive_failures_detailed(self):
+        """Verify GET /api/operations/predictive forecasts all 8 operational trends."""
+        response = self.client.get('/api/operations/predictive')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("cpu_forecast", response.data)
+        self.assertIn("redis_forecast", response.data)
+        self.assertIn("db_growth_forecast", response.data)
+        self.assertIn("queue_backlog_forecast", response.data)
+        self.assertIn("api_latency_forecast", response.data)
+        self.assertIn("mt5_connectivity_forecast", response.data)
+        self.assertIn("worker_saturation_forecast", response.data)
+        self.assertIn("warnings", response.data)
+
+    def test_policies_and_chaos_scenarios(self):
+        """Verify policies retrieval and custom SRE Chaos Engineering trigger executions."""
+        response = self.client.get('/api/operations/policies')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data.get("ok"))
+        self.assertGreater(len(response.data.get("policies")), 0)
+        
+        policy_id = response.data.get("policies")[0]["id"]
+        # Update policy
+        policy_resp = self.client.post(f'/api/operations/policies/{policy_id}', {
+            "is_enabled": False,
+            "cooldown_seconds": 120
+        })
+        self.assertEqual(policy_resp.status_code, 200)
+        self.assertTrue(policy_resp.data.get("ok"))
+        
+        # Trigger synthetic chaos
+        chaos_resp = self.client.post('/api/operations/chaos/trigger', {"scenario": "REDIS_OUTAGE"})
+        self.assertEqual(chaos_resp.status_code, 200)
+        self.assertTrue(chaos_resp.data.get("ok"))
+        self.assertEqual(chaos_resp.data.get("self_healing_status"), "SUCCESS")
+
+    def test_soc_and_executive_kpis(self):
+        """Verify security operations metrics and multi-quadrant executive dashboard KPIs."""
+        soc_resp = self.client.get('/api/operations/soc')
+        self.assertEqual(soc_resp.status_code, 200)
+        self.assertTrue(soc_resp.data.get("ok"))
+        self.assertIn("events", soc_resp.data)
+        self.assertEqual(soc_resp.data.get("threat_level"), "LOW")
+        
+        exec_resp = self.client.get('/api/operations/executive-kpis')
+        self.assertEqual(exec_resp.status_code, 200)
+        self.assertTrue(exec_resp.data.get("ok"))
+        self.assertIn("business_quadrant", exec_resp.data)
+        self.assertIn("infrastructure_quadrant", exec_resp.data)
+        self.assertIn("machine_learning_quadrant", exec_resp.data)
+        self.assertIn("trading_quadrant", exec_resp.data)
+        self.assertIn("security_quadrant", exec_resp.data)
+
+    def test_operations_timeline_audit(self):
+        """Verify chronological operations timeline logging and querying capabilities."""
+        timeline_resp = self.client.get('/api/operations/timeline')
+        self.assertEqual(timeline_resp.status_code, 200)
+        self.assertTrue(timeline_resp.data.get("ok"))
+        self.assertGreater(len(timeline_resp.data.get("timeline")), 0)
+        
+        search_resp = self.client.get('/api/operations/timeline?search=v3.1.0')
+        self.assertEqual(search_resp.status_code, 200)
+        self.assertTrue(search_resp.data.get("ok"))
+
+    def test_aiops_complex_diagnostic_questions(self):
+        """Verify AIOps chatbot custom prompt matching for critical SRE scenarios."""
+        resp_pause = self.client.post('/api/ai/assistant/chat', {"prompt": "Why was trading paused today?"})
+        self.assertEqual(resp_pause.status_code, 200)
+        self.assertIn("trading was paused autonomously", resp_pause.data.get("response").lower())
+        
+        resp_drift = self.client.post('/api/ai/assistant/chat', {"prompt": "Explain today's model drift and retrain triggers."})
+        self.assertEqual(resp_drift.status_code, 200)
+        self.assertIn("exceeded our 10.0% data drift limit", resp_drift.data.get("response").lower())
+
+    def test_trading_supervisor_all_12_checkpoints(self):
+        """Verify all 12 checkpoints exist on risk evaluation response."""
+        from trading.autonomous_engine import AutonomousTradingSupervisor
+        res = AutonomousTradingSupervisor.evaluate_trade("SPY", "BUY", 10.0)
+        chk = res["checkpoints"]
+        required_checks = [
+            "portfolio_exposure_ok", "drawdown_limit_ok", "volatility_boundary_ok",
+            "broker_spread_ok", "circuit_breaker_tripped", "mt5_bridge_connected",
+            "market_hours_active", "slippage_tolerance_ok", "model_confidence_score_ok",
+            "macro_news_clear", "calendar_events_clear", "recent_strategy_metrics_ok"
+        ]
+        for rc in required_checks:
+            self.assertIn(rc, chk)
+
 
