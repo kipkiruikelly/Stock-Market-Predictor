@@ -5,6 +5,7 @@ from django.urls import path, include, re_path
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.views.generic import TemplateView
 from users import views as users_views
+from core.admin_site import enterprise_admin_site
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIST = BASE_DIR.parent / 'frontend' / 'dist'
@@ -49,7 +50,7 @@ def serve_react_spa(request, path=''):
 urlpatterns = [
     # ── Admin & API Endpoints ─────────────────────────────────────
     path('admin/api/', include('trading.admin_urls')),
-    path('admin/', admin.site.urls),
+    path('admin/', enterprise_admin_site.urls),
     path('api/', include('users.urls')),
     path('api/', include('trading.urls')),
     path('mt5/', include('trading.mt5_urls')),
