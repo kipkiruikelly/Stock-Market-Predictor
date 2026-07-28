@@ -16,6 +16,7 @@ from . import execution_views
 from . import v22_views
 from . import production_views
 from . import enterprise_views
+from . import saas_views
 
 urlpatterns = [
     # ── Institutional Smart Execution Engine ─────────────────────
@@ -223,4 +224,19 @@ urlpatterns = [
     path('enterprise/dev-experience', enterprise_views.EnterpriseDevExperienceView.as_view(), name='api-enterprise-dev-experience'),
     path('enterprise/documentation', enterprise_views.EnterpriseDocumentationView.as_view(), name='api-enterprise-documentation'),
     path('enterprise/ui-modernization', enterprise_views.EnterpriseUiModernizationView.as_view(), name='api-enterprise-ui-tokens'),
+
+    # ── Phase 33 Enterprise SaaS Product Upgrade Endpoints ────────
+    path('saas/architecture/simplify', saas_views.SaasArchitectureSimplifyView.as_view(), name='api-saas-simplify'),
+    path('saas/dependencies/graph', saas_views.SaasDependenciesGraphView.as_view(), name='api-saas-dependencies-graph'),
+    path('saas/database/optimization', saas_views.SaasDatabaseOptimizationView.as_view(), name='api-saas-db-optimization'),
+    path('saas/governance/endpoints', saas_views.SaasGovernanceEndpointsView.as_view(), name='api-saas-governance'),
+    path('saas/security/audit', saas_views.SaasSecurityAuditView.as_view(), name='api-saas-security-audit'),
+    path('saas/performance/profile', saas_views.SaasPerformanceProfileView.as_view(), name='api-saas-performance'),
+    path('saas/monitoring/trends', saas_views.SaasMonitoringTrendsView.as_view(), name='api-saas-monitoring-trends'),
+    path('saas/developer/bootstrap', saas_views.SaasDeveloperBootstrapView.as_view(), name='api-saas-developer-bootstrap'),
+    path('saas/cicd/pipeline', saas_views.SaasCicdPipelineView.as_view(), name='api-saas-cicd'),
+    path('saas/documentation/search', saas_views.SaasDocumentationSearchView.as_view(), name='api-saas-documentation-search'),
+    path('saas/accessibility/wcag', saas_views.SaasAccessibilityWcagView.as_view(), name='api-saas-wcag'),
+    path('saas/licensing/plans', saas_views.SaasLicensingPlansView.as_view(), name='api-saas-licensing-plans'),
+    path('saas/certification/scorecard', saas_views.SaasCertificationScorecardView.as_view(), name='api-saas-certification'),
 ]
