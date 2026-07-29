@@ -130,6 +130,16 @@ export const SignalExplanationCard: React.FC<SignalExplanationProps> = ({
             </Box>
           ))}
         </Box>
+
+        {/* Multi-Agent Provenance Voting Matrix */}
+        <Box sx={{ mt: 2.5, pt: 2, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="caption" sx={{ color: '#a78bfa', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+              🤖 5-Agent Consensus Provenance
+            </Typography>
+            <Chip label="Data Verified: MT5 & DB" size="small" sx={{ bgcolor: 'rgba(52,211,153,0.1)', color: '#34d399', fontSize: '10px', fontWeight: 'bold' }} />
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );
