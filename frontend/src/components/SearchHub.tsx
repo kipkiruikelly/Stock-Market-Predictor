@@ -11,14 +11,27 @@ interface SearchItem {
 }
 
 const INDEX_ITEMS: SearchItem[] = [
-  { title: 'Apple Inc. (AAPL) predictions', category: 'Assets', route: '/research?ticker=AAPL', icon: <Cpu size={16} className="text-nexus-blu" /> },
-  { title: 'Microsoft Corp. (MSFT) predictions', category: 'Assets', route: '/research?ticker=MSFT', icon: <Cpu size={16} className="text-nexus-blu" /> },
-  { title: 'Tesla Inc. (TSLA) predictions', category: 'Assets', route: '/research?ticker=TSLA', icon: <Cpu size={16} className="text-nexus-blu" /> },
-  { title: 'Strategy Marketplace subscription deck', category: 'Strategies', route: '/leaderboard', icon: <Award size={16} className="text-green-400" /> },
-  { title: 'Portfolio analytics & Sharpe ratio', category: 'Portfolio', route: '/portfolio', icon: <Compass size={16} className="text-nexus-pur" /> },
-  { title: 'Risk Management & Position size math', category: 'Risk Management', route: '/risk', icon: <Settings size={16} className="text-red-400" /> },
+  { title: 'Apple Inc. (AAPL) predictions & SHAP driver analysis', category: 'Assets', route: '/research?ticker=AAPL', icon: <Cpu size={16} className="text-nexus-blu" /> },
+  { title: 'Microsoft Corp. (MSFT) predictions & SHAP driver analysis', category: 'Assets', route: '/research?ticker=MSFT', icon: <Cpu size={16} className="text-nexus-blu" /> },
+  { title: 'Tesla Inc. (TSLA) predictions & SHAP driver analysis', category: 'Assets', route: '/research?ticker=TSLA', icon: <Cpu size={16} className="text-nexus-blu" /> },
+  { title: 'Trade Journal & Losing / Winning trades history', category: 'Journal', route: '/journal', icon: <Compass size={16} className="text-amber-400" /> },
+  { title: 'ML Training Pipeline, Experiments & Deployments', category: 'MLOps', route: '/pipeline', icon: <Cpu size={16} className="text-purple-400" /> },
+  { title: 'Strategy Marketplace & Leaderboard', category: 'Strategies', route: '/leaderboard', icon: <Award size={16} className="text-green-400" /> },
+  { title: 'Portfolio analytics, PnL & Sharpe ratio', category: 'Portfolio', route: '/portfolio', icon: <Compass size={16} className="text-nexus-pur" /> },
+  { title: 'Risk Management, VaR & Stress testing', category: 'Risk Management', route: '/risk', icon: <Settings size={16} className="text-red-400" /> },
+  { title: 'System Health, SRE Metrics, Celery Queues & Redis', category: 'SRE & Ops', route: '/admin?tab=health', icon: <Settings size={16} className="text-emerald-400" /> },
   { title: 'Developer API Explorer Blueprints', category: 'Resources', route: '/resources', icon: <FileText size={16} className="text-gray-400" /> },
-  { title: 'Executive command business stats', category: 'Administration', route: '/admin?tab=overview', icon: <Settings size={16} className="text-amber-500" /> },
+  { title: 'Executive Command Dashboard & Revenue Stats', category: 'Administration', route: '/admin?tab=overview', icon: <Settings size={16} className="text-amber-500" /> },
+];
+
+// Semantic Intent Parser Map
+const INTENT_MAP: Array<{ keywords: string[]; route: string; category: string; title: string }> = [
+  { keywords: ['losing', 'loss', 'winning', 'trades', 'history', 'journal', 'closed'], route: '/journal', category: 'Journal', title: 'Filter Trade Journal & Closed Trades' },
+  { keywords: ['tesla', 'tsla', 'elon'], route: '/research?ticker=TSLA', category: 'Assets', title: 'Open Tesla (TSLA) AI Model & Predictions' },
+  { keywords: ['apple', 'aapl'], route: '/research?ticker=AAPL', category: 'Assets', title: 'Open Apple (AAPL) AI Model & Predictions' },
+  { keywords: ['redis', 'celery', 'queue', 'incident', 'sre', 'cpu', 'memory', 'health'], route: '/admin?tab=health', category: 'SRE & Ops', title: 'Inspect System Health, Redis & Celery Status' },
+  { keywords: ['train', 'model', 'retrain', 'experiment', 'pipeline', 'drift'], route: '/pipeline', category: 'MLOps', title: 'Open ML Training & Model Registry Pipeline' },
+  { keywords: ['var', 'shortfall', 'greeks', 'monte', 'risk', 'drawdown'], route: '/risk', category: 'Risk Management', title: 'Open Portfolio Risk Analytics & VaR Calculator' },
 ];
 
 interface SearchHubProps {
@@ -31,10 +44,24 @@ export const SearchHub: React.FC<SearchHubProps> = ({ open, onClose }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
 
-  const filtered = INDEX_ITEMS.filter(item => 
-    item.title.toLowerCase().includes(query.toLowerCase()) ||
-    item.category.toLowerCase().includes(query.toLowerCase())
+  const qLower = query.toLowerCase().trim();
+  const matchedIntents: SearchItem[] = qLower ? INTENT_MAP
+    .filter(intent => intent.keywords.some(kw => qLower.includes(kw)))
+    .map(intent => ({
+      title: intent.title,
+      category: intent.category,
+      route: intent.route,
+      icon: <Compass size={16} className="text-purple-400" />
+    })) : [];
+
+  const standardFiltered = INDEX_ITEMS.filter(item => 
+    item.title.toLowerCase().includes(qLower) ||
+    item.category.toLowerCase().includes(qLower)
   );
+
+  // Combine intent matches first, then deduplicate by route
+  const combined = [...matchedIntents, ...standardFiltered];
+  const filtered = Array.from(new Map(combined.map(item => [item.route, item])).values());
 
   useEffect(() => {
     setSelectedIndex(0);
