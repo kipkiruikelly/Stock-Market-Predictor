@@ -103,6 +103,7 @@ urlpatterns = [
     path('manual-paper/account', extra_views.ManualPaperAccountView.as_view(), name='api-manual-paper-account'),
     path('manual-paper/order', extra_views.ManualPaperOrderView.as_view(), name='api-manual-paper-order'),
     path('manual-paper/cancel', extra_views.ManualPaperCancelView.as_view(), name='api-manual-paper-cancel'),
+    path('mlops/pipeline/deploy', extra_views.MlopsPipelineDeployView.as_view(), name='api-mlops-pipeline-deploy'),
     
     # ── Operational Monitoring ────────────────────────────────────
     path('operations/health', extra_views.OperationsHealthView.as_view(), name='api-operations-health'),
