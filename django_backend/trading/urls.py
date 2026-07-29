@@ -19,8 +19,13 @@ from . import enterprise_views
 from . import saas_views
 from . import ai_fos_views
 from . import institutional_views
+from . import stream_views
 
 urlpatterns = [
+    # ── Real-time SSE Streaming & Multi-Agent Provenance ─────────
+    path('stream/events', stream_views.EventStreamView.as_view(), name='api-stream-events'),
+    path('ai/subagents/provenance', stream_views.MultiAgentProvenanceView.as_view(), name='api-subagents-provenance'),
+
     # ── Institutional Smart Execution Engine ─────────────────────
     path('execution/smart-order', execution_views.SmartOrderView.as_view(), name='api-execution-smart-order'),
     path('execution/stats', execution_views.ExecutionStatsView.as_view(), name='api-execution-stats'),
