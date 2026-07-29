@@ -1,0 +1,7 @@
+Test Suite Summary
+==================================================
+Module:     all
+Status:     FAILED
+Duration:   1.8s
+Timestamp:  2026-07-29T05:32:06.377246
+Log file:   /Volumes/Archive/Project/Stock Market Predictor/logs/test_runner_20260729_053204.log
