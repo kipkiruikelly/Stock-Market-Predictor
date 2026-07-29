@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Activity, Briefcase, BarChart2, BookOpen, Settings, Cpu, Zap, Search, Layers, 
   ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight
@@ -10,7 +10,6 @@ import { apiFetch } from '../utils/api';
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const navigate = useNavigate();
   const isAdminView = location.pathname.startsWith('/admin');
   
   const [enterpriseMode, setEnterpriseMode] = useState<boolean>(true);

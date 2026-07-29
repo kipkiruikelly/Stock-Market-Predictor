@@ -9,6 +9,8 @@ import { getAppTheme } from '../theme';
 import { Sidebar } from './Sidebar';
 import { SearchHub } from './SearchHub';
 import { NotificationDrawer } from './NotificationDrawer';
+import { OnboardingWizard } from './OnboardingWizard';
+import { LifecyclePipelineModal } from './LifecyclePipelineModal';
 
 export const AppLayout = () => {
   const { user, logout, setUser } = useAuth();
@@ -39,6 +41,10 @@ export const AppLayout = () => {
   // Release Candidate Premium overlays
   const [searchHubOpen, setSearchHubOpen] = useState(false);
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(() => {
+    return !localStorage.getItem('bl-onboarding-completed');
+  });
+  const [pipelineModalOpen, setPipelineModalOpen] = useState(false);
   const [tableDensity, setTableDensity] = useState<'compact' | 'comfortable'>(() => {
     return (localStorage.getItem('bl-density') as any) || 'compact';
   });
@@ -560,6 +566,27 @@ export const AppLayout = () => {
 
       {/* Release Candidate Notifications Side Drawer */}
       <NotificationDrawer open={notificationDrawerOpen} onClose={() => setNotificationDrawerOpen(false)} />
+
+      {/* Guided First-Time Onboarding Wizard */}
+      <OnboardingWizard 
+        open={onboardingOpen} 
+        onClose={() => {
+          setOnboardingOpen(false);
+          localStorage.setItem('bl-onboarding-completed', 'true');
+        }} 
+        username={user?.username || 'Trader'}
+        onComplete={() => {
+          setOnboardingOpen(false);
+          localStorage.setItem('bl-onboarding-completed', 'true');
+        }}
+      />
+
+      {/* End-to-End MLOps Lifecycle Pipeline Modal */}
+      <LifecyclePipelineModal 
+        open={pipelineModalOpen} 
+        onClose={() => setPipelineModalOpen(false)} 
+        ticker="AAPL"
+      />
     </div>
     </ThemeProvider>
   );
