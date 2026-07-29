@@ -20,8 +20,33 @@ from . import saas_views
 from . import ai_fos_views
 from . import institutional_views
 from . import stream_views
+from . import production_views
+from users import security_views
+from . import execution_analytics
+from . import quant_views
+from . import ai_governance_views
+from . import collaboration_views
+from . import report_views
+from . import webhook_views
 
 urlpatterns = [
+    # ── Phase 34: Enterprise Production & Scalability Suite ──────
+    path('production/deployments/status', production_views.DeploymentStatusView.as_view(), name='api-production-deployments-status'),
+    path('production/deployments/rollback', production_views.DeploymentRollbackView.as_view(), name='api-production-deployments-rollback'),
+    path('security/dashboard', security_views.SecurityCenterView.as_view(), name='api-security-dashboard'),
+    path('security/audit-logs', security_views.AuditLogExplorerView.as_view(), name='api-security-audit-logs'),
+    path('execution/tca', execution_analytics.TcaAnalyticsView.as_view(), name='api-execution-tca'),
+    path('execution/replay', execution_analytics.OrderReplayView.as_view(), name='api-execution-replay'),
+    path('quant/factor-attribution', quant_views.FactorAttributionView.as_view(), name='api-quant-factor-attribution'),
+    path('quant/pair-research', quant_views.PairResearchView.as_view(), name='api-quant-pair-research'),
+    path('ai/governance/summary', ai_governance_views.AiGovernanceSummaryView.as_view(), name='api-ai-governance-summary'),
+    path('ai/governance/approve', ai_governance_views.AiHumanApprovalView.as_view(), name='api-ai-governance-approve'),
+    path('collaboration/feed', collaboration_views.ActivityFeedView.as_view(), name='api-collaboration-feed'),
+    path('collaboration/comments', collaboration_views.ChartCommentsView.as_view(), name='api-collaboration-comments'),
+    path('reports/generate', report_views.ReportGeneratorView.as_view(), name='api-reports-generate'),
+    path('reports/schedule', report_views.ScheduledReportsView.as_view(), name='api-reports-schedule'),
+    path('developer/webhooks', webhook_views.WebhookManagementView.as_view(), name='api-developer-webhooks'),
+
     # ── Real-time SSE Streaming & Multi-Agent Provenance ─────────
     path('stream/events', stream_views.EventStreamView.as_view(), name='api-stream-events'),
     path('ai/subagents/provenance', stream_views.MultiAgentProvenanceView.as_view(), name='api-subagents-provenance'),

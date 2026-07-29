@@ -33,6 +33,8 @@ import { RiskDashboard } from './pages/RiskDashboard';
 import { ScannerDashboard } from './pages/ScannerDashboard';
 import { ModelMetricsDashboard } from './pages/ModelMetricsDashboard';
 import { TrackRecordDashboard } from './pages/TrackRecordDashboard';
+import { DeploymentDashboard } from './pages/DeploymentDashboard';
+import { SecurityCenterDashboard } from './pages/SecurityCenterDashboard';
 
 function App() {
   return (
@@ -119,6 +121,8 @@ function App() {
               <Route path="/admin/secrets" element={<AdminDashboard />} />
               <Route path="/admin/billing" element={<AdminDashboard />} />
               <Route path="/admin/compliance" element={<AdminDashboard />} />
+              <Route path="/admin/deployments" element={<DeploymentDashboard />} />
+              <Route path="/admin/security-center" element={<SecurityCenterDashboard />} />
               
               <Route path="/tools" element={<ToolsDashboard />} />
               <Route path="/scanner" element={<ScannerDashboard />} />
