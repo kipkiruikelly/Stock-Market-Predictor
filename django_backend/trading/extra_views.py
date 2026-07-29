@@ -318,7 +318,7 @@ class ManualPaperAccountView(APIView):
             })
 
         # Source C: UserPaperPosition
-        user_paper_pos = UserPaperPosition.objects.filter(user=user).order_by('-opened_at')
+        user_paper_pos = UserPaperPosition.objects.filter(account__user=user).order_by('-opened_at')
         for upp in user_paper_pos:
             cur_price = _get_live_price(upp.ticker, upp.entry_price)
             pnl = (cur_price - upp.entry_price) * upp.quantity if upp.side.lower() in ('buy', 'long') else (upp.entry_price - cur_price) * upp.quantity
@@ -341,7 +341,7 @@ class ManualPaperAccountView(APIView):
 
         # 2. Aggregate Pending Orders
         pending_orders = []
-        user_orders = UserPaperOrder.objects.filter(user=user, status='pending').order_by('-created_at')
+        user_orders = UserPaperOrder.objects.filter(account__user=user, status='pending').order_by('-created_at')
         for o in user_orders:
             pending_orders.append({
                 'id': o.id,
@@ -411,7 +411,6 @@ class ManualPaperOrderView(APIView):
         if order_type in ('limit', 'stop') and target_price:
             # Record as Pending Order
             order = UserPaperOrder.objects.create(
-                user=user,
                 account=acct,
                 ticker=ticker,
                 side=norm_side,
@@ -475,7 +474,7 @@ class ManualPaperCancelView(APIView):
         if not order_id:
             return Response({'ok': False, 'error': 'order_id is required.'}, status=400)
         try:
-            order = UserPaperOrder.objects.get(id=order_id, user=request.user)
+            order = UserPaperOrder.objects.get(id=order_id, account__user=request.user)
             order.status = 'cancelled'
             order.save()
             return Response({'ok': True, 'message': 'Order cancelled.'})
