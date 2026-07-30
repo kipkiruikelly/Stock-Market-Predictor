@@ -68,6 +68,7 @@ import { ApiExplorerDashboard } from './pages/ApiExplorerDashboard';
 import { RunbooksPortalDashboard } from './pages/RunbooksPortalDashboard';
 import { UserGuidePortalDashboard } from './pages/UserGuidePortalDashboard';
 import { AdminGuidePortalDashboard } from './pages/AdminGuidePortalDashboard';
+import { EnterpriseMarketOverviewDashboard } from './pages/EnterpriseMarketOverviewDashboard';
 
 function App() {
   return (
@@ -93,6 +94,8 @@ function App() {
               <Route path="/index" element={<HomeDashboard />} />
               <Route path="/dashboard" element={<HomeDashboard />} />
               <Route path="/dashboard/home" element={<HomeDashboard />} />
+              <Route path="/dashboard/market-overview" element={<EnterpriseMarketOverviewDashboard />} />
+              <Route path="/enterprise/market-overview" element={<EnterpriseMarketOverviewDashboard />} />
               <Route path="/portfolio" element={<TradingDashboard />} />
               <Route path="/paper" element={<TradingDashboard />} />
               <Route path="/watchlist" element={<TradingDashboard />} />

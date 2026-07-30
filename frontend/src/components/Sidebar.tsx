@@ -27,7 +27,7 @@ export const Sidebar: React.FC = () => {
 
   const [sidebarStructure, setSidebarStructure] = useState<Record<string, any[]>>({
     "Dashboard": [
-      {"name": "Market Overview", "route": "/markets"}
+      {"name": "Market Overview", "route": "/dashboard/market-overview"}
     ],
     "Trading": [
       {"name": "Trading Strategies", "route": "/trading/strategies"},

@@ -46,6 +46,7 @@ urlpatterns = [
     path('executive/business-analytics/dashboard', executive_suite_views.BusinessAnalyticsView.as_view(), name='api-executive-analytics'),
     path('executive/growth/dashboard', executive_suite_views.ExecutiveGrowthView.as_view(), name='api-executive-growth'),
     path('executive/cloud-costs/dashboard', executive_suite_views.CloudCostsView.as_view(), name='api-executive-cloud-costs'),
+    path('dashboard/market-overview/dashboard', executive_suite_views.EnterpriseMarketOverviewView.as_view(), name='api-market-overview'),
 
     # ── Administration Suite Endpoints ───────────────────────────
     path('admin/users/dashboard', admin_suite_views.AdminUsersView.as_view(), name='api-admin-users'),
