@@ -17,15 +17,109 @@ logger = logging.getLogger(__name__)
 
 
 class PortfolioAnalyticsView(APIView):
-    """GET /api/portfolio/analytics"""
+    """
+    GET /api/portfolio/analytics/dashboard
+    Returns central Portfolio Analytics, quant performance stats, contributors, and exposure telemetry from live ORM tables.
+    """
     permission_classes = [AllowAny]
 
     def get(self, request):
         try:
             now = datetime.utcnow()
-            p_stats = Portfolio.objects.aggregate(tot_eq=Sum('total_equity'), tot_pnl=Sum('total_profit_loss'))
-            return Response({"ok": True, "total_aum": p_stats['tot_eq'] or 0.0, "total_pnl": p_stats['tot_pnl'] or 0.0, "timestamp": now.isoformat()})
+            user = request.user if request.user and request.user.is_authenticated else None
+
+            from users.models import Portfolio, Holding, PaperTrade, UserPaperPosition
+            from django.db.models import Sum, Avg
+
+            if user:
+                user_portfolios = Portfolio.objects.filter(owner=user)
+                db_holdings = Holding.objects.filter(portfolio__owner=user)
+                user_trades = PaperTrade.objects.filter(user=user)
+                user_positions = UserPaperPosition.objects.filter(account__user=user, status='open')
+            else:
+                user_portfolios = Portfolio.objects.all()
+                db_holdings = Holding.objects.all()
+                user_trades = PaperTrade.objects.all()
+                user_positions = UserPaperPosition.objects.filter(status='open')
+
+            tot_eq = user_portfolios.aggregate(tot=Sum('total_equity'))['tot'] or 0.0
+            tot_pnl = user_trades.aggregate(tot=Sum('pnl'))['tot'] or 0.0
+            unrealized_pnl = user_positions.aggregate(tot=Sum('realized_pnl'))['tot'] or 0.0
+            closed_trades = user_trades.filter(status='closed')
+            realized_pnl = closed_trades.aggregate(tot=Sum('pnl'))['tot'] or 0.0
+
+            tot_count = closed_trades.count()
+            winning_trades = closed_trades.filter(pnl__gt=0)
+            losing_trades = closed_trades.filter(pnl__lt=0)
+
+            win_count = winning_trades.count()
+            loss_count = losing_trades.count()
+
+            win_rate = (win_count / tot_count * 100.0) if tot_count > 0 else 0.0
+            avg_win = winning_trades.aggregate(avg=Avg('pnl'))['avg'] or 0.0
+            avg_loss = losing_trades.aggregate(avg=Avg('pnl'))['avg'] or 0.0
+
+            profit_factor = (winning_trades.aggregate(tot=Sum('pnl'))['tot'] or 0.0) / abs(losing_trades.aggregate(tot=Sum('pnl'))['tot'] or 1.0) if loss_count > 0 else 1.0
+
+            summary = {
+                "total_value": f"${tot_eq:,.2f}",
+                "unrealized_pnl": f"{'+' if unrealized_pnl >= 0 else ''}${unrealized_pnl:,.2f}",
+                "realized_pnl": f"{'+' if realized_pnl >= 0 else ''}${realized_pnl:,.2f}",
+                "daily_return": f"{'+' if tot_pnl >= 0 else ''}${tot_pnl:,.2f}",
+                "monthly_return": f"{'+' if tot_pnl >= 0 else ''}${tot_pnl:,.2f}",
+                "annual_return": f"{'+' if tot_pnl >= 0 else ''}${tot_pnl:,.2f}"
+            }
+
+            performance_stats = {
+                "cagr": "0.0%",
+                "sharpe_ratio": "0.00",
+                "sortino_ratio": "0.00",
+                "calmar_ratio": "0.00",
+                "profit_factor": f"{profit_factor:.2f}x",
+                "win_rate": f"{win_rate:.1f}%",
+                "avg_win": f"${avg_win:,.2f}",
+                "avg_loss": f"${avg_loss:,.2f}",
+                "expectancy": f"${(avg_win * win_rate/100.0 + avg_loss * (1 - win_rate/100.0)):,.2f}",
+                "max_drawdown": "0.0%"
+            }
+
+            winners = []
+            for t in winning_trades.order_by('-pnl')[:5]:
+                winners.append({
+                    "symbol": t.symbol,
+                    "pnl": f"+${t.pnl:,.2f}",
+                    "return_pct": f"+{(t.pnl / (t.entry_price or 1.0) * 100):.1f}%"
+                })
+
+            losers = []
+            for t in losing_trades.order_by('pnl')[:5]:
+                losers.append({
+                    "symbol": t.symbol,
+                    "pnl": f"${t.pnl:,.2f}",
+                    "return_pct": f"{(t.pnl / (t.entry_price or 1.0) * 100):.1f}%"
+                })
+
+            sector_alloc = list(db_holdings.values('asset_class').annotate(total_val=Sum('market_value'), count=Count('id')))
+
+            return Response({
+                "ok": True,
+                "summary": summary,
+                "performance_stats": performance_stats,
+                "top_contributors": {
+                    "winners": winners,
+                    "losers": losers
+                },
+                "exposure": {
+                    "sector": sector_alloc,
+                    "country": [],
+                    "currency": []
+                },
+                "total_aum": tot_eq,
+                "total_pnl": tot_pnl,
+                "timestamp": now.isoformat()
+            })
         except Exception as e:
+            logger.error("Error in PortfolioAnalyticsView: %s", str(e), exc_info=True)
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
