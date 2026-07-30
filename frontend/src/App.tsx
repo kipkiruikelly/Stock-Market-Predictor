@@ -37,6 +37,7 @@ import { DeploymentDashboard } from './pages/DeploymentDashboard';
 import { SecurityCenterDashboard } from './pages/SecurityCenterDashboard';
 import { TradingSignalsDashboard } from './pages/TradingSignalsDashboard';
 import { SmartExecutionDashboard } from './pages/SmartExecutionDashboard';
+import { OrdersDashboard } from './pages/OrdersDashboard';
 
 function App() {
   return (
@@ -112,7 +113,9 @@ function App() {
               <Route path="/trading/signals" element={<TradingSignalsDashboard />} />
               <Route path="/signals" element={<TradingSignalsDashboard />} />
               <Route path="/dashboard/signals" element={<TradingSignalsDashboard />} />
-              <Route path="/trading/orders" element={<LiveDashboard />} />
+              <Route path="/trading/orders" element={<OrdersDashboard />} />
+              <Route path="/orders" element={<OrdersDashboard />} />
+              <Route path="/dashboard/orders" element={<OrdersDashboard />} />
               <Route path="/trading/positions" element={<LiveDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<TradingDashboard />} />

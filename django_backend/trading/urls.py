@@ -30,8 +30,13 @@ from . import report_views
 from . import webhook_views
 from . import signals_views
 from . import smartexecution_views
+from . import oms_views
 
 urlpatterns = [
+    # ── Institutional Order Management System (OMS) Suite ───────
+    path('trading/orders/oms', oms_views.OmsDashboardView.as_view(), name='api-oms-dashboard'),
+    path('trading/orders/<str:order_id>/timeline', oms_views.OmsOrderTimelineView.as_view(), name='api-oms-order-timeline'),
+    path('trading/orders/<str:order_id>/modify', oms_views.OmsOrderModifyView.as_view(), name='api-oms-order-modify'),
     # ── Institutional Smart Order Execution (SOR) Suite ─────────
     path('execution/smartexecution/dashboard', smartexecution_views.SmartExecutionDashboardView.as_view(), name='api-smartexecution-dashboard'),
     path('execution/order/<str:order_id>/details', smartexecution_views.SmartExecutionOrderDetailView.as_view(), name='api-smartexecution-order-details'),
