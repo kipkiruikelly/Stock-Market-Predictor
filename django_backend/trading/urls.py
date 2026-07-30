@@ -87,6 +87,8 @@ urlpatterns = [
     path('trading/supervisor/dashboard', supervisor_views.SupervisorDashboardView.as_view(), name='api-supervisor-dashboard'),
     path('trading/supervisor/decision', supervisor_views.SupervisorDecisionView.as_view(), name='api-supervisor-decision'),
     path('trading/terminal/dashboard', supervisor_views.TradingTerminalView.as_view(), name='api-trading-terminal'),
+    path('trading/performance/dashboard', supervisor_views.TradingPerformanceAnalyticsView.as_view(), name='api-trading-performance'),
+    path('trading/marketanalytics/dashboard', supervisor_views.TradingMarketAnalyticsView.as_view(), name='api-trading-marketanalytics'),
     # ── Institutional Position Management System (PMS) Suite ────
     path('trading/positions/dashboard', positions_views.PositionsDashboardView.as_view(), name='api-positions-dashboard'),
     path('trading/positions/<str:position_id>/details', positions_views.PositionDetailView.as_view(), name='api-position-details'),

@@ -35,10 +35,10 @@ export const Sidebar: React.FC = () => {
       {"name": "Orders OMS", "route": "/trading/orders"},
       {"name": "Smart Execution", "route": "/trading/smartexecution"},
       {"name": "Trading Signals", "route": "/trading/signals"},
-      {"name": "Performance", "route": "/portfolio/performance"},
+      {"name": "Trading Performance", "route": "/trading/performance"},
       {"name": "Trading Terminal", "route": "/trading/tradingterminal"},
-      {"name": "Markets Analytics", "route": "/markets"},
-      {"name": "AI Robots", "route": "/bots"},
+      {"name": "Markets Analytics", "route": "/trading/marketanalytics"},
+      {"name": "AI Robots", "route": "/trading/airobots"},
       {"name": "Strategy Tools", "route": "/tools"}
     ],
     "Portfolio": [

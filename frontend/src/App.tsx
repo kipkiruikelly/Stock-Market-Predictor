@@ -70,6 +70,9 @@ import { UserGuidePortalDashboard } from './pages/UserGuidePortalDashboard';
 import { AdminGuidePortalDashboard } from './pages/AdminGuidePortalDashboard';
 import { EnterpriseMarketOverviewDashboard } from './pages/EnterpriseMarketOverviewDashboard';
 import { TradingTerminalDashboard } from './pages/TradingTerminalDashboard';
+import { TradingPerformanceDashboard } from './pages/TradingPerformanceDashboard';
+import { MarketAnalyticsDashboard } from './pages/MarketAnalyticsDashboard';
+import { AIRobotsDashboard } from './pages/AIRobotsDashboard';
 
 function App() {
   return (
@@ -186,9 +189,11 @@ function App() {
               <Route path="/knowledge/user-guide" element={<UserGuidePortalDashboard />} />
               <Route path="/knowledge/admin-guide" element={<AdminGuidePortalDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
-              <Route path="/trading/performance" element={<PortfolioPerformanceDashboard />} />
+              <Route path="/trading/performance" element={<TradingPerformanceDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
               <Route path="/trading/tradingterminal" element={<TradingTerminalDashboard />} />
+              <Route path="/trading/marketanalytics" element={<MarketAnalyticsDashboard />} />
+              <Route path="/trading/airobots" element={<AIRobotsDashboard />} />
               <Route path="/trading/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/dashboard/strategies" element={<TradingStrategiesDashboard />} />
