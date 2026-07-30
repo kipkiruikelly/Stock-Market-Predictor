@@ -20,7 +20,6 @@ from . import saas_views
 from . import ai_fos_views
 from . import institutional_views
 from . import stream_views
-from . import production_views
 from users import security_views
 from . import execution_analytics
 from . import quant_views
