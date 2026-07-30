@@ -30,6 +30,7 @@ export const Sidebar: React.FC = () => {
       {"name": "Market Overview", "route": "/markets"}
     ],
     "Trading": [
+      {"name": "Trading Strategies", "route": "/trading/strategies"},
       {"name": "Trading Supervisor", "route": "/trading/supervisor"},
       {"name": "Positions PMS", "route": "/trading/positions"},
       {"name": "Orders OMS", "route": "/trading/orders"},

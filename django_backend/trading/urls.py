@@ -33,8 +33,13 @@ from . import smartexecution_views
 from . import oms_views
 from . import positions_views
 from . import supervisor_views
+from . import strategy_management_views
 
 urlpatterns = [
+    # ── Institutional Strategy Management System (SMS) Suite ────
+    path('trading/strategies/dashboard', strategy_management_views.StrategyDashboardView.as_view(), name='api-strategy-dashboard'),
+    path('trading/strategies/<str:strategy_id>/details', strategy_management_views.StrategyDetailView.as_view(), name='api-strategy-details'),
+    path('trading/strategies/<str:strategy_id>/action', strategy_management_views.StrategyActionView.as_view(), name='api-strategy-action'),
     # ── Institutional Trading Supervisor Console Suite ──────────
     path('trading/supervisor/dashboard', supervisor_views.SupervisorDashboardView.as_view(), name='api-supervisor-dashboard'),
     path('trading/supervisor/decision', supervisor_views.SupervisorDecisionView.as_view(), name='api-supervisor-decision'),
