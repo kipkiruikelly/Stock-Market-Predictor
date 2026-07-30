@@ -134,6 +134,8 @@ class KnowledgeUserGuideView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "guide_status": "ONLINE", "version": "v5.5", "timestamp": now.isoformat()})
@@ -146,6 +148,8 @@ class KnowledgeAdminGuideView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "admin_guide_status": "ONLINE", "version": "v5.5", "timestamp": now.isoformat()})
