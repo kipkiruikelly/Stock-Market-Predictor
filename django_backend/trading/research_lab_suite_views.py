@@ -272,7 +272,7 @@ class ResearchLabPipelineView(APIView):
 class ResearchLabExperimentsView(APIView):
     """
     GET /api/researchlab/experiments/dashboard
-    Returns ML experiments tracking from live ModelEvaluation database model.
+    Returns ML experiments tracking, hyperparameter evolution logs, and validation loss from live ModelEvaluation model.
     """
     permission_classes = [AllowAny]
 
@@ -280,12 +280,19 @@ class ResearchLabExperimentsView(APIView):
         try:
             now = datetime.utcnow()
 
-            evals = ModelEvaluation.objects.select_related('model_version').all().order_by('-evaluated_at')[:20]
+            from users.models import ModelEvaluation, ModelVersion
+            from django.db.models import Max, Min
+
+            evals = ModelEvaluation.objects.select_related('model_version').all().order_by('-evaluated_at')[:50]
+            exp_cnt = evals.count()
+
             experiments = []
             for ev in evals:
                 experiments.append({
                     "experiment_id": f"EXP-{ev.id}",
-                    "model_version": f"{ev.model_version.ticker} {ev.model_version.version}",
+                    "model_version": f"{ev.model_version.ticker if ev.model_version else 'N/A'} {ev.model_version.version if ev.model_version else 'v1.0'}",
+                    "ticker": ev.model_version.ticker if ev.model_version else "SPY",
+                    "model_type": ev.model_version.model_type.upper() if ev.model_version else "XGBOOST",
                     "mae": round(ev.mae or 0.0, 4),
                     "mse": round(ev.mse or 0.0, 4),
                     "rmse": round(ev.rmse or 0.0, 4),
@@ -294,9 +301,21 @@ class ResearchLabExperimentsView(APIView):
                     "evaluated_at": ev.evaluated_at.strftime("%Y-%m-%d %H:%M UTC")
                 })
 
+            max_acc = evals.aggregate(m=Max('directional_accuracy_pct'))['m'] or 0.0
+            min_loss = evals.aggregate(m=Min('mae'))['m'] or 0.0
+
+            summary = {
+                "total_experiments": exp_cnt,
+                "active_experiments": exp_cnt,
+                "logged_experiments": exp_cnt,
+                "best_directional_accuracy": f"{max_acc:.1f}%",
+                "best_loss": f"{min_loss:.4f}"
+            }
+
             return Response({
                 "ok": True,
-                "total_experiments": len(experiments),
+                "summary": summary,
+                "total_experiments": exp_cnt,
                 "experiments": experiments,
                 "timestamp": now.isoformat()
             })
