@@ -240,7 +240,13 @@ function App() {
               <Route path="/dashboard/pricing" element={<PricingDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/dashboard/admin" element={<AdminDashboard />} />
-              <Route path="*" element={<div className="p-10 text-center text-[#a0a5b1]">Page under construction</div>} />
+              <Route path="*" element={
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center p-8">
+                  <h1 className="text-4xl font-bold text-nexus-white">404 — Page Not Found</h1>
+                  <p className="text-xs text-nexus-muted max-w-md">The requested workspace or URL resource could not be located in the Triple Fusion Operating System registry.</p>
+                  <a href="/home" className="px-4 py-2 bg-nexus-pur text-white text-xs font-bold rounded-xl shadow-lg hover:bg-nexus-pur/80 transition">Return to Command Center</a>
+                </div>
+              } />
             </Route>
           </Route>
         </Routes>
