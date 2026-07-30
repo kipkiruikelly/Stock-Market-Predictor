@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ExecutiveDashboardView(APIView):
     """
     GET /api/executive/dashboard
-    Returns central executive metrics across Revenue, ARR, Active Orgs, AUM, System Health, and Spend.
+    Returns central executive metrics across Revenue, ARR, AUM, Portfolio, Trading, AI/ML, Operations, Risk, Compliance, and Strategic Forecasting.
     """
     permission_classes = [AllowAny]
 
@@ -24,34 +24,131 @@ class ExecutiveDashboardView(APIView):
         try:
             now = datetime.utcnow()
 
-            kpis = {
+            executive_summary = {
+                "aum": "$248,500,000.00",
+                "net_portfolio_value": "$268,420,500.00",
+                "daily_pnl": "+$12,450.00",
+                "weekly_pnl": "+$48,200.00",
+                "monthly_pnl": "+$182,500.00",
+                "annual_return": "+18.2%",
+                "sharpe_ratio": "2.84",
+                "sortino_ratio": "3.42",
+                "win_rate": "68.4%",
+                "active_traders": 18,
+                "active_strategies": 12,
+                "active_models": 24,
+                "live_predictions": "1,420,000/day",
+                "open_positions": 8,
+                "pending_orders": 14,
+                "executed_orders": 142,
+                "active_incidents": 0,
+                "system_health": "99.8% (Optimal)",
+                "ai_confidence_score": "94.2%",
+                "platform_availability": "99.99%",
                 "arr": "$14,850,000.00",
                 "mrr": "$1,237,500.00",
+                "customer_growth": "+42.8% YoY",
                 "active_orgs": 142,
-                "active_users": 1840,
-                "aum": "$248,500,000.00",
-                "trading_performance": "+18.2%",
-                "ai_prediction_accuracy": "94.2%",
-                "system_availability": "99.99%",
-                "cloud_spend_monthly": "$42,800.00",
-                "infrastructure_health": "OPTIMAL",
-                "open_incidents": 0,
-                "compliance_status": "100% AUDITED"
+                "cloud_spend_monthly": "$42,800.00"
             }
 
-            revenue_trend = [
-                {"month": "Jan", "revenue": "$1,120,000"},
-                {"month": "Feb", "revenue": "$1,150,000"},
-                {"month": "Mar", "revenue": "$1,190,000"},
-                {"month": "Apr", "revenue": "$1,210,000"},
-                {"month": "May", "revenue": "$1,225,000"},
-                {"month": "Jun", "revenue": "$1,237,500"}
+            business_intelligence = [
+                {"month": "Jan", "arr": "$12.4M", "mrr": "$1.03M", "cloud_spend": "$38.2K", "active_orgs": 120},
+                {"month": "Feb", "arr": "$12.8M", "mrr": "$1.06M", "cloud_spend": "$39.5K", "active_orgs": 126},
+                {"month": "Mar", "arr": "$13.4M", "mrr": "$1.11M", "cloud_spend": "$40.8K", "active_orgs": 131},
+                {"month": "Apr", "arr": "$13.9M", "mrr": "$1.15M", "cloud_spend": "$41.2K", "active_orgs": 135},
+                {"month": "May", "arr": "$14.4M", "mrr": "$1.20M", "cloud_spend": "$42.0K", "active_orgs": 138},
+                {"month": "Jun", "arr": "$14.85M", "mrr": "$1.237M", "cloud_spend": "$42.8K", "active_orgs": 142}
+            ]
+
+            portfolio_intelligence = {
+                "total_value": "$268,420,500.00",
+                "asset_allocation": [
+                    {"asset_class": "US Equities & Index Futures", "value": "$112,736,610.00", "pct": "42.0%"},
+                    {"asset_class": "Digital Assets (Crypto)", "value": "$75,157,740.00", "pct": "28.0%"},
+                    {"asset_class": "Global Commodities & Forex", "value": "$48,315,690.00", "pct": "18.0%"},
+                    {"asset_class": "Cash & Short-Term Yield", "value": "$32,210,460.00", "pct": "12.0%"}
+                ],
+                "var_95": "$4,250.00",
+                "expected_shortfall": "$6,120.00",
+                "monte_carlo_cagr": "+34.2%"
+            }
+
+            trading_intelligence = {
+                "orders_today": 142,
+                "open_orders": 14,
+                "execution_success_rate": "99.8%",
+                "avg_slippage": "0.02 bps",
+                "execution_latency": "1.8ms",
+                "signal_accuracy": "94.2%",
+                "broker_connectivity": "CONNECTED (MT5 FIX Gateway)"
+            }
+
+            ai_ml_executive = {
+                "active_models": 24,
+                "champion_models": 8,
+                "shadow_models": 4,
+                "prediction_accuracy": "94.2%",
+                "model_drift": "0.02% (Optimal)",
+                "explainability_coverage": "100.0% SHAP",
+                "inference_latency": "1.8ms"
+            }
+
+            operations_center = {
+                "infrastructure_health": "99.8% (Optimal)",
+                "api_health": "99.99%",
+                "db_health": "100.0% (PostgreSQL Master/Replica)",
+                "active_incidents": 0,
+                "avg_response_time": "14.2ms"
+            }
+
+            risk_center = {
+                "enterprise_risk_score": "12.4 / 100 (LOW_RISK)",
+                "trading_risk": "OPTIMAL",
+                "portfolio_risk": "BALANCED",
+                "compliance_risk": "100% AUDITED",
+                "cyber_risk": "SOC2_COMPLIANT"
+            }
+
+            compliance_center = {
+                "soc2_status": "COMPLIANT",
+                "iso27001_status": "COMPLIANT",
+                "gdpr_status": "COMPLIANT",
+                "audit_status": "100% PASSED"
+            }
+
+            forecasting = {
+                "arr_forecast_q4": "$18,400,000.00",
+                "mrr_forecast_q4": "$1,530,000.00",
+                "cloud_spend_forecast": "$45,200.00",
+                "org_growth_forecast": "+24 Orgs (Q4 Target)"
+            }
+
+            activity_timeline = [
+                {"event": "System Maintenance & Failover Audit Passed", "time": "2h ago", "type": "OPERATIONS"},
+                {"event": "ICT Smart Money Model MDL-401 Champion Promoted", "time": "4h ago", "type": "AI_ML"},
+                {"event": "Quarterly SOC2 Compliance Audit Certified", "time": "Yesterday", "type": "COMPLIANCE"}
+            ]
+
+            ai_executive_prompts = [
+                "Summarize today's enterprise C-suite executive performance and P&L drivers.",
+                "Compare ARR vs Cloud FinOps expenditure trends across Q1 and Q2.",
+                "Generate Board of Directors executive summary report for Triple Fusion OS."
             ]
 
             return Response({
                 "ok": True,
-                "kpis": kpis,
-                "revenue_trend": revenue_trend,
+                "executive_summary": executive_summary,
+                "business_intelligence": business_intelligence,
+                "portfolio_intelligence": portfolio_intelligence,
+                "trading_intelligence": trading_intelligence,
+                "ai_ml_executive": ai_ml_executive,
+                "operations_center": operations_center,
+                "risk_center": risk_center,
+                "compliance_center": compliance_center,
+                "forecasting": forecasting,
+                "activity_timeline": activity_timeline,
+                "ai_executive_prompts": ai_executive_prompts,
                 "timestamp": now.isoformat()
             })
 
