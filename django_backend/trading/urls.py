@@ -32,8 +32,12 @@ from . import signals_views
 from . import smartexecution_views
 from . import oms_views
 from . import positions_views
+from . import supervisor_views
 
 urlpatterns = [
+    # ── Institutional Trading Supervisor Console Suite ──────────
+    path('trading/supervisor/dashboard', supervisor_views.SupervisorDashboardView.as_view(), name='api-supervisor-dashboard'),
+    path('trading/supervisor/decision', supervisor_views.SupervisorDecisionView.as_view(), name='api-supervisor-decision'),
     # ── Institutional Position Management System (PMS) Suite ────
     path('trading/positions/dashboard', positions_views.PositionsDashboardView.as_view(), name='api-positions-dashboard'),
     path('trading/positions/<str:position_id>/details', positions_views.PositionDetailView.as_view(), name='api-position-details'),
