@@ -87,39 +87,6 @@ export const Sidebar: React.FC = () => {
     ]
   });
 
-  useEffect(() => {
-    const fetchSidebar = async () => {
-      try {
-        const res = await apiFetch('/api/institutional/optimization/navigation-audit');
-        if (res?.ok && res?.navigation_accessibility_audit?.sidebar_structure) {
-          const struct = res.navigation_accessibility_audit.sidebar_structure;
-          const mappedStruct: Record<string, any[]> = {};
-          Object.keys(struct).forEach(key => {
-            mappedStruct[key] = struct[key].map((item: any) => {
-              let route = item.route;
-              if (route.startsWith('/trading/market') || route.startsWith('/dashboard/market')) route = '/markets';
-              else if (route.startsWith('/trading/strategies')) route = '/tools';
-              else if (route.startsWith('/trading/execution') || route.startsWith('/trading/orders') || route.startsWith('/trading/positions')) route = '/live';
-              else if (route.startsWith('/portfolio')) route = '/portfolio';
-              else if (route.startsWith('/research/pipelines')) route = '/pipeline';
-              else if (route.startsWith('/research')) route = '/research';
-              else if (route.startsWith('/ml/predictions') || route.startsWith('/ml/health')) route = '/bots';
-              else if (route.startsWith('/ops/center') || route.startsWith('/ops/incidents')) route = '/screener';
-              else if (route.startsWith('/admin')) route = '/admin';
-              else if (route.startsWith('/knowledge')) route = '/journal';
-              else if (route.startsWith('/executive')) route = '/portfolio';
-              return { ...item, route };
-            });
-          });
-          setSidebarStructure(mappedStruct);
-        }
-      } catch (e) {
-        console.error("Failed to fetch dynamic navigation audit sidebar structure", e);
-      }
-    };
-    fetchSidebar();
-  }, []);
-
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
       ...prev,
