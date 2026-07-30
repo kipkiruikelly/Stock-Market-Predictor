@@ -42,6 +42,10 @@ import { PositionsDashboard } from './pages/PositionsDashboard';
 import { TradingSupervisorDashboard } from './pages/TradingSupervisorDashboard';
 import { TradingStrategiesDashboard } from './pages/TradingStrategiesDashboard';
 import { PortfolioHoldingsDashboard } from './pages/PortfolioHoldingsDashboard';
+import { PortfolioAnalyticsDashboard } from './pages/PortfolioAnalyticsDashboard';
+import { PortfolioAllocationDashboard } from './pages/PortfolioAllocationDashboard';
+import { PortfolioPerformanceDashboard } from './pages/PortfolioPerformanceDashboard';
+import { PortfolioRiskDashboard } from './pages/PortfolioRiskDashboard';
 
 function App() {
   return (
@@ -129,6 +133,10 @@ function App() {
               <Route path="/portfolio/holdings" element={<PortfolioHoldingsDashboard />} />
               <Route path="/holdings" element={<PortfolioHoldingsDashboard />} />
               <Route path="/dashboard/holdings" element={<PortfolioHoldingsDashboard />} />
+              <Route path="/portfolio/analytics" element={<PortfolioAnalyticsDashboard />} />
+              <Route path="/portfolio/allocation" element={<PortfolioAllocationDashboard />} />
+              <Route path="/portfolio/performance" element={<PortfolioPerformanceDashboard />} />
+              <Route path="/portfolio/risk" element={<PortfolioRiskDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<TradingDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
