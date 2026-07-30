@@ -41,164 +41,85 @@ BROKERS = ["MetaTrader 5", "Interactive Brokers", "Binance", "Alpaca", "OANDA"]
 class TradingSignalsView(APIView):
     """
     GET /api/trading/signals
-    
-    Query Params:
-      - asset_class: Stocks | Forex | Crypto | Commodities | Indices | All
-      - timeframe: 1m | 5m | 15m | 30m | 1h | 4h | 1d | All
-      - strategy: All or specific strategy slug
-      - direction: BUY | SELL | All
-      - status: ACTIVE | EXPIRED | TRIGGERED | CLOSED_WIN | CLOSED_LOSS | All
-      - min_confidence: float (0 - 100)
-      - search: string (ticker or strategy name)
+    Returns real-time quantitative trading signals directly from the PredictionHistory ORM table.
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
-        from users.models import User
-        _orm_check = User.objects.count()
         try:
+            user = request.user if request.user and request.user.is_authenticated else None
+
+            from users.models import PredictionHistory
+            from django.db.models import Avg
+
             asset_class_filter = request.query_params.get('asset_class', 'All')
-            timeframe_filter = request.query_params.get('timeframe', 'All')
-            strategy_filter = request.query_params.get('strategy', 'All')
             direction_filter = request.query_params.get('direction', 'All')
-            status_filter = request.query_params.get('status', 'All')
-            min_confidence = float(request.query_params.get('min_confidence', 0))
             search_query = request.query_params.get('search', '').strip().upper()
 
-            # Seed list of assets across classes
-            raw_signals: List[Dict[str, Any]] = []
+            preds_qs = PredictionHistory.objects.all()
+            if user:
+                preds_qs = preds_qs.filter(user=user)
 
-            # We build a comprehensive set of signals across universe
-            seed_tickers = [
-                ("AAPL", "Stocks"), ("NVDA", "Stocks"), ("MSFT", "Stocks"), ("TSLA", "Stocks"), ("SPY", "Stocks"),
-                ("EURUSD", "Forex"), ("GBPUSD", "Forex"), ("USDJPY", "Forex"), ("AUDUSD", "Forex"),
-                ("BTC", "Crypto"), ("ETH", "Crypto"), ("SOL", "Crypto"),
-                ("GOLD", "Commodities"), ("OIL", "Commodities"), ("SILVER", "Commodities"),
-                ("SPX", "Indices"), ("NDX", "Indices"), ("DJI", "Indices")
-            ]
+            if search_query:
+                preds_qs = preds_qs.filter(ticker__icontains=search_query)
 
-            timeframes = ["15m", "1h", "4h", "1d"]
-            
-            signal_counter = 1001
+            if direction_filter != 'All':
+                preds_qs = preds_qs.filter(direction__iexact=direction_filter)
 
-            for ticker, ac in seed_tickers:
-                for tf in timeframes:
-                    for strat in STRATEGIES:
-                        # Deterministic generation
-                        s_list = generate_bot_signals(
-                            bot_slug=strat["slug"],
-                            ticker=ticker,
-                            timeframe=tf,
-                            asset_class=ac,
-                        )
-                        for raw in s_list:
-                            sig_id = f"SIG-{signal_counter}"
-                            signal_counter += 1
+            tot_cnt = preds_qs.count()
+            buy_cnt = preds_qs.filter(direction__icontains='BUY').count()
+            sell_cnt = preds_qs.filter(direction__icontains='SELL').count()
 
-                            entry = raw["entry_price"]
-                            sl = raw["stop_loss"]
-                            tp = raw["take_profit"]
-                            direction = raw["direction"]
-                            conf = raw["confidence_pct"]
+            avg_conf_val = (preds_qs.aggregate(avg=Avg('confidence'))['avg'] or 0.0) * 100.0
 
-                            # Risk Reward calculation
-                            if direction == "BUY":
-                                risk = abs(entry - sl) if entry != sl else 1.0
-                                reward = abs(tp - entry)
-                            else:
-                                risk = abs(sl - entry) if entry != sl else 1.0
-                                reward = abs(entry - tp)
-                            
-                            rr_ratio = round(reward / risk, 2) if risk > 0 else 2.10
-                            expected_ret = round((reward / entry) * 100, 2) if entry > 0 else 3.5
+            signals_list = []
+            for p in preds_qs.order_by('-predicted_at')[:80]:
+                conf_pct = round((p.confidence or 0.70) * 100.0, 1)
+                entry = p.current_price or 0.0
+                target = p.target_price or (entry * 1.05)
+                stop = p.stop_loss or (entry * 0.95)
 
-                            # Expiry and Created times
-                            gen_dt = datetime.utcnow() - timedelta(minutes=(signal_counter * 7) % 360)
-                            exp_dt = gen_dt + timedelta(hours=24)
-
-                            # Determine status deterministically
-                            if (signal_counter % 7) == 0:
-                                sig_status = "EXPIRED"
-                            elif (signal_counter % 11) == 0:
-                                sig_status = "CLOSED_WIN"
-                            elif (signal_counter % 13) == 0:
-                                sig_status = "CLOSED_LOSS"
-                            elif (signal_counter % 5) == 0:
-                                sig_status = "TRIGGERED"
-                            else:
-                                sig_status = "ACTIVE"
-
-                            sig_obj = {
-                                "id": sig_id,
-                                "symbol": ticker,
-                                "asset_class": ac,
-                                "timeframe": tf,
-                                "signal_type": direction,
-                                "confidence_score": conf,
-                                "probability": round(conf / 100.0, 3),
-                                "entry_price": entry,
-                                "stop_loss": sl,
-                                "take_profit": tp,
-                                "risk_reward_ratio": rr_ratio,
-                                "expected_return": expected_ret,
-                                "generated_time": gen_dt.strftime("%Y-%m-%d %H:%M:%S UTC"),
-                                "expiry_time": exp_dt.strftime("%Y-%m-%d %H:%M:%S UTC"),
-                                "strategy": strat["name"],
-                                "strategy_slug": strat["slug"],
-                                "model_name": strat["model"],
-                                "model_confidence": round(conf + 1.2, 1),
-                                "signal_status": sig_status,
-                                "broker_compatibility": BROKERS[:3 + (signal_counter % 3)],
-                                "explanation_id": f"EXP-{sig_id}",
-                                "reason": raw.get("reason", "Quantitative Alpha Confluence Signal"),
-                            }
-                            raw_signals.append(sig_obj)
-
-            # Apply Filtering
-            filtered = []
-            for s in raw_signals:
-                if asset_class_filter != 'All' and s["asset_class"].lower() != asset_class_filter.lower():
-                    continue
-                if timeframe_filter != 'All' and s["timeframe"].lower() != timeframe_filter.lower():
-                    continue
-                if strategy_filter != 'All' and s["strategy_slug"].lower() != strategy_filter.lower() and strategy_filter.lower() not in s["strategy"].lower():
-                    continue
-                if direction_filter != 'All' and s["signal_type"].upper() != direction_filter.upper():
-                    continue
-                if status_filter != 'All' and s["signal_status"].upper() != status_filter.upper():
-                    continue
-                if s["confidence_score"] < min_confidence:
-                    continue
-                if search_query and (search_query not in s["symbol"] and search_query not in s["strategy"].upper()):
-                    continue
-                filtered.append(s)
-
-            # Calculate Overview KPI Summary
-            total_active = sum(1 for s in raw_signals if s["signal_status"] == "ACTIVE")
-            buy_count = sum(1 for s in raw_signals if s["signal_type"] == "BUY" and s["signal_status"] == "ACTIVE")
-            sell_count = sum(1 for s in raw_signals if s["signal_type"] == "SELL" and s["signal_status"] == "ACTIVE")
-            avg_conf = round(sum(s["confidence_score"] for s in raw_signals) / len(raw_signals), 1) if raw_signals else 0.0
-            avg_rr = round(sum(s["risk_reward_ratio"] for s in raw_signals) / len(raw_signals), 2) if raw_signals else 0.0
-            expired_count = sum(1 for s in raw_signals if s["signal_status"] == "EXPIRED")
-            signals_today = len(raw_signals)
-            win_rate = 72.4  # Historical overall win rate %
+                signals_list.append({
+                    "id": f"SIG-{p.id}",
+                    "symbol": p.ticker,
+                    "asset_class": "Equities & Crypto",
+                    "timeframe": p.interval or "1h",
+                    "signal_type": p.direction.upper() if p.direction else "BUY",
+                    "confidence_score": conf_pct,
+                    "probability": round((p.confidence or 0.70), 3),
+                    "entry_price": entry,
+                    "stop_loss": stop,
+                    "take_profit": target,
+                    "risk_reward_ratio": 2.0,
+                    "expected_return": 3.5,
+                    "generated_time": p.predicted_at.strftime("%Y-%m-%d %H:%M:%S UTC") if p.predicted_at else "",
+                    "expiry_time": "",
+                    "strategy": p.model_name or "Alpha Engine",
+                    "strategy_slug": "alpha_engine",
+                    "model_name": p.model_name or "XGBoost Alpha",
+                    "model_confidence": conf_pct,
+                    "signal_status": "ACTIVE",
+                    "broker_compatibility": ["Interactive Brokers", "MetaTrader 5"],
+                    "explanation_id": f"EXP-SIG-{p.id}",
+                    "reason": p.src_source or "Quantitative AI Signal Confluence"
+                })
 
             kpis = {
-                "active_signals": total_active,
-                "buy_signals": buy_count,
-                "sell_signals": sell_count,
-                "avg_confidence": avg_conf,
-                "win_rate": win_rate,
-                "avg_risk_reward": avg_rr,
-                "signals_today": signals_today,
-                "expired_signals": expired_count,
+                "active_signals": tot_cnt,
+                "buy_signals": buy_cnt,
+                "sell_signals": sell_cnt,
+                "avg_confidence": round(avg_conf_val, 1),
+                "win_rate": 0.0,
+                "avg_risk_reward": 2.0,
+                "signals_today": tot_cnt,
+                "expired_signals": 0,
             }
 
             return Response({
                 "ok": True,
                 "summary": kpis,
-                "signals": filtered[:80],  # Return top matching signals
-                "total_count": len(filtered),
+                "signals": signals_list,
+                "total_count": len(signals_list),
             })
 
         except Exception as e:
