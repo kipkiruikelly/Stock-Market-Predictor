@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ],
     "Operations": [
       {"name": "Screener Monitor", "route": "/operations/screener"},
-      {"name": "Settings Controls", "route": "/settings"}
+      {"name": "Settings Controls", "route": "/operations/settingscontrol"}
     ],
     "Executive": [
       {"name": "Executive Command Center", "route": "/executive/dashboard"},
