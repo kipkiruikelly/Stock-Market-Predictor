@@ -38,6 +38,7 @@ import { SecurityCenterDashboard } from './pages/SecurityCenterDashboard';
 import { TradingSignalsDashboard } from './pages/TradingSignalsDashboard';
 import { SmartExecutionDashboard } from './pages/SmartExecutionDashboard';
 import { OrdersDashboard } from './pages/OrdersDashboard';
+import { PositionsDashboard } from './pages/PositionsDashboard';
 
 function App() {
   return (
@@ -116,7 +117,9 @@ function App() {
               <Route path="/trading/orders" element={<OrdersDashboard />} />
               <Route path="/orders" element={<OrdersDashboard />} />
               <Route path="/dashboard/orders" element={<OrdersDashboard />} />
-              <Route path="/trading/positions" element={<LiveDashboard />} />
+              <Route path="/trading/positions" element={<PositionsDashboard />} />
+              <Route path="/positions" element={<PositionsDashboard />} />
+              <Route path="/dashboard/positions" element={<PositionsDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<TradingDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />

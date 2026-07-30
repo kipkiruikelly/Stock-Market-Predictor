@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Activity, Briefcase, BarChart2, BookOpen, Settings, Cpu, Zap, Search, Layers, 
-  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight
+  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight, PieChart
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../utils/api';
@@ -30,6 +30,7 @@ export const Sidebar: React.FC = () => {
       {"name": "Market Overview", "route": "/markets"}
     ],
     "Trading": [
+      {"name": "Positions PMS", "route": "/trading/positions"},
       {"name": "Orders OMS", "route": "/trading/orders"},
       {"name": "Smart Execution", "route": "/trading/smartexecution"},
       {"name": "Trading Signals", "route": "/trading/signals"},
@@ -131,6 +132,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Promo & Gift Codes', path: '/admin?tab=gift-codes', icon: <Ticket size={20} /> },
     { name: 'System Admin & Settings', path: '/admin?tab=system-admin', icon: <Settings size={20} /> },
   ] : [
+    { name: 'Positions Management (PMS)', path: '/trading/positions', icon: <PieChart size={20} /> },
     { name: 'Order Management (OMS)', path: '/trading/orders', icon: <Layers size={20} /> },
     { name: 'Smart Execution', path: '/trading/smartexecution', icon: <Cpu size={20} /> },
     { name: 'Trading Signals', path: '/trading/signals', icon: <Zap size={20} /> },

@@ -31,8 +31,13 @@ from . import webhook_views
 from . import signals_views
 from . import smartexecution_views
 from . import oms_views
+from . import positions_views
 
 urlpatterns = [
+    # ── Institutional Position Management System (PMS) Suite ────
+    path('trading/positions/dashboard', positions_views.PositionsDashboardView.as_view(), name='api-positions-dashboard'),
+    path('trading/positions/<str:position_id>/details', positions_views.PositionDetailView.as_view(), name='api-position-details'),
+    path('trading/positions/<str:position_id>/action', positions_views.PositionActionView.as_view(), name='api-position-action'),
     # ── Institutional Order Management System (OMS) Suite ───────
     path('trading/orders/oms', oms_views.OmsDashboardView.as_view(), name='api-oms-dashboard'),
     path('trading/orders/<str:order_id>/timeline', oms_views.OmsOrderTimelineView.as_view(), name='api-oms-order-timeline'),
