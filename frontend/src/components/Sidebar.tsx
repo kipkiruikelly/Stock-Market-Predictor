@@ -1,30 +1,46 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Activity, Briefcase, BarChart2, BookOpen, Settings, Cpu, Zap, Search, Layers, 
-  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight, PieChart
+  ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight, PieChart,
+  ChevronLeft, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  mobileOpen = false,
+  onMobileClose,
+  collapsed = false,
+  onToggleCollapse
+}) => {
   const { user } = useAuth();
   const location = useLocation();
   const isAdminView = location.pathname.startsWith('/admin');
   
   const [enterpriseMode, setEnterpriseMode] = useState<boolean>(true);
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null);
+
+  // Initialize expanded sections based on current route
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    'Dashboard': false,
-    'Trading': true,
-    'Portfolio': true,
-    'Research Lab': false,
-    'Machine Learning': false,
-    'Operations': false,
-    'Executive': false,
-    'Administration': false,
-    'Knowledge Center': false
+    'Dashboard': location.pathname.startsWith('/dashboard'),
+    'Trading': location.pathname.startsWith('/trading') || location.pathname === '/live' || location.pathname === '/markets' || location.pathname === '/bots' || location.pathname === '/tools',
+    'Portfolio': location.pathname.startsWith('/portfolio'),
+    'Research Lab': location.pathname.startsWith('/researchlab') || location.pathname === '/research',
+    'Machine Learning': location.pathname.includes('models') || location.pathname.includes('experiments'),
+    'Operations': location.pathname === '/screener' || location.pathname === '/settings',
+    'Executive': location.pathname.startsWith('/executive'),
+    'Administration': location.pathname.startsWith('/admin'),
+    'Knowledge Center': location.pathname.startsWith('/knowledge')
   });
 
-  const [sidebarStructure] = useState<Record<string, any[]>>({
+  const sidebarStructure: Record<string, any[]> = {
     "Dashboard": [
       {"name": "Market Overview", "route": "/dashboard/market-overview"}
     ],
@@ -84,7 +100,17 @@ export const Sidebar: React.FC = () => {
       {"name": "User Guide", "route": "/knowledge/user-guide"},
       {"name": "Admin Guide", "route": "/knowledge/admin-guide"}
     ]
-  });
+  };
+
+  // Expand parent section automatically when route changes
+  useEffect(() => {
+    Object.keys(sidebarStructure).forEach(section => {
+      const items = sidebarStructure[section];
+      if (items.some(item => location.pathname === item.route)) {
+        setExpandedSections(prev => ({ ...prev, [section]: true }));
+      }
+    });
+  }, [location.pathname]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({
@@ -95,16 +121,16 @@ export const Sidebar: React.FC = () => {
 
   const getSectionIcon = (section: string) => {
     switch(section) {
-      case 'Dashboard': return <Layers size={18} className="text-nexus-pur" />;
-      case 'Trading': return <Zap size={18} className="text-yellow-400" />;
-      case 'Portfolio': return <Briefcase size={18} className="text-emerald-400" />;
-      case 'Research Lab': return <Search size={18} className="text-blue-400" />;
-      case 'Machine Learning': return <Cpu size={18} className="text-indigo-400" />;
-      case 'Operations': return <Settings size={18} className="text-slate-400" />;
-      case 'Executive': return <DollarSign size={18} className="text-amber-400" />;
-      case 'Administration': return <Users size={18} className="text-pink-400" />;
-      case 'Knowledge Center': return <BookOpen size={18} className="text-teal-400" />;
-      default: return <Activity size={18} />;
+      case 'Dashboard': return <Layers size={18} className="text-nexus-pur shrink-0" />;
+      case 'Trading': return <Zap size={18} className="text-yellow-400 shrink-0" />;
+      case 'Portfolio': return <Briefcase size={18} className="text-emerald-400 shrink-0" />;
+      case 'Research Lab': return <Search size={18} className="text-blue-400 shrink-0" />;
+      case 'Machine Learning': return <Cpu size={18} className="text-indigo-400 shrink-0" />;
+      case 'Operations': return <Settings size={18} className="text-slate-400 shrink-0" />;
+      case 'Executive': return <DollarSign size={18} className="text-amber-400 shrink-0" />;
+      case 'Administration': return <Users size={18} className="text-pink-400 shrink-0" />;
+      case 'Knowledge Center': return <BookOpen size={18} className="text-teal-400 shrink-0" />;
+      default: return <Activity size={18} className="shrink-0" />;
     }
   };
 
@@ -139,24 +165,61 @@ export const Sidebar: React.FC = () => {
     legacyNavItems.push({ name: 'Admin Console', path: '/admin', icon: <ShieldCheck size={20} /> });
   }
 
-  return (
-    <div className="w-64 h-full bg-nexus-sf border-r border-nexus-border flex flex-col shrink-0">
-      {!isAdminView && (
-        <div className="p-4 border-b border-nexus-border flex items-center justify-between">
-          <span className="text-xs font-bold text-nexus-muted tracking-wider uppercase">Layout Configuration</span>
+  // Common inner content
+  const sidebarContent = (
+    <div className="flex flex-col h-full w-full bg-nexus-sf border-r border-nexus-border select-none">
+      
+      {/* Header Controls */}
+      <div className="p-3 border-b border-nexus-border flex items-center justify-between shrink-0">
+        {!collapsed && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-nexus-white uppercase tracking-wider">
+              {isAdminView ? 'Admin Console' : 'Navigation'}
+            </span>
+          </div>
+        )}
+
+        {/* Mobile Close Button */}
+        {mobileOpen && (
+          <button 
+            onClick={onMobileClose}
+            className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-nexus-bg text-nexus-muted hover:text-white transition cursor-pointer"
+            aria-label="Close navigation menu"
+          >
+            <X size={20} />
+          </button>
+        )}
+
+        {/* Desktop Collapse Toggle Button */}
+        {!mobileOpen && onToggleCollapse && (
+          <button 
+            onClick={onToggleCollapse}
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg hover:bg-nexus-bg text-nexus-muted hover:text-white transition cursor-pointer ml-auto"
+            title={collapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            aria-label={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        )}
+      </div>
+
+      {/* Mode Switcher */}
+      {!isAdminView && !collapsed && (
+        <div className="px-3 py-2 border-b border-nexus-border/60 flex items-center justify-between bg-nexus-bg/40">
+          <span className="text-[10px] font-bold text-nexus-muted uppercase tracking-wider">Layout Format</span>
           <button 
             onClick={() => setEnterpriseMode(!enterpriseMode)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded bg-nexus-bg hover:bg-nexus-bg2 text-nexus-white transition cursor-pointer"
-            title="Switch layout format between standard and 8 core enterprise spaces"
+            className="flex items-center gap-1.5 px-2 py-1 rounded bg-nexus-bg hover:bg-nexus-bg2 text-nexus-white transition cursor-pointer min-h-[36px]"
+            title="Switch between Enterprise Workspaces and Legacy List"
           >
             {enterpriseMode ? (
               <>
-                <ToggleRight size={18} className="text-nexus-pur" />
+                <ToggleRight size={16} className="text-nexus-pur" />
                 <span className="text-[10px] font-bold text-nexus-pur">Enterprise</span>
               </>
             ) : (
               <>
-                <ToggleLeft size={18} className="text-nexus-muted" />
+                <ToggleLeft size={16} className="text-nexus-muted" />
                 <span className="text-[10px] font-bold text-nexus-muted">Standard</span>
               </>
             )}
@@ -164,21 +227,74 @@ export const Sidebar: React.FC = () => {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto py-4">
+      {/* Main Navigation Scroll Region */}
+      <div className="flex-1 overflow-y-auto py-3 px-2 space-y-2 custom-scrollbar">
         {enterpriseMode && !isAdminView ? (
-          <div className="flex flex-col gap-3 px-4">
+          <div className="flex flex-col gap-2">
             {Object.keys(sidebarStructure).map((section) => {
               const isExpanded = !!expandedSections[section];
               const items = sidebarStructure[section] || [];
+              const hasActiveChild = items.some((item: any) => location.pathname === item.route);
+
+              if (collapsed) {
+                return (
+                  <div 
+                    key={section} 
+                    className="relative group flex justify-center py-2"
+                    onMouseEnter={() => setHoveredSection(section)}
+                    onMouseLeave={() => setHoveredSection(null)}
+                  >
+                    <button 
+                      onClick={() => toggleSection(section)}
+                      className={`p-2.5 rounded-xl transition flex items-center justify-center min-w-[44px] min-h-[44px] ${
+                        hasActiveChild ? 'bg-nexus-pur/20 border border-nexus-pur/40 shadow-lg' : 'hover:bg-nexus-bg'
+                      }`}
+                      aria-label={section}
+                    >
+                      {getSectionIcon(section)}
+                    </button>
+
+                    {/* Tooltip Overlay on Collapsed Sidebar */}
+                    {hoveredSection === section && (
+                      <div className="absolute left-full top-0 ml-2 w-52 bg-nexus-sf border border-nexus-border rounded-xl shadow-2xl p-2 z-[999] flex flex-col gap-1 animate-fadeIn">
+                        <div className="text-[11px] font-bold text-nexus-white uppercase border-b border-nexus-border/50 pb-1.5 px-2 flex items-center gap-2">
+                          {getSectionIcon(section)}
+                          <span>{section}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 pt-1">
+                          {items.map((item: any) => (
+                            <NavLink
+                              key={item.name}
+                              to={item.route}
+                              onClick={onMobileClose}
+                              className={({ isActive }) => 
+                                `px-2.5 py-1.5 rounded text-xs transition ${
+                                  isActive ? 'bg-nexus-pur text-white font-bold' : 'text-nexus-muted hover:text-white hover:bg-nexus-bg'
+                                }`
+                              }
+                            >
+                              {item.name}
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
-                <div key={section} className="border border-nexus-border/30 rounded-lg overflow-hidden bg-nexus-bg/20">
+                <div key={section} className="border border-nexus-border/30 rounded-xl overflow-hidden bg-nexus-bg/20 transition-all duration-200">
                   <button 
                     onClick={() => toggleSection(section)}
-                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-nexus-bg transition cursor-pointer"
+                    className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-nexus-bg transition cursor-pointer min-h-[44px]"
+                    aria-expanded={isExpanded}
                   >
                     <div className="flex items-center gap-2.5">
                       {getSectionIcon(section)}
-                      <span className="text-xs font-bold text-nexus-white tracking-wide">{section}</span>
+                      <span className={`text-xs font-bold tracking-wide ${hasActiveChild ? 'text-nexus-pur font-black' : 'text-nexus-white'}`}>
+                        {section}
+                      </span>
                     </div>
                     {isExpanded ? (
                       <ChevronDown size={14} className="text-nexus-muted" />
@@ -188,21 +304,22 @@ export const Sidebar: React.FC = () => {
                   </button>
 
                   {isExpanded && (
-                    <div className="flex flex-col border-t border-nexus-border/30 bg-nexus-bg/5 px-2 py-1">
+                    <div className="flex flex-col border-t border-nexus-border/30 bg-nexus-bg/10 px-2 py-1 space-y-0.5">
                       {items.map((item: any) => (
                         <NavLink
                           key={item.name}
                           to={item.route}
+                          onClick={onMobileClose}
                           className={({ isActive }) => 
-                            `flex items-center gap-2 px-3 py-2 rounded text-[11px] transition ${
+                            `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] transition min-h-[38px] ${
                               isActive 
-                                ? 'bg-nexus-pur/20 text-nexus-pur font-bold' 
+                                ? 'bg-nexus-pur/20 text-nexus-pur font-bold border-l-2 border-nexus-pur shadow-sm' 
                                 : 'text-nexus-muted hover:text-nexus-white hover:bg-nexus-bg/50'
                             }`
                           }
                         >
-                          <div className="w-1.5 h-1.5 rounded-full bg-nexus-pur/55 shrink-0" />
-                          <span>{item.name}</span>
+                          <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${location.pathname === item.route ? 'bg-nexus-pur' : 'bg-nexus-muted/40'}`} />
+                          <span className="truncate">{item.name}</span>
                         </NavLink>
                       ))}
                     </div>
@@ -212,40 +329,71 @@ export const Sidebar: React.FC = () => {
             })}
           </div>
         ) : (
-          <nav className="flex flex-col gap-2 px-4">
+          <nav className="flex flex-col gap-1.5">
             {legacyNavItems.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.path}
+                onClick={onMobileClose}
                 className={() => {
                   const isItemActive = isAdminView
                     ? location.search === item.path.substring(6) || (location.search === '' && item.path.endsWith('overview'))
                     : location.pathname === item.path;
-                  return `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  return `flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all min-h-[44px] ${
                     isItemActive 
-                      ? 'bg-nexus-bg2 text-nexus-pur' 
+                      ? 'bg-nexus-pur/20 text-nexus-pur font-bold border-l-2 border-nexus-pur' 
                       : 'text-nexus-muted hover:text-nexus-white hover:bg-nexus-bg'
                   }`;
                 }}
               >
                 {item.icon}
-                <span className="font-medium text-xs md:text-sm">{item.name}</span>
+                {!collapsed && <span className="font-medium text-xs">{item.name}</span>}
               </NavLink>
             ))}
           </nav>
         )}
       </div>
 
-      {isAdminView && (
-        <div className="p-4 border-t border-nexus-border">
+      {isAdminView && !collapsed && (
+        <div className="p-3 border-t border-nexus-border shrink-0">
           <NavLink
             to="/portfolio"
-            className="flex items-center justify-center gap-2 w-full py-2.5 bg-nexus-pur hover:bg-nexus-pur/80 text-white font-bold text-xs rounded-xl transition cursor-pointer"
+            onClick={onMobileClose}
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-nexus-pur hover:bg-nexus-pur/80 text-white font-bold text-xs rounded-xl transition cursor-pointer min-h-[44px]"
           >
             ← Return to Workspace
           </NavLink>
         </div>
       )}
     </div>
+  );
+
+  // Render Off-Canvas Mobile Drawer vs Regular Desktop Sidebar
+  if (mobileOpen) {
+    return (
+      <div className="fixed inset-0 z-[1000] flex lg:hidden">
+        {/* Backdrop Overlay */}
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300 animate-fadeIn" 
+          onClick={onMobileClose}
+          aria-hidden="true"
+        />
+
+        {/* Off-Canvas Drawer */}
+        <div className="relative w-72 max-w-[85vw] h-full shadow-2xl z-[1001] animate-slideRight">
+          {sidebarContent}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <aside 
+      className={`hidden lg:flex h-full transition-all duration-300 shrink-0 z-40 ${
+        collapsed ? 'w-16' : 'w-64'
+      }`}
+    >
+      {sidebarContent}
+    </aside>
   );
 };
