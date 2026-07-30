@@ -344,7 +344,7 @@ class ResearchLabDatasetsView(APIView):
 class ResearchLabPipelineView(APIView):
     """
     GET /api/researchlab/datapipeline/dashboard
-    Returns ETL and ML data pipeline DAG execution status and history.
+    Returns enterprise ETL/ELT pipeline catalog, DAG workflow graph, task execution telemetry, and orchestration metrics.
     """
     permission_classes = [AllowAny]
 
@@ -352,25 +352,134 @@ class ResearchLabPipelineView(APIView):
         try:
             now = datetime.utcnow()
 
-            stages = [
-                {"stage": "Data Ingestion", "status": "SUCCESS", "duration": "4.2s", "logs": "Ingested 142,000 tick records"},
-                {"stage": "Schema Validation", "status": "SUCCESS", "duration": "1.1s", "logs": "0 nulls detected across 38 features"},
-                {"stage": "Feature Engineering", "status": "SUCCESS", "duration": "12.8s", "logs": "Calculated Order Block & EMA indicators"},
-                {"stage": "Model Training", "status": "RUNNING", "duration": "45.0s", "logs": "Epoch 18/50 - Loss: 0.0142"},
-                {"stage": "Evaluation & Registry", "status": "PENDING", "duration": "-", "logs": "Awaiting training completion"}
+            overview = {
+                "total_pipelines": 18,
+                "running_pipelines": 4,
+                "scheduled_pipelines": 12,
+                "failed_pipelines": 0,
+                "successful_pipelines": 14,
+                "paused_pipelines": 2,
+                "avg_runtime": "2m 14s",
+                "avg_success_rate": "99.4%",
+                "queue_length": 0,
+                "running_jobs": 4,
+                "daily_executions": 142,
+                "data_processed_today": "184.2 GB",
+                "processing_throughput": "24,800 events/sec",
+                "active_workers": 8,
+                "pipeline_health_score": "99.8%"
+            }
+
+            pipelines = [
+                {
+                    "pipeline_id": "PL-101",
+                    "name": "US Equities Tick L2 ETL & Feature Store",
+                    "description": "High-frequency tick ingest, schema validation, L2 depth calculation, and Feature Store sync",
+                    "domain": "Equities Quant Desk",
+                    "type": "STREAMING_ETL",
+                    "owner": "Kelvin (Data Lead)",
+                    "team": "Data Engineering",
+                    "env": "PRODUCTION",
+                    "schedule": "Continuous (0 * * * *)",
+                    "trigger_type": "EVENT_STREAM",
+                    "status": "RUNNING",
+                    "last_run": (now - timedelta(minutes=2)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "next_run": "Continuous",
+                    "duration": "1m 12s",
+                    "success_rate": "99.8%",
+                    "retries": 0,
+                    "dependencies": ["Polygon_L2_Feed", "Kafka_Ingest_Cluster"],
+                    "version": "v3.2.0",
+                    "sla": "99.9% (<100ms)",
+                    "priority": "P0_CRITICAL"
+                },
+                {
+                    "pipeline_id": "PL-102",
+                    "name": "Binance Crypto Order Book L3 Pipeline",
+                    "description": "WebSocket order book snapshot aggregation, imbalance feature computation, and model input generation",
+                    "domain": "Digital Assets",
+                    "type": "STREAMING_ETL",
+                    "owner": "HFT Desk",
+                    "team": "HFT Data Engineering",
+                    "env": "PRODUCTION",
+                    "schedule": "Continuous",
+                    "trigger_type": "EVENT_STREAM",
+                    "status": "RUNNING",
+                    "last_run": (now - timedelta(seconds=30)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "next_run": "Continuous",
+                    "duration": "45s",
+                    "success_rate": "99.9%",
+                    "retries": 0,
+                    "dependencies": ["Binance_WS_Gateway"],
+                    "version": "v4.1.0",
+                    "sla": "99.9% (<50ms)",
+                    "priority": "P0_CRITICAL"
+                },
+                {
+                    "pipeline_id": "PL-103",
+                    "name": "FRED Macro Yield Curve & CPI Batch Pipeline",
+                    "description": "Daily FRED economic series fetch, inflation alignment, and yield curve interpolation",
+                    "domain": "Macro Economics",
+                    "type": "DAILY_BATCH_ELT",
+                    "owner": "Macro Desk",
+                    "team": "Quant Research",
+                    "env": "PRODUCTION",
+                    "schedule": "0 0 * * * (Midnight UTC)",
+                    "trigger_type": "CRON_SCHEDULE",
+                    "status": "SUCCESS",
+                    "last_run": (now - timedelta(hours=6)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "next_run": (now + timedelta(hours=18)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "duration": "3m 42s",
+                    "success_rate": "98.5%",
+                    "retries": 0,
+                    "dependencies": ["FRED_API_Gateway"],
+                    "version": "v1.8.2",
+                    "sla": "99.0% (<10m)",
+                    "priority": "P2_MEDIUM"
+                }
             ]
 
-            metrics = {
-                "throughput": "12,800 events/sec",
-                "execution_time": "1m 03s",
-                "queue_depth": 0,
-                "success_rate": "99.4%"
+            dag_graph = [
+                {"step": 1, "node": "Market Feed (Polygon / MT5)", "status": "COMPLETED", "duration": "10ms"},
+                {"step": 2, "node": "Schema Validation & Quality Gate", "status": "COMPLETED", "duration": "15ms"},
+                {"step": 3, "node": "Data Normalization & Cleaning", "status": "COMPLETED", "duration": "8ms"},
+                {"step": 4, "node": "Feature Store Synchronization", "status": "COMPLETED", "duration": "12ms"},
+                {"step": 5, "node": "Dataset Creation for ML Training", "status": "COMPLETED", "duration": "1.2s"},
+                {"step": 6, "node": "Model Training & Inference (XGBoost)", "status": "RUNNING", "duration": "42.0s"},
+                {"step": 7, "node": "Model Registry & Champion Gate", "status": "PENDING", "duration": "-"},
+                {"step": 8, "node": "Prediction Engine & Trading Signal Router", "status": "PENDING", "duration": "-"}
+            ]
+
+            tasks = [
+                {"task_id": "TSK-01", "name": "Ingest Tick Buffer", "pipeline": "PL-101", "status": "SUCCESS", "runtime": "4.2s", "worker": "Worker-01 (GPU-0)", "queue": "high_priority", "start_time": "14:20:00", "end_time": "14:20:04", "retries": 0, "logs": "Ingested 142,000 tick records without drop"},
+                {"task_id": "TSK-02", "name": "Schema Sanity Check", "pipeline": "PL-101", "status": "SUCCESS", "runtime": "1.1s", "worker": "Worker-02 (CPU)", "queue": "validation_queue", "start_time": "14:20:04", "end_time": "14:20:05", "retries": 0, "logs": "0 nulls detected across 38 features"},
+                {"task_id": "TSK-03", "name": "Compute Imbalance & VWAP", "pipeline": "PL-101", "status": "SUCCESS", "runtime": "12.8s", "worker": "Worker-03 (GPU-1)", "queue": "compute_queue", "start_time": "14:20:05", "end_time": "14:20:18", "retries": 0, "logs": "Calculated Order Block & EMA indicators"},
+                {"task_id": "TSK-04", "name": "Execute Model Inference", "pipeline": "PL-101", "status": "RUNNING", "runtime": "45.0s", "worker": "Worker-01 (GPU-0)", "queue": "inference_queue", "start_time": "14:20:18", "end_time": "-", "retries": 0, "logs": "Batch 4/10 - Current Loss: 0.0142"}
+            ]
+
+            resources = {
+                "cpu_utilization": "38.2%",
+                "memory_usage": "18.4 GB / 64 GB",
+                "gpu_utilization": "42.8%",
+                "queue_utilization": "0.0%",
+                "active_workers": "8 / 8 Active",
+                "network_throughput": "1.2 GB/sec"
             }
+
+            ai_pipeline_prompts = [
+                "Explain pipeline PL-101 execution latency and potential bottlenecks.",
+                "Verify task TSK-04 GPU memory allocation during model inference.",
+                "Recommend optimal worker scaling for market open volume spikes."
+            ]
 
             return Response({
                 "ok": True,
-                "stages": stages,
-                "metrics": metrics,
+                "overview": overview,
+                "pipelines": pipelines,
+                "dag_graph": dag_graph,
+                "tasks": tasks,
+                "resources": resources,
+                "ai_pipeline_prompts": ai_pipeline_prompts,
                 "timestamp": now.isoformat()
             })
 
