@@ -75,6 +75,7 @@ import { MarketAnalyticsDashboard } from './pages/MarketAnalyticsDashboard';
 import { AIRobotsDashboard } from './pages/AIRobotsDashboard';
 import { StrategyToolsDashboard } from './pages/StrategyToolsDashboard';
 import { OperationsScreenerDashboard } from './pages/OperationsScreenerDashboard';
+import { OperationsSettingsControlDashboard } from './pages/OperationsSettingsControlDashboard';
 
 function App() {
   return (
