@@ -257,6 +257,21 @@ export const OperationsScreenerDashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
+
+                {timeline.map((inc, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between font-mono">
+                    <div>
+                      <span className="font-bold text-nexus-white block font-sans">{inc.id} - {inc.title}</span>
+                      <span className="text-[10px] text-nexus-muted">Root Cause: {inc.root_cause}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400 uppercase">
+                        {inc.status} ({inc.duration})
+                      </span>
+                      <span className="text-[10px] text-nexus-muted block mt-1">{inc.time}</span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

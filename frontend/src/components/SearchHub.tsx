@@ -34,6 +34,7 @@ const INDEX_ITEMS: SearchItem[] = [
   { title: 'MLflow Experiment Tracker & Hyperparameter Logs', category: 'Machine Learning', route: '/researchlab/experiments', icon: <Cpu size={16} className="text-purple-400" /> },
   { title: 'AI Model Inventory & SHAP Explanations', category: 'Machine Learning', route: '/researchlab/models', icon: <Cpu size={16} className="text-purple-400" /> },
   { title: 'Enterprise Model Governance & Registry Console', category: 'Machine Learning', route: '/researchlab/modelregistry', icon: <Cpu size={16} className="text-purple-400" /> },
+  { title: 'Enterprise Operations Screener & Infrastructure Health Monitor', category: 'Operations', route: '/operations/screener', icon: <Compass size={16} className="text-nexus-pur" /> },
   { title: 'Executive Command Center & C-Suite Intelligence', category: 'Executive', route: '/executive/dashboard', icon: <Settings size={16} className="text-amber-500" /> },
   { title: 'Business Intelligence & SaaS Analytics', category: 'Executive', route: '/executive/business-analytics', icon: <Settings size={16} className="text-amber-500" /> },
   { title: 'Enterprise Growth Planning & Cohort Analytics', category: 'Executive', route: '/executive/growth', icon: <Settings size={16} className="text-amber-500" /> },
