@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class ResearchLabProjectsView(APIView):
     """
     GET /api/researchlab/projects/dashboard
-    Returns quantitative research initiatives dashboard.
+    Returns quantitative research initiatives command center data.
     """
     permission_classes = [AllowAny]
 
@@ -28,9 +28,15 @@ class ResearchLabProjectsView(APIView):
                 "active_projects": 14,
                 "completed_projects": 28,
                 "archived_projects": 6,
-                "running_pipelines": 8,
+                "running_experiments": 42,
+                "registered_models": 24,
                 "active_researchers": 12,
-                "active_models": 24
+                "training_jobs": 8,
+                "failed_jobs": 1,
+                "dataset_count": 18,
+                "total_predictions": "1,420,000",
+                "avg_model_accuracy": "88.4%",
+                "avg_drift_score": "0.02 (Optimal)"
             }
 
             projects = [
@@ -38,44 +44,133 @@ class ResearchLabProjectsView(APIView):
                     "project_id": "PRJ-101",
                     "name": "ICT Order Block Alpha Model",
                     "description": "Smart money institutional liquidity pool detection algorithm",
-                    "owner": "Kelvin (Quant Desk)",
+                    "objective": "Capture high-probability order block liquidity sweeps with 3:1 R/R",
+                    "owner": "Kelvin (Quant Lead)",
                     "team": "Quant & AI Desk",
+                    "department": "Quantitative Alpha",
+                    "priority": "P0_CRITICAL",
                     "status": "ACTIVE",
                     "progress": "85%",
-                    "models_count": 4,
+                    "phase": "Explainability & Risk Review",
+                    "created": "2026-05-12",
+                    "updated": (now - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "last_activity": "SHAP Feature Driver calculation completed",
                     "experiments_count": 18,
-                    "last_updated": (now - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M UTC")
+                    "models_count": 4,
+                    "datasets_count": 6,
+                    "accuracy": "91.2%",
+                    "drift": "0.01",
+                    "risk_rating": "LOW",
+                    "deployment_status": "CHAMPION_LIVE"
                 },
                 {
                     "project_id": "PRJ-102",
                     "name": "Stacking Meta-Learner v3",
                     "description": "Multi-model ensemble combining XGBoost, LightGBM, and Numba Neural Net",
+                    "objective": "Ensemble meta-learning across 142 features for directional trend prediction",
                     "owner": "AI FOS Engine",
                     "team": "MLOps Team",
+                    "department": "Machine Learning",
+                    "priority": "P1_HIGH",
                     "status": "ACTIVE",
                     "progress": "92%",
-                    "models_count": 6,
+                    "phase": "Model Deployment & Monitoring",
+                    "created": "2026-06-01",
+                    "updated": (now - timedelta(minutes=20)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "last_activity": "Model registered in Champion slot",
                     "experiments_count": 32,
-                    "last_updated": (now - timedelta(minutes=20)).strftime("%Y-%m-%d %H:%M UTC")
+                    "models_count": 6,
+                    "datasets_count": 8,
+                    "accuracy": "89.4%",
+                    "drift": "0.02",
+                    "risk_rating": "LOW",
+                    "deployment_status": "CHAMPION_LIVE"
                 },
                 {
                     "project_id": "PRJ-103",
                     "name": "HFT Microstructure Scalper",
                     "description": "High-frequency limit order book imbalance prediction engine",
+                    "objective": "Sub-millisecond order book imbalance forecasting for ECN execution",
                     "owner": "HFT Desk",
                     "team": "HFT Research",
+                    "department": "High-Frequency Trading",
+                    "priority": "P2_MEDIUM",
                     "status": "COMPLETED",
                     "progress": "100%",
-                    "models_count": 2,
+                    "phase": "Production Retraining",
+                    "created": "2026-04-10",
+                    "updated": (now - timedelta(days=2)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "last_activity": "Archived baseline run",
                     "experiments_count": 14,
-                    "last_updated": (now - timedelta(days=2)).strftime("%Y-%m-%d %H:%M UTC")
+                    "models_count": 2,
+                    "datasets_count": 4,
+                    "accuracy": "84.1%",
+                    "drift": "0.04",
+                    "risk_rating": "MEDIUM",
+                    "deployment_status": "CHALLENGER"
                 }
+            ]
+
+            lifecycle_stages = [
+                {"stage": "Idea", "status": "COMPLETED", "owner": "Kelvin (Quant Lead)", "date": "2026-05-12"},
+                {"stage": "Proposal", "status": "APPROVED", "owner": "Research Board", "date": "2026-05-14"},
+                {"stage": "Dataset Collection", "status": "COMPLETED", "owner": "Data Engineering", "date": "2026-05-20"},
+                {"stage": "Feature Engineering", "status": "COMPLETED", "owner": "Quant Desk", "date": "2026-05-28"},
+                {"stage": "Model Training", "status": "COMPLETED", "owner": "MLOps Pipeline", "date": "2026-06-10"},
+                {"stage": "Validation & HPO", "status": "COMPLETED", "owner": "AI FOS Engine", "date": "2026-06-25"},
+                {"stage": "Explainability & Risk", "status": "IN_PROGRESS", "owner": "Risk Review Board", "date": "Active"},
+                {"stage": "Deployment & Retraining", "status": "SCHEDULED", "owner": "Execution Ops", "date": "Pending Approval"}
+            ]
+
+            experiments = [
+                {"exp_id": "EXP-8801", "name": "XGBoost Depth 8 Hyperparameter Sweep", "accuracy": "91.2%", "loss": "0.082", "duration": "14m 20s", "status": "BEST_RUN"},
+                {"exp_id": "EXP-8802", "name": "LightGBM Learning Rate 0.01", "accuracy": "89.8%", "loss": "0.094", "duration": "10m 12s", "status": "COMPLETED"},
+                {"exp_id": "EXP-8803", "name": "Neural Net 3-Layer Dense Dropout 0.2", "accuracy": "87.4%", "loss": "0.112", "duration": "28m 45s", "status": "COMPLETED"}
+            ]
+
+            datasets = [
+                {"dataset_id": "DS-201", "name": "NVDA 15m Order Book Imbalance", "size": "42.8 GB", "features": 68, "quality": "99.4%", "freshness": "Real-time"},
+                {"dataset_id": "DS-202", "name": "BTCUSDT On-Chain & Order Flow", "size": "112.4 GB", "features": 114, "quality": "98.8%", "freshness": "Real-time"}
+            ]
+
+            models_registry = [
+                {"role": "CHAMPION", "name": "ICT Order Block Alpha v3.2", "version": "v3.2", "accuracy": "91.2%", "drift": "0.01", "status": "DEPLOYED_LIVE"},
+                {"role": "CHALLENGER", "name": "Stacking Meta-Learner v3.0", "version": "v3.0", "accuracy": "89.4%", "drift": "0.02", "status": "SHADOW_TESTING"}
+            ]
+
+            resource_monitoring = {
+                "gpu_utilization": "42.8%",
+                "cpu_usage": "18.4%",
+                "ram_usage": "14.2 GB / 64.0 GB",
+                "active_training_jobs": 8,
+                "running_cost": "$142.50 / day"
+            }
+
+            risk_assessment = {
+                "technical_risk": "LOW",
+                "data_risk": "LOW",
+                "model_risk": "LOW",
+                "compliance_risk": "PASSED",
+                "overall_health": "EXCELLENT (98.2%)"
+            }
+
+            ai_assistant_prompts = [
+                "Summarize research project progress and latest experiment validation scores.",
+                "Explain why XGBoost Depth 8 sweep achieved 91.2% accuracy over baseline.",
+                "Verify model drift and confirm SHAP feature driver stability before production deployment."
             ]
 
             return Response({
                 "ok": True,
                 "overview": overview,
                 "projects": projects,
+                "lifecycle_stages": lifecycle_stages,
+                "experiments": experiments,
+                "datasets": datasets,
+                "models_registry": models_registry,
+                "resource_monitoring": resource_monitoring,
+                "risk_assessment": risk_assessment,
+                "ai_assistant_prompts": ai_assistant_prompts,
                 "timestamp": now.isoformat()
             })
 
