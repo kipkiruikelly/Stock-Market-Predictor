@@ -34,8 +34,13 @@ from . import oms_views
 from . import positions_views
 from . import supervisor_views
 from . import strategy_management_views
+from . import holdings_views
 
 urlpatterns = [
+    # ── Institutional Portfolio Holdings Dashboard Suite ────────
+    path('portfolio/holdings/dashboard', holdings_views.HoldingsDashboardView.as_view(), name='api-holdings-dashboard'),
+    path('portfolio/holdings/<str:holding_id>/details', holdings_views.HoldingDetailView.as_view(), name='api-holding-details'),
+    path('portfolio/holdings/<str:holding_id>/action', holdings_views.HoldingActionView.as_view(), name='api-holding-action'),
     # ── Institutional Strategy Management System (SMS) Suite ────
     path('trading/strategies/dashboard', strategy_management_views.StrategyDashboardView.as_view(), name='api-strategy-dashboard'),
     path('trading/strategies/<str:strategy_id>/details', strategy_management_views.StrategyDetailView.as_view(), name='api-strategy-details'),
