@@ -30,6 +30,7 @@ export const Sidebar: React.FC = () => {
       {"name": "Market Overview", "route": "/markets"}
     ],
     "Trading": [
+      {"name": "Smart Execution", "route": "/trading/smartexecution"},
       {"name": "Trading Signals", "route": "/trading/signals"},
       {"name": "Performance", "route": "/portfolio"},
       {"name": "Trading Terminal", "route": "/live"},
@@ -129,6 +130,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Promo & Gift Codes', path: '/admin?tab=gift-codes', icon: <Ticket size={20} /> },
     { name: 'System Admin & Settings', path: '/admin?tab=system-admin', icon: <Settings size={20} /> },
   ] : [
+    { name: 'Smart Execution', path: '/trading/smartexecution', icon: <Cpu size={20} /> },
     { name: 'Trading Signals', path: '/trading/signals', icon: <Zap size={20} /> },
     { name: 'Performance Dashboard', path: '/portfolio', icon: <Briefcase size={20} /> },
     { name: 'Trading Terminal', path: '/live', icon: <Zap size={20} /> },

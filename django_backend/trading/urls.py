@@ -29,8 +29,12 @@ from . import collaboration_views
 from . import report_views
 from . import webhook_views
 from . import signals_views
+from . import smartexecution_views
 
 urlpatterns = [
+    # ── Institutional Smart Order Execution (SOR) Suite ─────────
+    path('execution/smartexecution/dashboard', smartexecution_views.SmartExecutionDashboardView.as_view(), name='api-smartexecution-dashboard'),
+    path('execution/order/<str:order_id>/details', smartexecution_views.SmartExecutionOrderDetailView.as_view(), name='api-smartexecution-order-details'),
     # ── Trading Signals & Explainable AI Suite ──────────────
     path('trading/signals', signals_views.TradingSignalsView.as_view(), name='api-trading-signals'),
     path('trading/signals/<str:signal_id>/explanation', signals_views.TradingSignalExplanationView.as_view(), name='api-trading-signal-explanation'),
