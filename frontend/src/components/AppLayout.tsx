@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -30,8 +30,21 @@ export const AppLayout = () => {
   });
 
   // UI state
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const [, setNotifs] = useState<any[]>([]);
   const [, setUnreadCount] = useState(0);
+
+  // Outside click listener for user profile menu
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, []);
 
   // AI Chat Sidebar state
   const [chatOpen, setChatOpen] = useState(false);
@@ -236,18 +249,53 @@ export const AppLayout = () => {
 
               {/* User Dropdown */}
               {user && (
-                <div className="relative group">
-                  <button className="flex items-center gap-1.5 p-1.5 sm:px-3 min-h-[44px] border border-nexus-border rounded-xl bg-nexus-sf hover:bg-nexus-bg text-xs font-bold transition cursor-pointer">
+                <div className="relative" ref={userMenuRef}>
+                  <button 
+                    onClick={() => setUserMenuOpen(prev => !prev)}
+                    className="flex items-center gap-1.5 p-1.5 sm:px-3 min-h-[44px] border border-nexus-border rounded-xl bg-nexus-sf hover:bg-nexus-bg text-xs font-bold transition cursor-pointer"
+                    aria-expanded={userMenuOpen}
+                    aria-label="User profile menu"
+                  >
                     <User size={16} className="text-nexus-pur" />
                     <span className="hidden md:inline">{user.username}</span>
                   </button>
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-nexus-sf border border-nexus-border rounded-xl py-2 hidden group-hover:block hover:block z-50 shadow-2xl animate-fadeIn">
-                    <Link to="/settings" className="block px-4 py-2 text-xs text-nexus-text hover:bg-nexus-bg2 hover:text-nexus-white">Profile & Settings</Link>
-                    <Link to="/pricing" className="block px-4 py-2 text-xs text-nexus-text hover:bg-nexus-bg2 hover:text-nexus-white">Upgrade / Billing</Link>
-                    {user.role_level >= 3 && <Link to="/admin" className="block px-4 py-2 text-xs text-nexus-pur font-bold hover:bg-nexus-bg2">Admin Console</Link>}
-                    <hr className="border-nexus-border my-1" />
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-nexus-bg2 cursor-pointer">Logout</button>
-                  </div>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-nexus-sf border border-nexus-border rounded-xl py-2 z-50 shadow-2xl animate-fadeIn">
+                      <Link 
+                        to="/settings" 
+                        onClick={() => setUserMenuOpen(false)} 
+                        className="block px-4 py-2.5 text-xs text-nexus-text hover:bg-nexus-bg2 hover:text-nexus-white"
+                      >
+                        Profile & Settings
+                      </Link>
+                      <Link 
+                        to="/pricing" 
+                        onClick={() => setUserMenuOpen(false)} 
+                        className="block px-4 py-2.5 text-xs text-nexus-text hover:bg-nexus-bg2 hover:text-nexus-white"
+                      >
+                        Upgrade / Billing
+                      </Link>
+                      {user.role_level >= 3 && (
+                        <Link 
+                          to="/admin" 
+                          onClick={() => setUserMenuOpen(false)} 
+                          className="block px-4 py-2.5 text-xs text-nexus-pur font-bold hover:bg-nexus-bg2"
+                        >
+                          Admin Console
+                        </Link>
+                      )}
+                      <hr className="border-nexus-border my-1" />
+                      <button 
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          handleLogout();
+                        }} 
+                        className="w-full text-left px-4 py-2.5 text-xs text-rose-400 hover:bg-nexus-bg2 font-bold cursor-pointer"
+                      >
+                        Log Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
