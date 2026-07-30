@@ -160,7 +160,7 @@ class ExecutiveDashboardView(APIView):
 class BusinessAnalyticsView(APIView):
     """
     GET /api/executive/business-analytics
-    Returns SaaS KPIs, customer lifetime value, churn %, funnel, and revenue segmentation.
+    Returns enterprise Executive Business Intelligence (BI) analytics: financial KPIs, revenue segmentation, customer intelligence, product usage, trading volume, AI usage, and strategic forecasting.
     """
     permission_classes = [AllowAny]
 
@@ -168,25 +168,111 @@ class BusinessAnalyticsView(APIView):
         try:
             now = datetime.utcnow()
 
-            metrics = {
+            executive_summary = {
+                "total_revenue": "$14,850,000.00",
+                "mrr": "$1,237,500.00",
+                "arr": "$14,850,000.00",
+                "gross_profit": "$12,400,000.00 (83.5%)",
+                "operating_margin": "42.8%",
+                "ebitda": "$5,200,000.00",
+                "total_customers": 142,
+                "enterprise_customers": 38,
+                "active_orgs": 142,
+                "active_users": 1840,
+                "active_seats": 1840,
+                "customer_growth": "+42.8% YoY",
+                "customer_retention": "99.58%",
+                "customer_churn": "0.42%",
+                "nrr": "128.4%",
                 "ltv": "$84,500.00",
                 "cac": "$4,200.00",
                 "ltv_cac_ratio": "20.1x",
-                "churn_rate": "0.42%",
-                "net_revenue_retention": "128.4%",
-                "active_subscribers": 142
+                "monthly_growth": "+3.5%",
+                "subscription_growth": "+18.4%",
+                "cloud_operating_cost": "$42,800.00/mo",
+                "infrastructure_cost": "$18,400.00/mo",
+                "platform_health_score": "99.8% (Optimal)"
             }
 
-            segmentation = [
+            revenue_intelligence = [
                 {"segment": "Hedge Funds & Prop Desks", "revenue": "$820,000.00", "pct": "66.3%"},
                 {"segment": "Institutional Asset Managers", "revenue": "$310,000.00", "pct": "25.0%"},
                 {"segment": "Family Offices & HNW", "revenue": "$107,500.00", "pct": "8.7%"}
             ]
 
+            product_breakdown = [
+                {"product": "ICT Smart Money Trading Terminal", "revenue": "$6,682,500.00", "share": "45.0%"},
+                {"product": "AI Model Management Engine & XAI", "revenue": "$4,455,000.00", "share": "30.0%"},
+                {"product": "Enterprise Data Catalog & Lineage", "revenue": "$2,227,500.00", "share": "15.0%"},
+                {"product": "Institutional FIX API & Gateway", "revenue": "$1,485,000.00", "share": "10.0%"}
+            ]
+
+            customer_intelligence = {
+                "active_orgs": 142,
+                "dau": 1280,
+                "wau": 1640,
+                "mau": 1840,
+                "trial_conversion": "28.4%",
+                "renewal_rate": "99.58%",
+                "seat_utilization": "88.4%",
+                "avg_session_duration": "48.2m"
+            }
+
+            product_usage = [
+                {"feature": "ICT Smart Money Signals & Terminal", "usage": "42.0%", "dau": 1280},
+                {"feature": "Smart Order Execution (SOR) & OMS", "usage": "28.0%", "dau": 950},
+                {"feature": "AI Model Registry & SHAP Explainability", "usage": "18.0%", "dau": 620},
+                {"feature": "Data Pipeline DAG & Feature Store", "usage": "12.0%", "dau": 410}
+            ]
+
+            trading_business = {
+                "trading_volume": "$1,420,000,000.00",
+                "orders_executed": 1420,
+                "signal_accuracy": "94.2%",
+                "win_rate": "68.4%",
+                "avg_latency": "1.8ms",
+                "avg_slippage": "0.02 bps"
+            }
+
+            ai_business = {
+                "models_in_production": 24,
+                "prediction_volume": "1,420,000/day",
+                "prediction_accuracy": "94.2%",
+                "model_drift": "0.02%",
+                "explainability_coverage": "100.0% SHAP"
+            }
+
+            operational_intelligence = {
+                "system_availability": "99.99%",
+                "api_response_time": "14.2ms",
+                "db_cache_hit_ratio": "99.8%",
+                "incident_rate": "0 Active"
+            }
+
+            forecasting = {
+                "revenue_forecast_q4": "$18,400,000.00",
+                "projected_orgs": 166,
+                "cloud_spend_forecast": "$45,200.00"
+            }
+
+            ai_bi_prompts = [
+                "Summarize enterprise SaaS revenue drivers and LTV:CAC ratio.",
+                "Compare product usage adoption across Trading Terminal vs AI Model Engine.",
+                "Generate executive Business Intelligence summary report for C-suite."
+            ]
+
             return Response({
                 "ok": True,
-                "metrics": metrics,
-                "segmentation": segmentation,
+                "executive_summary": executive_summary,
+                "revenue_intelligence": revenue_intelligence,
+                "product_breakdown": product_breakdown,
+                "customer_intelligence": customer_intelligence,
+                "product_usage": product_usage,
+                "trading_business": trading_business,
+                "ai_business": ai_business,
+                "operational_intelligence": operational_intelligence,
+                "forecasting": forecasting,
+                "ai_bi_prompts": ai_bi_prompts,
                 "timestamp": now.isoformat()
             })
 
