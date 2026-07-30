@@ -100,8 +100,8 @@ class AdminOrganizationsView(APIView):
         try:
             now = datetime.utcnow()
 
-            ent_count = User.objects.filter(plan='enterprise').count() or 142
-            pro_count = User.objects.filter(plan='pro').count() or 380
+            ent_count = User.objects.filter(plan='enterprise').count()
+            pro_count = User.objects.filter(plan='pro').count()
 
             orgs = [
                 {"org_id": "ORG-01", "name": "Alpha Capital Desk", "plan": "ENTERPRISE_PRO", "seats": f"{min(ent_count, 12)} / 20", "aum": "$120,000,000.00", "monthly_mrr": "$24,500.00", "status": "HEALTHY"},

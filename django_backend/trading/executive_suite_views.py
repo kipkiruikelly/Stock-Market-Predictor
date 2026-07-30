@@ -40,22 +40,22 @@ class ExecutiveDashboardView(APIView):
                 realized=Sum('realized_profit_loss'),
                 unrealized=Sum('unrealized_profit_loss')
             )
-            aum_val = portfolio_stats['total_eq'] or 248500000.00
+            aum_val = portfolio_stats['total_eq'] or 0.0
             net_val = (portfolio_stats['total_bal'] or 0.0) + aum_val
-            daily_pnl = portfolio_stats['total_pnl'] or 12450.00
+            daily_pnl = portfolio_stats['total_pnl'] or 0.0
 
             # ── 2. Live User & Organization Aggregations ────────────────────
-            total_users = User.objects.filter(is_active=True).count() or 1840
-            active_orgs = User.objects.filter(plan='enterprise').count() or 142
+            total_users = User.objects.filter(is_active=True).count()
+            active_orgs = User.objects.filter(plan='enterprise').count()
 
             # ── 3. Live Trading & Order Execution Aggregations ─────────────
-            executed_orders_count = UserPaperOrder.objects.filter(status='filled').count() or 142
-            open_orders_count = UserPaperOrder.objects.filter(status='pending').count() or 14
-            open_positions_count = UserPaperPosition.objects.filter(status='open').count() or 8
-            smart_orders_count = SmartOrderExecution.objects.count() or 120
+            executed_orders_count = UserPaperOrder.objects.filter(status='filled').count()
+            open_orders_count = UserPaperOrder.objects.filter(status='pending').count()
+            open_positions_count = UserPaperPosition.objects.filter(status='open').count()
+            smart_orders_count = SmartOrderExecution.objects.count()
 
             # ── 4. Live MLOps & Model Registry Aggregations ────────────────
-            active_models_count = ModelVersion.objects.filter(is_active=True).count() or 24
+            active_models_count = ModelVersion.objects.filter(is_active=True).count()
 
             # ── 5. System Incident Telemetry ────────────────────────────────
             active_incidents = ErrorLog.objects.filter(
@@ -219,9 +219,9 @@ class BusinessAnalyticsView(APIView):
             now = datetime.utcnow()
 
             # ── Live User & Revenue Aggregations ───────────────────────────
-            active_users = User.objects.filter(is_active=True).count() or 1840
-            active_orgs = User.objects.filter(plan='enterprise').count() or 142
-            payment_sum = Payment.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 14850000.00
+            active_users = User.objects.filter(is_active=True).count()
+            active_orgs = User.objects.filter(plan='enterprise').count()
+            payment_sum = Payment.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0.0
             mrr_val = payment_sum / 12.0
 
             executive_summary = {
@@ -283,7 +283,7 @@ class BusinessAnalyticsView(APIView):
 
             trading_business = {
                 "trading_volume": "$1,420,000,000.00",
-                "orders_executed": UserPaperOrder.objects.count() or 1420,
+                "orders_executed": UserPaperOrder.objects.count(),
                 "signal_accuracy": "94.2%",
                 "win_rate": "68.4%",
                 "avg_latency": "1.8ms",
@@ -291,7 +291,7 @@ class BusinessAnalyticsView(APIView):
             }
 
             ai_business = {
-                "models_in_production": ModelVersion.objects.filter(is_active=True).count() or 24,
+                "models_in_production": ModelVersion.objects.filter(is_active=True).count(),
                 "prediction_volume": "1,420,000/day",
                 "prediction_accuracy": "94.2%",
                 "model_drift": "0.02%",
@@ -348,9 +348,9 @@ class ExecutiveGrowthView(APIView):
         try:
             now = datetime.utcnow()
 
-            active_users = User.objects.filter(is_active=True).count() or 1840
-            active_orgs = User.objects.filter(plan='enterprise').count() or 142
-            payment_sum = Payment.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 14850000.00
+            active_users = User.objects.filter(is_active=True).count()
+            active_orgs = User.objects.filter(plan='enterprise').count()
+            payment_sum = Payment.objects.filter(status='paid').aggregate(total=Sum('amount'))['total'] or 0.0
             mrr_val = payment_sum / 12.0
 
             executive_summary = {
@@ -427,8 +427,8 @@ class CloudCostsView(APIView):
         try:
             now = datetime.utcnow()
 
-            active_models = ModelVersion.objects.filter(is_active=True).count() or 24
-            active_datasets = UploadedDataset.objects.count() or 12
+            active_models = ModelVersion.objects.filter(is_active=True).count()
+            active_datasets = UploadedDataset.objects.count()
 
             executive_summary = {
                 "current_month_spend": "$42,800.00",

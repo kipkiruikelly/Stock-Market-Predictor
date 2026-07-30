@@ -119,6 +119,6 @@ class ExecutiveCommandView(APIView):
             now = datetime.utcnow()
             p_stats = Portfolio.objects.aggregate(tot_eq=Sum('total_equity'))
             users_cnt = User.objects.count()
-            return Response({"ok": True, "aum": p_stats['tot_eq'] or 248500000.0, "total_users": users_cnt, "timestamp": now.isoformat()})
+            return Response({"ok": True, "aum": p_stats['tot_eq'] or 0.0, "total_users": users_cnt, "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

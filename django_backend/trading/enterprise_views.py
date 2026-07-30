@@ -174,7 +174,7 @@ class EnterprisePortfolioOptimizationView(APIView):
         try:
             now = datetime.utcnow()
             p_stats = Portfolio.objects.aggregate(tot_eq=Sum('total_equity'), tot_pnl=Sum('total_profit_loss'))
-            return Response({"ok": True, "total_equity": p_stats['tot_eq'] or 248500000.0, "total_pnl": p_stats['tot_pnl'] or 12450.0, "timestamp": now.isoformat()})
+            return Response({"ok": True, "total_equity": p_stats['tot_eq'] or 0.0, "total_pnl": p_stats['tot_pnl'] or 0.0, "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -219,7 +219,7 @@ class EnterpriseAnalyticsExecutiveView(APIView):
     def get(self, request):
         try:
             now = datetime.utcnow()
-            payments_sum = Payment.objects.filter(status='paid').aggregate(tot=Sum('amount'))['tot'] or 14850000.0
+            payments_sum = Payment.objects.filter(status='paid').aggregate(tot=Sum('amount'))['tot'] or 0.0
             users_cnt = User.objects.filter(is_active=True).count()
             return Response({"ok": True, "arr": payments_sum, "active_users": users_cnt, "timestamp": now.isoformat()})
         except Exception as e:
@@ -233,7 +233,7 @@ class EnterpriseCloudCostsView(APIView):
     def get(self, request):
         try:
             now = datetime.utcnow()
-            models_cnt = ModelVersion.objects.filter(is_active=True).count() or 24
+            models_cnt = ModelVersion.objects.filter(is_active=True).count()
             return Response({"ok": True, "monthly_spend": "$42,800.00", "active_gpu_models": models_cnt, "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

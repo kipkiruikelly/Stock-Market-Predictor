@@ -28,9 +28,9 @@ class ResearchLabProjectsView(APIView):
         try:
             now = datetime.utcnow()
 
-            active_models_count = ModelVersion.objects.filter(is_active=True).count() or 24
-            dataset_count = UploadedDataset.objects.count() or 18
-            prediction_count = PredictionHistory.objects.count() or 1420000
+            active_models_count = ModelVersion.objects.filter(is_active=True).count()
+            dataset_count = UploadedDataset.objects.count()
+            prediction_count = PredictionHistory.objects.count()
 
             overview = {
                 "active_projects": 14,
@@ -86,7 +86,7 @@ class ResearchLabProjectsView(APIView):
                 experiments.append({
                     "exp_id": f"EXP-{ev.id}",
                     "name": f"{ev.model_version.ticker} {ev.model_version.model_type.upper()} Evaluation",
-                    "accuracy": f"{(ev.directional_accuracy_pct or 88.4):.1f}%",
+                    "accuracy": f"{(ev.directional_accuracy_pct or 0.0):.1f}%",
                     "loss": f"{(ev.mae or 0.082):.3f}",
                     "duration": "14m 20s",
                     "status": "BEST_RUN"
@@ -104,8 +104,8 @@ class ResearchLabProjectsView(APIView):
                 datasets.append({
                     "dataset_id": f"DS-{ds.id}",
                     "name": ds.filename,
-                    "size": f"{(ds.file_size or 42000000) / 1000000:.1f} MB",
-                    "features": ds.total_cols or 68,
+                    "size": f"{(ds.file_size or 0) / 1000000:.1f} MB",
+                    "features": ds.total_cols or 0,
                     "quality": "99.4%",
                     "freshness": ds.uploaded_at.strftime("%Y-%m-%d")
                 })
@@ -190,10 +190,10 @@ class ResearchLabDatasetsView(APIView):
                 datasets.append({
                     "dataset_id": f"DS-{ds.id}",
                     "name": ds.filename,
-                    "rows": ds.total_rows or 10000,
-                    "columns": ds.total_cols or 68,
+                    "rows": ds.total_rows or 0,
+                    "columns": ds.total_cols or 0,
                     "null_count": ds.null_count or 0,
-                    "size_mb": round((ds.file_size or 42000000) / 1000000.0, 2),
+                    "size_mb": round((ds.file_size or 0) / 1000000.0, 2),
                     "uploaded_at": ds.uploaded_at.strftime("%Y-%m-%d %H:%M UTC")
                 })
 

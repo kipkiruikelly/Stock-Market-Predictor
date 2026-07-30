@@ -70,9 +70,9 @@ class StrategyDashboardView(APIView):
                     "symbol": p.ticker,
                     "direction": p.direction.upper() if p.direction else "BUY",
                     "confidence": f"{p.confidence * 100:.1f}%" if p.confidence else "90.0%",
-                    "entry_price": p.current_price or 100.0,
-                    "target_price": p.target_price or 110.0,
-                    "stop_loss": p.stop_loss or 95.0,
+                    "entry_price": p.current_price or 0.0,
+                    "target_price": p.target_price or 0.0,
+                    "stop_loss": p.stop_loss or 0.0,
                     "time": "Just now"
                 })
 

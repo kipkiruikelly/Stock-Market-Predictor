@@ -139,7 +139,7 @@ class InstitutionalExecutiveDashboardView(APIView):
             now = datetime.utcnow()
             users_cnt = User.objects.count()
             p_stats = Portfolio.objects.aggregate(tot_eq=Sum('total_equity'))
-            return Response({"ok": True, "aum": p_stats['tot_eq'] or 248500000.0, "active_users": users_cnt, "timestamp": now.isoformat()})
+            return Response({"ok": True, "aum": p_stats['tot_eq'] or 0.0, "active_users": users_cnt, "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

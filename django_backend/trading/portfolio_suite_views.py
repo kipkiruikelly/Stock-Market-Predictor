@@ -64,6 +64,6 @@ class PortfolioRiskView(APIView):
         try:
             now = datetime.utcnow()
             p_stats = Portfolio.objects.aggregate(tot_eq=Sum('total_equity'))
-            return Response({"ok": True, "var_95": (p_stats['tot_eq'] or 100000.0) * 0.02, "status": "LOW_RISK", "timestamp": now.isoformat()})
+            return Response({"ok": True, "var_95": (p_stats['tot_eq'] or 0.0) * 0.02, "status": "LOW_RISK", "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

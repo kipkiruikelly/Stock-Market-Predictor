@@ -197,8 +197,8 @@ class TradingTerminalView(APIView):
             account = {
                 "broker": "MetaTrader 5 ECN Bridge",
                 "account_id": "MT5-INST-7781920",
-                "balance": f"${p_stats['tot_bal'] or 250000.0:,.2f}",
-                "equity": f"${p_stats['tot_eq'] or 268420.50:,.2f}",
+                "balance": f"${p_stats['tot_bal'] or 0.0:,.2f}",
+                "equity": f"${p_stats['tot_eq'] or 0.0:,.2f}",
                 "margin": "$18,400.00",
                 "free_margin": "$250,020.50",
                 "margin_level": "1,458.8%",
@@ -694,9 +694,9 @@ class OperationsSettingsControlView(APIView):
 
             from users.models import AppSetting, ApiKey, UserWebhook, DiscordConfig, TelegramConfig, WhatsappConfig
 
-            settings_count = AppSetting.objects.count() or 18
-            api_keys_count = ApiKey.objects.count() or 8
-            webhooks_count = UserWebhook.objects.filter(active=True).count() or 12
+            settings_count = AppSetting.objects.count()
+            api_keys_count = ApiKey.objects.count()
+            webhooks_count = UserWebhook.objects.filter(active=True).count()
             discord_count = DiscordConfig.objects.filter(enabled=True).count()
             telegram_count = TelegramConfig.objects.filter(enabled=True).count()
             whatsapp_count = WhatsappConfig.objects.filter(enabled=True).count()
