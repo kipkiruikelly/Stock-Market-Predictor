@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
 import { ThemeProvider, CssBaseline } from '@mui/material';
@@ -77,14 +77,11 @@ export const AppLayout = () => {
       if (e.key === 'Escape') {
         setMobileSidebarOpen(false);
         setSearchHubOpen(false);
-        setNotifOpen(false);
       }
     };
     window.addEventListener('keydown', handleGlobalKey);
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
-
-  const notifRef = useRef<HTMLDivElement>(null);
 
   // Apply theme to HTML tag
   useEffect(() => {
@@ -99,17 +96,6 @@ export const AppLayout = () => {
       setTheme(user.theme_preference);
     }
   }, [user?.theme_preference]);
-
-  // Handle outside clicks to close notification panel
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setNotifOpen(false);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, []);
 
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -153,35 +139,6 @@ export const AppLayout = () => {
     await logout();
     toast.success('Logged out successfully');
     navigate('/login');
-  };
-
-  const markRead = async (id: number, link: string | null) => {
-    try {
-      const res = await apiFetch('/api/notifications/read', {
-        method: 'POST',
-        body: { id }
-      });
-      if (res.ok) {
-        if (link) {
-          navigate(link);
-        } else {
-          fetchNotifications();
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const clearAllNotifs = async () => {
-    try {
-      const res = await apiFetch('/api/notifications/clear', { method: 'POST' });
-      if (res.ok) {
-        fetchNotifications();
-      }
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   // Extract clean current page title from pathname
