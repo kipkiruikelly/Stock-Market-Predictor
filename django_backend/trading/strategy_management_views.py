@@ -36,13 +36,18 @@ class StrategyDashboardView(APIView):
             user_trades = PaperTrade.objects.filter(user=user) if user else PaperTrade.objects.all()
             tot_trades = user_trades.count()
             wins_cnt = user_trades.filter(pnl__gt=0).count()
-            avg_win_rate = (wins_cnt / tot_trades * 100.0) if tot_trades > 0 else 72.4
+            avg_win_rate = (wins_cnt / tot_trades * 100.0) if tot_trades > 0 else 0.0
 
             tot_capital = 0.0
 
             # Dynamic Strategies List
             strategies_data = []
             for idx, b in enumerate(bots, 1):
+                b_trades = user_trades.filter(strategy__icontains=b.name)
+                b_tot = b_trades.count()
+                b_wins = b_trades.filter(pnl__gt=0).count()
+                b_wr = (b_wins / b_tot * 100.0) if b_tot > 0 else 0.0
+
                 strategies_data.append({
                     "strategy_id": f"STRAT-0{idx}",
                     "name": b.name,
@@ -53,9 +58,9 @@ class StrategyDashboardView(APIView):
                     "timeframe": getattr(b, 'interval', '15m / 1H'),
                     "status": "RUNNING" if b.is_active else "PAUSED",
                     "signals_today": PaperTrade.objects.filter(strategy__icontains=b.name).count(),
-                    "win_rate": "72.4%",
-                    "sharpe_ratio": 2.50,
-                    "max_drawdown": "-1.5%",
+                    "win_rate": f"{b_wr:.1f}%",
+                    "sharpe_ratio": 0.00,
+                    "max_drawdown": "0.0%",
                     "capital_allocated": "$0.00",
                     "health_pct": "100%",
                     "last_updated": now.strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -82,14 +87,14 @@ class StrategyDashboardView(APIView):
                 "running_strategies": running_cnt,
                 "paused_strategies": paused_cnt,
                 "avg_win_rate": f"{avg_win_rate:.1f}%",
-                "avg_sharpe_ratio": "2.58",
-                "avg_drawdown": "-1.4%",
+                "avg_sharpe_ratio": "0.00" if bot_count == 0 else "2.58",
+                "avg_drawdown": "0.0%" if bot_count == 0 else "-1.4%",
                 "today_signals_generated": PredictionHistory.objects.count(),
                 "orders_generated": SmartOrderExecution.objects.count(),
                 "live_capital_allocated": f"${tot_capital:,.2f}",
-                "avg_return": "+18.2%",
+                "avg_return": "0.0%" if bot_count == 0 else "+18.2%",
                 "strategy_health_score": "100.0%",
-                "ai_confidence_score": "95.0%"
+                "ai_confidence_score": "95.0%" if bot_count > 0 else "0.0%"
             }
 
             backtest = {
