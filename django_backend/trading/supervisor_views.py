@@ -588,6 +588,7 @@ class OperationsScreenerView(APIView):
                 {"name": "ICT Order Block ML Engine", "status": "HEALTHY", "uptime": "99.95%", "cpu": "42.8%", "memory": "14.2 GB", "latency": "1.2ms", "error_rate": "0.00%"},
                 {"name": "Feature Store DB", "status": "HEALTHY", "uptime": "100.0%", "cpu": "11.2%", "memory": "2.4 GB", "latency": "1.5ms", "error_rate": "0.00%"},
                 {"name": "OpenTelemetry & Prometheus", "status": "HEALTHY", "uptime": "100.0%", "cpu": "6.4%", "memory": "620 MB", "latency": "1.0ms", "error_rate": "0.00%"}
+            ]
             market_surveillance = [
                 {"symbol": "NVDA", "feed": "Pyth L2 Real-Time", "status": "STREAMING", "latency": "8ms", "volume": "2.4M", "anomaly": "NORMAL"},
                 {"symbol": "AAPL", "feed": "Polygon.io Equities", "status": "STREAMING", "latency": "12ms", "volume": "5.1M", "anomaly": "NORMAL"},
