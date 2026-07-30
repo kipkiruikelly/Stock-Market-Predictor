@@ -358,7 +358,7 @@ class ExecutiveGrowthView(APIView):
 class CloudCostsView(APIView):
     """
     GET /api/executive/cloud-costs
-    Returns Cloud FinOps cost breakdown across GPU, Redis, DB, Storage, and Optimization tips.
+    Returns enterprise Cloud Financial Operations (FinOps) analytics: spend breakdown, resource utilization, cost optimization center, budget management, AI GPU costs, sustainability, and forecasting.
     """
     permission_classes = [AllowAny]
 
@@ -366,24 +366,90 @@ class CloudCostsView(APIView):
         try:
             now = datetime.utcnow()
 
-            costs = {
-                "total_monthly_spend": "$42,800.00",
-                "ml_gpu_compute": "$18,400.00 (43.0%)",
-                "database_postgresql": "$9,800.00 (22.9%)",
-                "redis_cluster": "$4,200.00 (9.8%)",
-                "cloud_run_compute": "$6,100.00 (14.3%)",
-                "object_storage": "$4,300.00 (10.0%)"
+            executive_summary = {
+                "current_month_spend": "$42,800.00",
+                "todays_spend": "$1,426.60",
+                "projected_monthend": "$43,500.00",
+                "annual_spend": "$513,600.00",
+                "budget_utilization": "85.6%",
+                "remaining_budget": "$7,200.00",
+                "cost_savings": "$6,200.00/mo Potential",
+                "efficiency_score": "92.8 / 100",
+                "reserved_instance_savings": "$4,200.00/mo",
+                "spot_instance_savings": "$3,800.00/mo",
+                "gpu_cost": "$18,400.00 (43.0%)",
+                "ai_compute_cost": "$18,400.00",
+                "cost_per_customer": "$301.40/mo",
+                "cost_per_trade": "$0.03",
+                "cost_per_prediction": "$0.00003"
             }
 
+            cost_breakdown = {
+                "by_service": [
+                    {"service": "NVIDIA CUDA GPU ML Compute", "cost": "$18,400.00", "pct": "43.0%"},
+                    {"service": "PostgreSQL DB Cluster (GCP Cloud SQL)", "cost": "$9,800.00", "pct": "22.9%"},
+                    {"service": "GCP Cloud Run Backend API", "cost": "$6,100.00", "pct": "14.3%"},
+                    {"service": "Google Cloud Storage (L2 Ticks & Logs)", "cost": "$4,300.00", "pct": "10.0%"},
+                    {"service": "Redis In-Memory Cluster", "cost": "$4,200.00", "pct": "9.8%"}
+                ],
+                "by_environment": [
+                    {"env": "Production", "cost": "$34,240.00", "pct": "80.0%"},
+                    {"env": "Staging & Canary", "cost": "$6,077.60", "pct": "14.2%"},
+                    {"env": "Dev & QA", "cost": "$2,482.40", "pct": "5.8%"}
+                ]
+            }
+
+            resource_utilization = [
+                {"resource": "Kubernetes GPU Worker Nodes", "type": "GPU_COMPUTE", "utilization": "84.2%", "status": "OPTIMAL"},
+                {"resource": "PostgreSQL DB Master Cluster", "type": "DATABASE", "utilization": "62.0%", "status": "HEALTHY"},
+                {"resource": "Redis Enterprise Cache", "type": "CACHE", "utilization": "48.5%", "status": "HEALTHY"},
+                {"resource": "Cloud Run Backend Auto-Scale", "type": "COMPUTE", "utilization": "54.0%", "status": "OPTIMAL"}
+            ]
+
             optimizations = [
-                {"resource": "Idle GPU Inference Workers", "savings": "$2,400.00/mo", "recommendation": "Autoscale down during non-market hours"},
-                {"resource": "PostgreSQL Reserved Capacity", "savings": "$1,800.00/mo", "recommendation": "Switch to 1-year committed use discount"}
+                {"resource": "Idle GPU Inference Autoscale", "savings": "$2,400.00/mo", "impact": "LOW_RISK", "difficulty": "EASY", "recommendation": "Autoscale down inference pods during non-market hours"},
+                {"resource": "PostgreSQL 1-Year Committed Capacity", "savings": "$1,800.00/mo", "impact": "NO_RISK", "difficulty": "EASY", "recommendation": "Switch to 1-year committed use discount"},
+                {"resource": "Cold Tick Data S3 Glacier Archival", "savings": "$1,200.00/mo", "impact": "NO_RISK", "difficulty": "MEDIUM", "recommendation": "Transition tick data older than 90 days to cold storage"},
+                {"resource": "Dev/QA Nightly Auto-Shutdown", "savings": "$800.00/mo", "impact": "NO_RISK", "difficulty": "EASY", "recommendation": "Schedule Dev environments shutdown between 20:00 - 06:00 UTC"}
+            ]
+
+            budget_management = {
+                "annual_budget": "$600,000.00",
+                "monthly_budget": "$50,000.00",
+                "monthly_spend": "$42,800.00",
+                "variance": "-$7,200.00 (-14.4%)",
+                "health": "UNDER_BUDGET_HEALTHY"
+            }
+
+            ai_finops_analytics = {
+                "model_training_cost": "$12,200.00/mo",
+                "inference_cost": "$6,200.00/mo",
+                "cost_per_1m_predictions": "$30.00",
+                "gpu_waste_rate": "2.1% (Low Waste)"
+            }
+
+            sustainability = {
+                "carbon_footprint": "1.82 metric tons CO₂e/mo",
+                "green_energy_score": "94.2 / 100",
+                "renewable_energy_usage": "92.0% (GCP Green Regions)"
+            }
+
+            ai_finops_prompts = [
+                "Explain main drivers of monthly cloud spend across GPU ML compute and DB storage.",
+                "Compare FinOps optimization recommendations for GPU inference vs Committed Use Discounts.",
+                "Generate executive Cloud FinOps governance and budget variance report."
             ]
 
             return Response({
                 "ok": True,
-                "costs": costs,
+                "executive_summary": executive_summary,
+                "cost_breakdown": cost_breakdown,
+                "resource_utilization": resource_utilization,
                 "optimizations": optimizations,
+                "budget_management": budget_management,
+                "ai_finops_analytics": ai_finops_analytics,
+                "sustainability": sustainability,
+                "ai_finops_prompts": ai_finops_prompts,
                 "timestamp": now.isoformat()
             })
 
