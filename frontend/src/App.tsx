@@ -35,6 +35,7 @@ import { ModelMetricsDashboard } from './pages/ModelMetricsDashboard';
 import { TrackRecordDashboard } from './pages/TrackRecordDashboard';
 import { DeploymentDashboard } from './pages/DeploymentDashboard';
 import { SecurityCenterDashboard } from './pages/SecurityCenterDashboard';
+import { TradingSignalsDashboard } from './pages/TradingSignalsDashboard';
 
 function App() {
   return (
@@ -103,6 +104,9 @@ function App() {
               <Route path="/ml/feature-store" element={<ResearchDashboard />} />
 
               {/* Alternative Trading Routes */}
+              <Route path="/trading/signals" element={<TradingSignalsDashboard />} />
+              <Route path="/signals" element={<TradingSignalsDashboard />} />
+              <Route path="/dashboard/signals" element={<TradingSignalsDashboard />} />
               <Route path="/trading/orders" element={<LiveDashboard />} />
               <Route path="/trading/positions" element={<LiveDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
