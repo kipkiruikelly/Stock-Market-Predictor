@@ -128,12 +128,12 @@ function App() {
               
               {/* Alternative Machine Learning Routes */}
               <Route path="/ml/drift" element={<BotsDashboard />} />
-              <Route path="/ml/models" element={<PipelineDashboard />} />
-              <Route path="/ml/registry" element={<PipelineDashboard />} />
-              <Route path="/ml/experiments" element={<ResearchDashboard />} />
-              <Route path="/ml/pipeline" element={<PipelineDashboard />} />
+              <Route path="/ml/models" element={<ResearchModelsDashboard />} />
+              <Route path="/ml/registry" element={<ResearchModelRegistryDashboard />} />
+              <Route path="/ml/experiments" element={<ResearchExperimentsDashboard />} />
+              <Route path="/ml/pipeline" element={<ResearchDataPipelineDashboard />} />
               <Route path="/ml/xai" element={<BotsDashboard />} />
-              <Route path="/ml/feature-store" element={<ResearchDashboard />} />
+              <Route path="/ml/feature-store" element={<ResearchDatasetsDashboard />} />
 
               {/* Alternative Trading Routes */}
               <Route path="/trading/supervisor" element={<TradingSupervisorDashboard />} />
@@ -207,12 +207,8 @@ function App() {
               <Route path="/ops/slos" element={<ScreenerDashboard />} />
 
               {/* Alternative Administration Routes */}
-              <Route path="/admin/users" element={<AdminDashboard />} />
-              <Route path="/admin/roles" element={<AdminDashboard />} />
-              <Route path="/admin/feature-flags" element={<AdminDashboard />} />
-              <Route path="/admin/secrets" element={<AdminDashboard />} />
-              <Route path="/admin/billing" element={<AdminDashboard />} />
-              <Route path="/admin/compliance" element={<AdminDashboard />} />
+              <Route path="/admin/secrets" element={<AdminApiKeysDashboard />} />
+              <Route path="/admin/compliance" element={<AdminGuidePortalDashboard />} />
               <Route path="/admin/deployments" element={<DeploymentDashboard />} />
               <Route path="/admin/security-center" element={<SecurityCenterDashboard />} />
               
