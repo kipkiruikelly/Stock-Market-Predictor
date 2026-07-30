@@ -185,7 +185,7 @@ function App() {
               <Route path="/knowledge/user-guide" element={<UserGuidePortalDashboard />} />
               <Route path="/knowledge/admin-guide" element={<AdminGuidePortalDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
-              <Route path="/trading/performance" element={<TradingDashboard />} />
+              <Route path="/trading/performance" element={<PortfolioPerformanceDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
               <Route path="/trading/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/strategies" element={<TradingStrategiesDashboard />} />

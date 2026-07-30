@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   Activity, Briefcase, BarChart2, BookOpen, Settings, Cpu, Zap, Search, Layers, 
   ShieldCheck, Users, Sliders, ShieldAlert, DollarSign, Ticket, ChevronDown, ChevronRight, ToggleLeft, ToggleRight, PieChart
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { apiFetch } from '../utils/api';
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
@@ -25,7 +24,7 @@ export const Sidebar: React.FC = () => {
     'Knowledge Center': false
   });
 
-  const [sidebarStructure, setSidebarStructure] = useState<Record<string, any[]>>({
+  const [sidebarStructure] = useState<Record<string, any[]>>({
     "Dashboard": [
       {"name": "Market Overview", "route": "/dashboard/market-overview"}
     ],
@@ -36,7 +35,7 @@ export const Sidebar: React.FC = () => {
       {"name": "Orders OMS", "route": "/trading/orders"},
       {"name": "Smart Execution", "route": "/trading/smartexecution"},
       {"name": "Trading Signals", "route": "/trading/signals"},
-      {"name": "Performance", "route": "/portfolio"},
+      {"name": "Performance", "route": "/portfolio/performance"},
       {"name": "Trading Terminal", "route": "/live"},
       {"name": "Markets Analytics", "route": "/markets"},
       {"name": "AI Robots", "route": "/bots"},
