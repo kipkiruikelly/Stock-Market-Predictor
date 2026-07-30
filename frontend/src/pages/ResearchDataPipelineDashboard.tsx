@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   RefreshCw, Activity, 
-  Download, AlertTriangle, Sparkles, Workflow,
-  CheckCircle2, Play
+  AlertTriangle, Sparkles, Workflow,
+  Play
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';

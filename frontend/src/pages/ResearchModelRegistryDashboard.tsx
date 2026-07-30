@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   RefreshCw, Activity, 
   Download, AlertTriangle, Sparkles, ShieldCheck,
-  Award, Clock
+  Clock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
