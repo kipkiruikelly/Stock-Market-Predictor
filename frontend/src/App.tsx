@@ -58,28 +58,40 @@ function App() {
             <Route element={<AppLayout />}>
               <Route path="/home" element={<HomeDashboard />} />
               <Route path="/index" element={<HomeDashboard />} />
+              <Route path="/dashboard" element={<HomeDashboard />} />
+              <Route path="/dashboard/home" element={<HomeDashboard />} />
               <Route path="/portfolio" element={<TradingDashboard />} />
               <Route path="/paper" element={<TradingDashboard />} />
               <Route path="/watchlist" element={<TradingDashboard />} />
               <Route path="/performance" element={<TradingDashboard />} />
+              <Route path="/dashboard/portfolio" element={<TradingDashboard />} />
+              <Route path="/dashboard/trading" element={<TradingDashboard />} />
               
               <Route path="/live" element={<LiveDashboard />} />
+              <Route path="/dashboard/live" element={<LiveDashboard />} />
               <Route path="/journal" element={<JournalDashboard />} />
               <Route path="/history" element={<JournalDashboard />} />
+              <Route path="/dashboard/journal" element={<JournalDashboard />} />
               
               <Route path="/market" element={<MarketDashboard />} />
               <Route path="/markets" element={<MarketDashboard />} />
+              <Route path="/dashboard/market" element={<MarketDashboard />} />
+              <Route path="/dashboard/markets" element={<MarketDashboard />} />
               <Route path="/macro" element={<MacroDashboard />} />
+              <Route path="/dashboard/macro" element={<MacroDashboard />} />
               
               <Route path="/predict" element={<ResearchDashboard />} />
               <Route path="/research" element={<ResearchDashboard />} />
+              <Route path="/dashboard/research" element={<ResearchDashboard />} />
               <Route path="/model-metrics" element={<ModelMetricsDashboard />} />
               <Route path="/track-record" element={<TrackRecordDashboard />} />
               <Route path="/leaderboard" element={<LeaderboardDashboard />} />
               <Route path="/traders" element={<TradersDashboard />} />
               
               <Route path="/screener" element={<ScreenerDashboard />} />
+              <Route path="/dashboard/screener" element={<ScreenerDashboard />} />
               <Route path="/bots" element={<BotsDashboard />} />
+              <Route path="/dashboard/bots" element={<BotsDashboard />} />
               
               {/* Alternative Machine Learning Routes */}
               <Route path="/ml/drift" element={<BotsDashboard />} />
@@ -97,6 +109,8 @@ function App() {
               <Route path="/trading/performance" element={<TradingDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
               <Route path="/trading/strategies" element={<ToolsDashboard />} />
+              <Route path="/trading/market" element={<MarketDashboard />} />
+              <Route path="/trading/markets" element={<MarketDashboard />} />
 
               {/* Alternative Risk Routes */}
               <Route path="/risk/greeks" element={<RiskDashboard />} />
@@ -125,22 +139,33 @@ function App() {
               <Route path="/admin/security-center" element={<SecurityCenterDashboard />} />
               
               <Route path="/tools" element={<ToolsDashboard />} />
+              <Route path="/dashboard/tools" element={<ToolsDashboard />} />
               <Route path="/scanner" element={<ScannerDashboard />} />
+              <Route path="/dashboard/scanner" element={<ScannerDashboard />} />
               <Route path="/alerts" element={<AlertsDashboard />} />
+              <Route path="/dashboard/alerts" element={<AlertsDashboard />} />
               <Route path="/pipeline" element={<PipelineDashboard />} />
+              <Route path="/dashboard/pipeline" element={<PipelineDashboard />} />
               <Route path="/risk" element={<RiskDashboard />} />
+              <Route path="/dashboard/risk" element={<RiskDashboard />} />
               <Route path="/mt5" element={<LiveDashboard />} />
               <Route path="/calendar" element={<CalendarDashboard />} />
+              <Route path="/dashboard/calendar" element={<CalendarDashboard />} />
               <Route path="/backtest" element={<BacktestDashboard />} />
+              <Route path="/dashboard/backtest" element={<BacktestDashboard />} />
               <Route path="/resources" element={<ResourcesDashboard />} />
+              <Route path="/dashboard/resources" element={<ResourcesDashboard />} />
               <Route path="/faq" element={<StaticPage pageIdOverride="faq" />} />
               <Route path="/risk-basics" element={<StaticPage pageIdOverride="risk_basics" />} />
               <Route path="/data-sources" element={<StaticPage pageIdOverride="data_sources" />} />
               <Route path="/methodology" element={<StaticPage pageIdOverride="methodology" />} />
 
               <Route path="/settings" element={<SettingsDashboard />} />
+              <Route path="/dashboard/settings" element={<SettingsDashboard />} />
               <Route path="/pricing" element={<PricingDashboard />} />
+              <Route path="/dashboard/pricing" element={<PricingDashboard />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/dashboard/admin" element={<AdminDashboard />} />
               <Route path="*" element={<div className="p-10 text-center text-[#a0a5b1]">Page under construction</div>} />
             </Route>
           </Route>

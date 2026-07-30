@@ -74,7 +74,7 @@ export const Sidebar: React.FC = () => {
           Object.keys(struct).forEach(key => {
             mappedStruct[key] = struct[key].map((item: any) => {
               let route = item.route;
-              if (route.startsWith('/trading/market')) route = '/markets';
+              if (route.startsWith('/trading/market') || route.startsWith('/dashboard/market')) route = '/markets';
               else if (route.startsWith('/trading/strategies')) route = '/tools';
               else if (route.startsWith('/trading/execution') || route.startsWith('/trading/orders') || route.startsWith('/trading/positions')) route = '/live';
               else if (route.startsWith('/portfolio')) route = '/portfolio';
