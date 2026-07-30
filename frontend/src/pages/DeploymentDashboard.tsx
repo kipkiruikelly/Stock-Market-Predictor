@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Button, Chip, LinearProgress } from '@mui/material';
-import { Rocket, RotateCcw, Activity, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Rocket, RotateCcw, Activity, CheckCircle2 } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 
 export const DeploymentDashboard: React.FC = () => {

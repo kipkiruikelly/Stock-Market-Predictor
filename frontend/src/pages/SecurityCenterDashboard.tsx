@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Chip, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
-import { ShieldCheck, Lock, AlertTriangle, Globe, Key } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 
 export const SecurityCenterDashboard: React.FC = () => {
