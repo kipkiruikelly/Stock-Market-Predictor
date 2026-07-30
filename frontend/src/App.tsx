@@ -213,6 +213,7 @@ function App() {
 
               {/* Alternative Operations Routes */}
               <Route path="/operations/screener" element={<OperationsScreenerDashboard />} />
+              <Route path="/operations/settingscontrol" element={<OperationsSettingsControlDashboard />} />
               <Route path="/ops/incidents" element={<ScreenerDashboard />} />
               <Route path="/ops/traces" element={<AdminDashboard />} />
               <Route path="/ops/metrics" element={<AdminDashboard />} />
