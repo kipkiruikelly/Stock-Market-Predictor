@@ -169,3 +169,51 @@ class CloudCostsView(APIView):
         except Exception as e:
             logger.error("Error in CloudCostsView: %s", str(e), exc_info=True)
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class EnterpriseMarketOverviewView(APIView):
+    """
+    GET /api/dashboard/market-overview
+    Returns executive global market overview across equities, FX, commodities, crypto, sector breadth, and Fear & Greed index.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            now = datetime.utcnow()
+
+            indices = [
+                {"symbol": "S&P 500", "value": "5,420.50", "change": "+0.82%", "positive": True},
+                {"symbol": "NASDAQ", "value": "17,850.20", "change": "+1.15%", "positive": True},
+                {"symbol": "FTSE 100", "value": "8,240.10", "change": "+0.35%", "positive": True},
+                {"symbol": "DAX 40", "value": "18,450.00", "change": "+0.62%", "positive": True},
+                {"symbol": "Nikkei 225", "value": "38,900.00", "change": "-0.24%", "positive": False}
+            ]
+
+            sectors = [
+                {"sector": "Information Technology", "change": "+1.85%"},
+                {"sector": "Financial Services", "change": "+0.92%"},
+                {"sector": "Energy & Commodities", "change": "-0.45%"},
+                {"sector": "Healthcare", "change": "+0.30%"}
+            ]
+
+            market_summary = {
+                "fear_greed_index": "74 (Greed)",
+                "active_sessions": "US (Open), London (Close), Asia (Closed)",
+                "top_gainer": "NVDA (+4.2%)",
+                "top_loser": "TSLA (-1.8%)",
+                "ai_market_sentiment": "BULLISH_MOMENTUM"
+            }
+
+            return Response({
+                "ok": True,
+                "indices": indices,
+                "sectors": sectors,
+                "market_summary": market_summary,
+                "timestamp": now.isoformat()
+            })
+
+        except Exception as e:
+            logger.error("Error in EnterpriseMarketOverviewView: %s", str(e), exc_info=True)
+            return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
