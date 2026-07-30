@@ -3,7 +3,7 @@ import {
   RefreshCw, Activity, ShieldCheck, 
   Download, AlertTriangle, Sparkles, Cpu,
   Clock, CheckCircle2,
-  Search, Sliders, X, AlertOctagon, Scale, Eye, Play, Pause, Power, Check, XCircle
+  Search, X, AlertOctagon, Scale, Play, Pause, Power, Check, XCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
@@ -277,7 +277,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Executive Summary KPI Cards (12 Metrics) ────────────────────────── */}
+      {/* ── Executive Summary KPI Cards ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-2.5">
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Active Trades</span>

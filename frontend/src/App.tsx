@@ -39,6 +39,7 @@ import { TradingSignalsDashboard } from './pages/TradingSignalsDashboard';
 import { SmartExecutionDashboard } from './pages/SmartExecutionDashboard';
 import { OrdersDashboard } from './pages/OrdersDashboard';
 import { PositionsDashboard } from './pages/PositionsDashboard';
+import { TradingSupervisorDashboard } from './pages/TradingSupervisorDashboard';
 
 function App() {
   return (
@@ -107,6 +108,9 @@ function App() {
               <Route path="/ml/feature-store" element={<ResearchDashboard />} />
 
               {/* Alternative Trading Routes */}
+              <Route path="/trading/supervisor" element={<TradingSupervisorDashboard />} />
+              <Route path="/supervisor" element={<TradingSupervisorDashboard />} />
+              <Route path="/dashboard/supervisor" element={<TradingSupervisorDashboard />} />
               <Route path="/trading/smartexecution" element={<SmartExecutionDashboard />} />
               <Route path="/trading/smart-execution" element={<SmartExecutionDashboard />} />
               <Route path="/smartexecution" element={<SmartExecutionDashboard />} />
