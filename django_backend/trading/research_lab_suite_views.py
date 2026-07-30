@@ -555,7 +555,7 @@ class ResearchLabExperimentsView(APIView):
 class ResearchLabModelsView(APIView):
     """
     GET /api/researchlab/models/dashboard
-    Returns complete AI model management inventory, metrics, and SHAP feature importance.
+    Returns enterprise AI model management inventory, lifecycle timeline, XAI SHAP explainability, and drift monitoring.
     """
     permission_classes = [AllowAny]
 
@@ -563,48 +563,147 @@ class ResearchLabModelsView(APIView):
         try:
             now = datetime.utcnow()
 
+            overview = {
+                "total_models": 24,
+                "production_models": 12,
+                "champion_models": 8,
+                "challenger_models": 6,
+                "shadow_models": 4,
+                "archived_models": 2,
+                "failed_models": 0,
+                "awaiting_approval": 3,
+                "retraining_models": 2,
+                "avg_accuracy": "94.2%",
+                "avg_latency": "1.8ms",
+                "avg_drift_score": "0.02%",
+                "last_deployment": "12m ago",
+                "last_retraining": "1h ago"
+            }
+
             models = [
                 {
                     "model_id": "MDL-401",
                     "name": "ICT Smart Money Classifier",
                     "version": "v2.4",
                     "algorithm": "XGBoost + Numba CUDA",
+                    "type": "CLASSIFICATION_ALPHA",
+                    "asset_class": "US Equities & Index Futures",
+                    "strategy": "ICT Order Block Liquidity Sweep",
+                    "owner": "Kelvin (Quant Lead)",
+                    "team": "Alpha Research Desk",
+                    "env": "PRODUCTION",
+                    "status": "ACTIVE_HEALTHY",
+                    "stage": "CHAMPION_PRODUCTION",
                     "accuracy": "94.2%",
-                    "drift": "0.02% (Optimal)",
-                    "deployment": "Production (Champion)",
-                    "status": "ACTIVE",
+                    "precision": "92.8%",
+                    "recall": "95.1%",
+                    "f1": "0.939",
+                    "sharpe": "2.84",
+                    "sortino": "3.42",
+                    "profit_factor": "2.18",
+                    "win_rate": "68.4%",
+                    "drift_score": "0.02% (Optimal)",
+                    "explainability": "SHAP_COMPLIANT",
                     "latency": "1.2ms",
-                    "inference_time": "0.8ms"
+                    "inference_time": "0.8ms",
+                    "updated": (now - timedelta(minutes=12)).strftime("%Y-%m-%d %H:%M UTC")
                 },
                 {
                     "model_id": "MDL-402",
                     "name": "Stacking Meta-Learner Ensemble",
                     "version": "v3.1",
                     "algorithm": "Stacking Ensemble (XGB+LGBM)",
+                    "type": "META_ENSEMBLE",
+                    "asset_class": "Crypto & Foreign Exchange",
+                    "strategy": "Multi-Agent Consensus Voting",
+                    "owner": "AI FOS Engine",
+                    "team": "HFT Desk",
+                    "env": "PRODUCTION",
+                    "status": "ACTIVE_HEALTHY",
+                    "stage": "CHAMPION_PRODUCTION",
                     "accuracy": "92.4%",
-                    "drift": "0.05%",
-                    "deployment": "Production (Champion)",
-                    "status": "ACTIVE",
+                    "precision": "91.0%",
+                    "recall": "93.8%",
+                    "f1": "0.924",
+                    "sharpe": "2.65",
+                    "sortino": "3.10",
+                    "profit_factor": "1.98",
+                    "win_rate": "65.2%",
+                    "drift_score": "0.05%",
+                    "explainability": "SHAP_COMPLIANT",
                     "latency": "2.4ms",
-                    "inference_time": "1.5ms"
+                    "inference_time": "1.5ms",
+                    "updated": (now - timedelta(hours=1)).strftime("%Y-%m-%d %H:%M UTC")
                 },
                 {
                     "model_id": "MDL-403",
                     "name": "Deep Conv1D Market Microstructure",
                     "version": "v1.0",
-                    "algorithm": "PyTorch Conv1D",
-                    "accuracy": "95.8%",
-                    "drift": "0.01%",
-                    "deployment": "Shadow Mode",
+                    "algorithm": "PyTorch Conv1D + Transformer",
+                    "type": "NEURAL_MICROSTRUCTURE",
+                    "asset_class": "Futures & Commodities",
+                    "strategy": "Order Book Depth Imbalance",
+                    "owner": "MLOps Team",
+                    "team": "AI Research Desk",
+                    "env": "STAGING",
                     "status": "TESTING",
+                    "stage": "SHADOW_CANARY",
+                    "accuracy": "95.8%",
+                    "precision": "94.2%",
+                    "recall": "96.5%",
+                    "f1": "0.953",
+                    "sharpe": "3.12",
+                    "sortino": "3.85",
+                    "profit_factor": "2.45",
+                    "win_rate": "71.2%",
+                    "drift_score": "0.01%",
+                    "explainability": "SHAP_COMPLIANT",
                     "latency": "3.8ms",
-                    "inference_time": "2.2ms"
+                    "inference_time": "2.2ms",
+                    "updated": (now - timedelta(hours=2)).strftime("%Y-%m-%d %H:%M UTC")
                 }
+            ]
+
+            lifecycle_timeline = [
+                {"step": 1, "stage": "Dataset Sync", "detail": "Dataset DS-201 (US Equities L2 Ticks)", "status": "COMPLETED"},
+                {"step": 2, "stage": "Feature Store Generation", "detail": "38 Technical & Microstructure Features", "status": "COMPLETED"},
+                {"step": 3, "stage": "Model Training", "detail": "XGBoost CUDA HyperOpt (Epoch 50/50)", "status": "COMPLETED"},
+                {"step": 4, "stage": "Validation & Experiment Gate", "detail": "EXP-301 Accuracy 94.2%, Sharpe 2.84", "status": "COMPLETED"},
+                {"step": 5, "stage": "Model Governance Approval", "detail": "Digital Signature by Kelvin (Quant Lead)", "status": "COMPLETED"},
+                {"step": 6, "stage": "Canary & Production Deployment", "detail": "Live Canary 100% Traffic Allocation", "status": "COMPLETED"},
+                {"step": 7, "stage": "Drift Monitoring & Health", "detail": "Drift Score 0.02% - Optimal Health", "status": "ACTIVE"}
+            ]
+
+            xai_explainability = [
+                {"feature": "Order Book Imbalance (Bid/Ask Depth)", "importance": "42.8%", "shap_value": "+0.182", "direction": "BULLISH_SIGNAL"},
+                {"feature": "Session Anchored VWAP Spread", "importance": "34.2%", "shap_value": "+0.145", "direction": "BULLISH_SIGNAL"},
+                {"feature": "10-Period Exponential Moving Average", "importance": "14.5%", "shap_value": "-0.042", "direction": "NEUTRAL"},
+                {"feature": "Relative Strength Index (RSI 14)", "importance": "8.5%", "shap_value": "-0.015", "direction": "NEUTRAL"}
+            ]
+
+            drift_summary = {
+                "current_drift": "0.02%",
+                "concept_drift": "0.01%",
+                "psi_score": "0.012 (Optimal)",
+                "ks_statistic": "0.018",
+                "retraining_recommendation": "NO_RETRAINING_REQUIRED",
+                "status": "OPTIMAL_HEALTH"
+            }
+
+            ai_model_prompts = [
+                "Explain model MDL-401 prediction confidence and SHAP drivers.",
+                "Compare model MDL-401 (Champion) vs MDL-403 (Shadow Conv1D).",
+                "Verify model drift stability under market open volatility spikes."
             ]
 
             return Response({
                 "ok": True,
+                "overview": overview,
                 "models": models,
+                "lifecycle_timeline": lifecycle_timeline,
+                "xai_explainability": xai_explainability,
+                "drift_summary": drift_summary,
+                "ai_model_prompts": ai_model_prompts,
                 "timestamp": now.isoformat()
             })
 
