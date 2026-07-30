@@ -46,6 +46,12 @@ import { PortfolioAnalyticsDashboard } from './pages/PortfolioAnalyticsDashboard
 import { PortfolioAllocationDashboard } from './pages/PortfolioAllocationDashboard';
 import { PortfolioPerformanceDashboard } from './pages/PortfolioPerformanceDashboard';
 import { PortfolioRiskDashboard } from './pages/PortfolioRiskDashboard';
+import { ResearchProjectsDashboard } from './pages/ResearchProjectsDashboard';
+import { ResearchDatasetsDashboard } from './pages/ResearchDatasetsDashboard';
+import { ResearchDataPipelineDashboard } from './pages/ResearchDataPipelineDashboard';
+import { ResearchExperimentsDashboard } from './pages/ResearchExperimentsDashboard';
+import { ResearchModelsDashboard } from './pages/ResearchModelsDashboard';
+import { ResearchModelRegistryDashboard } from './pages/ResearchModelRegistryDashboard';
 
 function App() {
   return (
@@ -137,6 +143,12 @@ function App() {
               <Route path="/portfolio/allocation" element={<PortfolioAllocationDashboard />} />
               <Route path="/portfolio/performance" element={<PortfolioPerformanceDashboard />} />
               <Route path="/portfolio/risk" element={<PortfolioRiskDashboard />} />
+              <Route path="/researchlab/projects" element={<ResearchProjectsDashboard />} />
+              <Route path="/researchlab/datasets" element={<ResearchDatasetsDashboard />} />
+              <Route path="/researchlab/datapipeline" element={<ResearchDataPipelineDashboard />} />
+              <Route path="/researchlab/experiments" element={<ResearchExperimentsDashboard />} />
+              <Route path="/researchlab/models" element={<ResearchModelsDashboard />} />
+              <Route path="/researchlab/modelregistry" element={<ResearchModelRegistryDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<TradingDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />

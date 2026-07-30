@@ -50,12 +50,14 @@ export const Sidebar: React.FC = () => {
       {"name": "Risk Analysis", "route": "/portfolio/risk"}
     ],
     "Research Lab": [
-      {"name": "Search Projects", "route": "/research"},
-      {"name": "Feature Pipelines", "route": "/pipeline"}
+      {"name": "Research Projects", "route": "/researchlab/projects"},
+      {"name": "Data Catalog", "route": "/researchlab/datasets"},
+      {"name": "ETL Pipelines", "route": "/researchlab/datapipeline"}
     ],
     "Machine Learning": [
-      {"name": "AI Workflows", "route": "/pipeline"},
-      {"name": "AI Robots", "route": "/bots"}
+      {"name": "Experiment Tracker", "route": "/researchlab/experiments"},
+      {"name": "AI Model Inventory", "route": "/researchlab/models"},
+      {"name": "Model Governance Registry", "route": "/researchlab/modelregistry"}
     ],
     "Operations": [
       {"name": "Screener Monitor", "route": "/screener"},

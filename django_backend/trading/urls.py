@@ -36,8 +36,16 @@ from . import supervisor_views
 from . import strategy_management_views
 from . import holdings_views
 from . import portfolio_suite_views
+from . import research_lab_suite_views
 
 urlpatterns = [
+    # ── Institutional Research Lab Suite Endpoints ───────────────
+    path('researchlab/projects/dashboard', research_lab_suite_views.ResearchLabProjectsView.as_view(), name='api-researchlab-projects'),
+    path('researchlab/datasets/dashboard', research_lab_suite_views.ResearchLabDatasetsView.as_view(), name='api-researchlab-datasets'),
+    path('researchlab/datapipeline/dashboard', research_lab_suite_views.ResearchLabPipelineView.as_view(), name='api-researchlab-pipeline'),
+    path('researchlab/experiments/dashboard', research_lab_suite_views.ResearchLabExperimentsView.as_view(), name='api-researchlab-experiments'),
+    path('researchlab/models/dashboard', research_lab_suite_views.ResearchLabModelsView.as_view(), name='api-researchlab-models'),
+    path('researchlab/modelregistry/dashboard', research_lab_suite_views.ResearchLabModelRegistryView.as_view(), name='api-researchlab-registry'),
     # ── Institutional Portfolio Suite Endpoints ─────────────────
     path('portfolio/analytics/dashboard', portfolio_suite_views.PortfolioAnalyticsView.as_view(), name='api-portfolio-analytics'),
     path('portfolio/allocation/dashboard', portfolio_suite_views.PortfolioAllocationView.as_view(), name='api-portfolio-allocation'),
