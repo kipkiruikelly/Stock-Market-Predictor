@@ -182,7 +182,7 @@ class ResearchLabProjectsView(APIView):
 class ResearchLabDatasetsView(APIView):
     """
     GET /api/researchlab/datasets/dashboard
-    Returns enterprise data catalog and data quality inventory.
+    Returns enterprise data catalog, schema explorer, data profiling, lineage graph, and governance inventory.
     """
     permission_classes = [AllowAny]
 
@@ -190,51 +190,149 @@ class ResearchLabDatasetsView(APIView):
         try:
             now = datetime.utcnow()
 
+            overview = {
+                "total_datasets": 24,
+                "active_datasets": 18,
+                "archived_datasets": 4,
+                "streaming_datasets": 6,
+                "external_sources": 8,
+                "internal_sources": 10,
+                "data_quality_score": "98.6%",
+                "data_freshness": "Real-time (50ms)",
+                "failed_pipelines": 0,
+                "dataset_owners": 6,
+                "total_storage_used": "142.8 GB",
+                "daily_growth": "+4.2 GB / day",
+                "active_pipelines": 12,
+                "feature_store_entries": "1,420"
+            }
+
             datasets = [
                 {
                     "dataset_id": "DS-201",
                     "name": "US Equities 1m Tick Level L2",
-                    "source": "Polygon.io / MT5 ECN",
-                    "owner": "Data Engineering",
+                    "description": "High-frequency limit order book depth and tick-level trade execution series",
+                    "domain": "Quantitative Equities",
+                    "owner": "Kelvin (Data Lead)",
+                    "team": "Data Engineering",
+                    "source": "Polygon.io / MT5 ECN Bridge",
+                    "database": "nexus_quant_db",
+                    "schema": "market_data",
+                    "table": "us_equities_l2_ticks",
+                    "type": "STREAMING_TIME_SERIES",
                     "records": "42.8M",
                     "features": 38,
-                    "size": "14.2 GB",
+                    "updated": (now - timedelta(minutes=1)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "frequency": "Real-time (100ms)",
                     "quality_score": "98.5%",
-                    "freshness": "Real-time (100ms)",
-                    "drift": "0.02%",
-                    "status": "HEALTHY"
+                    "freshness": "100ms",
+                    "completeness": "99.8%",
+                    "missing_pct": "0.02%",
+                    "version": "v3.2",
+                    "status": "ACTIVE_HEALTHY",
+                    "classification": "CONFIDENTIAL_TRADING",
+                    "tags": ["L2_Ticks", "Equities", "Realtime", "OrderBook"]
                 },
                 {
                     "dataset_id": "DS-202",
                     "name": "Crypto Binance Order Book Depth",
-                    "source": "Binance WebSocket",
-                    "owner": "Data Engineering",
+                    "description": "L3 order book snapshot series and WebSocket trade accumulation feed",
+                    "domain": "Digital Assets",
+                    "owner": "HFT Desk",
+                    "team": "HFT Data Engineering",
+                    "source": "Binance WebSocket Gateway",
+                    "database": "nexus_crypto_db",
+                    "schema": "order_book",
+                    "table": "binance_l3_depth",
+                    "type": "STREAMING_TIME_SERIES",
                     "records": "118.2M",
                     "features": 44,
-                    "size": "38.6 GB",
+                    "updated": (now - timedelta(seconds=10)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "frequency": "Real-time (50ms)",
                     "quality_score": "99.2%",
-                    "freshness": "Real-time (50ms)",
-                    "drift": "0.01%",
-                    "status": "HEALTHY"
+                    "freshness": "50ms",
+                    "completeness": "99.9%",
+                    "missing_pct": "0.01%",
+                    "version": "v4.0",
+                    "status": "ACTIVE_HEALTHY",
+                    "classification": "CONFIDENTIAL_TRADING",
+                    "tags": ["Crypto", "OrderBook", "Binance", "L3_Depth"]
                 },
                 {
                     "dataset_id": "DS-203",
                     "name": "Macro Economic & Yield Curve Series",
-                    "source": "FRED / TradingEconomics",
-                    "owner": "Quant Desk",
+                    "description": "Federal Reserve FRED macroeconomic indicators, CPI, NFP, and 10Y US Treasury yield curve",
+                    "domain": "Macro Economics",
+                    "owner": "Quant Research",
+                    "team": "Macro Alpha Desk",
+                    "source": "FRED / TradingEconomics API",
+                    "database": "nexus_macro_db",
+                    "schema": "macro_series",
+                    "table": "fred_yield_curve",
+                    "type": "DAILY_BATCH",
                     "records": "1.2M",
                     "features": 18,
-                    "size": "450 MB",
+                    "updated": (now - timedelta(hours=4)).strftime("%Y-%m-%d %H:%M UTC"),
+                    "frequency": "Daily",
                     "quality_score": "96.0%",
                     "freshness": "Daily",
-                    "drift": "0.15%",
-                    "status": "HEALTHY"
+                    "completeness": "99.5%",
+                    "missing_pct": "0.05%",
+                    "version": "v1.8",
+                    "status": "ACTIVE_HEALTHY",
+                    "classification": "INTERNAL",
+                    "tags": ["Macro", "FRED", "YieldCurve", "InterestRates"]
                 }
+            ]
+
+            schema_sample = [
+                {"name": "timestamp", "type": "TIMESTAMP (UTC)", "nullable": False, "pk": True, "description": "Tick timestamp in nanoseconds UTC", "sample": "2026-07-30T14:22:05.182Z", "unique_count": "42,800,000", "null_pct": "0.00%"},
+                {"name": "symbol", "type": "VARCHAR(16)", "nullable": False, "pk": True, "description": "Ticker symbol identifier", "sample": "NVDA", "unique_count": "520", "null_pct": "0.00%"},
+                {"name": "bid_price", "type": "NUMERIC(18, 4)", "nullable": False, "pk": False, "description": "Best bid price at tick time", "sample": "128.4800", "unique_count": "142,500", "null_pct": "0.00%"},
+                {"name": "ask_price", "type": "NUMERIC(18, 4)", "nullable": False, "pk": False, "description": "Best ask price at tick time", "sample": "128.5200", "unique_count": "142,800", "null_pct": "0.00%"},
+                {"name": "volume", "type": "BIGINT", "nullable": False, "pk": False, "description": "Accumulated order volume at level", "sample": "2500", "unique_count": "18,400", "null_pct": "0.00%"}
+            ]
+
+            data_profiling = {
+                "completeness": "99.8%",
+                "accuracy": "99.4%",
+                "consistency": "99.2%",
+                "validity": "99.6%",
+                "timeliness": "99.9%",
+                "uniqueness": "100.0%",
+                "integrity": "99.8%",
+                "overall_quality_score": "98.6%"
+            }
+
+            lineage_graph = [
+                {"step": 1, "stage": "Raw Market Feed", "system": "Polygon.io / MT5 WebSocket", "latency": "10ms"},
+                {"step": 2, "stage": "Ingestion Pipeline", "system": "ETL Ingestion Worker", "latency": "15ms"},
+                {"step": 3, "stage": "Normalization & Cleaning", "system": "Data Quality Engine", "latency": "8ms"},
+                {"step": 4, "stage": "Feature Store Sync", "system": "Feature Store DB", "latency": "5ms"},
+                {"step": 5, "stage": "ML Model Training & Inference", "system": "ICT Order Block v3.2 Engine", "latency": "12ms"},
+                {"step": 6, "stage": "Trading Signal Dispatch", "system": "PMS / OMS Router", "latency": "2ms"}
+            ]
+
+            feature_store_link = [
+                {"feature": "Order Book Imbalance (Bid/Ask)", "owner": "Quant Desk", "importance": "42.8%", "usage_count": 18, "linked_models": "ICT Order Block v3.2"},
+                {"feature": "Session Anchored VWAP Spread", "owner": "HFT Desk", "importance": "34.2%", "usage_count": 14, "linked_models": "Stacking Meta-Learner v3.0"}
+            ]
+
+            ai_data_prompts = [
+                "Summarize dataset schema and profile missing value distribution.",
+                "Verify data lineage path from Polygon.io feed down to PMS Trading Signals.",
+                "Detect anomalies or drift in NVDA tick-level order book volume distribution."
             ]
 
             return Response({
                 "ok": True,
+                "overview": overview,
                 "datasets": datasets,
+                "schema_sample": schema_sample,
+                "data_profiling": data_profiling,
+                "lineage_graph": lineage_graph,
+                "feature_store_link": feature_store_link,
+                "ai_data_prompts": ai_data_prompts,
                 "timestamp": now.isoformat()
             })
 
