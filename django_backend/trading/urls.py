@@ -28,8 +28,12 @@ from . import ai_governance_views
 from . import collaboration_views
 from . import report_views
 from . import webhook_views
+from . import signals_views
 
 urlpatterns = [
+    # ── Trading Signals & Explainable AI Suite ──────────────
+    path('trading/signals', signals_views.TradingSignalsView.as_view(), name='api-trading-signals'),
+    path('trading/signals/<str:signal_id>/explanation', signals_views.TradingSignalExplanationView.as_view(), name='api-trading-signal-explanation'),
     # ── Phase 34: Enterprise Production & Scalability Suite ──────
     path('production/deployments/status', production_views.DeploymentStatusView.as_view(), name='api-production-deployments-status'),
     path('production/deployments/rollback', production_views.DeploymentRollbackView.as_view(), name='api-production-deployments-rollback'),
