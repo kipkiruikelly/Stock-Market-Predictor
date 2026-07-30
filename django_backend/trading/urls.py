@@ -35,8 +35,14 @@ from . import positions_views
 from . import supervisor_views
 from . import strategy_management_views
 from . import holdings_views
+from . import portfolio_suite_views
 
 urlpatterns = [
+    # ── Institutional Portfolio Suite Endpoints ─────────────────
+    path('portfolio/analytics/dashboard', portfolio_suite_views.PortfolioAnalyticsView.as_view(), name='api-portfolio-analytics'),
+    path('portfolio/allocation/dashboard', portfolio_suite_views.PortfolioAllocationView.as_view(), name='api-portfolio-allocation'),
+    path('portfolio/performance/dashboard', portfolio_suite_views.PortfolioPerformanceView.as_view(), name='api-portfolio-performance'),
+    path('portfolio/risk/dashboard', portfolio_suite_views.PortfolioRiskView.as_view(), name='api-portfolio-risk'),
     # ── Institutional Portfolio Holdings Dashboard Suite ────────
     path('portfolio/holdings/dashboard', holdings_views.HoldingsDashboardView.as_view(), name='api-holdings-dashboard'),
     path('portfolio/holdings/<str:holding_id>/details', holdings_views.HoldingDetailView.as_view(), name='api-holding-details'),
