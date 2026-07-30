@@ -75,7 +75,7 @@ class SupervisorDashboardView(APIView):
                 "active_trades": open_trades_cnt,
                 "orders_pending_approval": pending_orders_cnt,
                 "orders_blocked": blocked_orders_cnt,
-                "risk_violations": ErrorLog.objects.filter(level__icontains='RISK').count(),
+                "risk_violations": ErrorLog.objects.filter(severity__icontains='RISK').count(),
                 "daily_executions": smart_orders_cnt,
                 "active_trading_bots": active_bots_cnt,
                 "portfolio_exposure": "0.0%",
