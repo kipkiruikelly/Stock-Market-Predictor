@@ -284,7 +284,7 @@ class BusinessAnalyticsView(APIView):
 class ExecutiveGrowthView(APIView):
     """
     GET /api/executive/growth
-    Returns growth scorecards, ARR/MRR forecasts, and expansion revenue.
+    Returns enterprise Strategic Growth Intelligence: ARR/MRR velocity, cohort expansion, strategic growth initiatives, capacity planning, scenario models, and AI growth forecasts.
     """
     permission_classes = [AllowAny]
 
@@ -292,23 +292,61 @@ class ExecutiveGrowthView(APIView):
         try:
             now = datetime.utcnow()
 
-            growth = {
+            executive_summary = {
+                "arr": "$14,850,000.00",
+                "mrr": "$1,237,500.00",
                 "arr_growth_yoy": "+42.8%",
                 "mrr_growth_mom": "+3.5%",
                 "net_new_mrr": "+$41,800.00",
                 "expansion_mrr": "+$28,400.00",
-                "upsell_opportunities": 18
+                "active_orgs": 142,
+                "active_seats": 1840,
+                "nrr": "128.4%",
+                "grr": "99.58%",
+                "market_expansion_score": "88.4 / 100",
+                "ai_adoption_rate": "94.2%",
+                "growth_velocity_index": "92.8"
             }
 
             cohorts = [
-                {"cohort": "Q1 2026", "retention": "99.2%", "growth": "+18.4%"},
-                {"cohort": "Q2 2026", "retention": "99.8%", "growth": "+22.1%"}
+                {"cohort": "Q1 2026", "retention": "99.2%", "growth": "+18.4%", "net_mrr": "$1.03M"},
+                {"cohort": "Q2 2026", "retention": "99.8%", "growth": "+22.1%", "net_mrr": "$1.23M"},
+                {"cohort": "Q3 2026 (Est)", "retention": "99.9%", "growth": "+26.5%", "net_mrr": "$1.53M"}
+            ]
+
+            expansion_initiatives = [
+                {"name": "EMEA & APAC Institutional Gateway Launch", "sponsor": "Chief Strategy Officer", "status": "IN_PROGRESS", "priority": "HIGH", "budget": "$450,000.00", "roi": "4.2x"},
+                {"name": "MT5 FIX Bridge Multi-Broker Scaling", "sponsor": "Head of Trading", "status": "ACTIVE", "priority": "CRITICAL", "budget": "$280,000.00", "roi": "5.8x"},
+                {"name": "Multi-Agent Consensus ML Engine v3.5", "sponsor": "VP AI Research", "status": "COMPLETED", "priority": "HIGH", "budget": "$350,000.00", "roi": "6.1x"}
+            ]
+
+            scenario_models = [
+                {"scenario": "Base Case (+20% Expansion)", "projected_arr": "$17.82M", "projected_mrr": "$1.48M", "cloud_spend": "$44.5K"},
+                {"scenario": "Accelerated Growth (+35% Expansion)", "projected_arr": "$20.04M", "projected_mrr": "$1.67M", "cloud_spend": "$48.2K"},
+                {"scenario": "Conservative Growth (+10% Expansion)", "projected_arr": "$16.33M", "projected_mrr": "$1.36M", "cloud_spend": "$41.0K"}
+            ]
+
+            capacity_planning = {
+                "trading_volume_capacity": "$1.42B / $10.00B Daily Limit",
+                "gpu_inference_capacity": "1.42M / 10.00M Pred/Day",
+                "db_storage_capacity": "4.2 TB / 20.0 TB Max Cluster",
+                "seat_capacity": "1,840 / 5,000 Active Seats"
+            }
+
+            ai_growth_prompts = [
+                "Summarize strategic business expansion and cohort revenue retention.",
+                "Compare growth scenario models (+20% vs +35% ARR expansion).",
+                "Generate C-suite Strategic Growth Intelligence and capacity report."
             ]
 
             return Response({
                 "ok": True,
-                "growth": growth,
+                "executive_summary": executive_summary,
                 "cohorts": cohorts,
+                "expansion_initiatives": expansion_initiatives,
+                "scenario_models": scenario_models,
+                "capacity_planning": capacity_planning,
+                "ai_growth_prompts": ai_growth_prompts,
                 "timestamp": now.isoformat()
             })
 
