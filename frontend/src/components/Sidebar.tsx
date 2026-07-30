@@ -64,13 +64,26 @@ export const Sidebar: React.FC = () => {
       {"name": "Settings Controls", "route": "/settings"}
     ],
     "Executive": [
-      {"name": "Journal Overview", "route": "/journal"}
+      {"name": "Executive Command Center", "route": "/executive/dashboard"},
+      {"name": "Business Analytics", "route": "/executive/business-analytics"},
+      {"name": "Growth Planning", "route": "/executive/growth"},
+      {"name": "Cloud FinOps", "route": "/executive/cloud-costs"}
     ],
     "Administration": [
-      {"name": "Client Console", "route": "/admin"}
+      {"name": "User Management", "route": "/admin/users"},
+      {"name": "RBAC Roles", "route": "/admin/roles"},
+      {"name": "Tenant Organizations", "route": "/admin/organizations"},
+      {"name": "Feature Flags", "route": "/admin/feature-flags"},
+      {"name": "API Key Manager", "route": "/admin/api-keys"},
+      {"name": "Billing Console", "route": "/admin/billing"},
+      {"name": "System Settings", "route": "/admin/settings"}
     ],
     "Knowledge Center": [
-      {"name": "Journal Documentation", "route": "/journal"}
+      {"name": "Documentation Portal", "route": "/knowledge/documentation"},
+      {"name": "API Explorer", "route": "/knowledge/api-explorer"},
+      {"name": "SRE Runbooks", "route": "/knowledge/runbooks"},
+      {"name": "User Guide", "route": "/knowledge/user-guide"},
+      {"name": "Admin Guide", "route": "/knowledge/admin-guide"}
     ]
   });
 

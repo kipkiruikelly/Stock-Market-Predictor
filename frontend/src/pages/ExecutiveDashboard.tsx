@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  RefreshCw, Activity, 
+  RefreshCw, 
   Download, AlertTriangle, Sparkles, TrendingUp,
   DollarSign
 } from 'lucide-react';

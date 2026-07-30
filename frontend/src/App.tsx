@@ -52,6 +52,22 @@ import { ResearchDataPipelineDashboard } from './pages/ResearchDataPipelineDashb
 import { ResearchExperimentsDashboard } from './pages/ResearchExperimentsDashboard';
 import { ResearchModelsDashboard } from './pages/ResearchModelsDashboard';
 import { ResearchModelRegistryDashboard } from './pages/ResearchModelRegistryDashboard';
+import { ExecutiveDashboard } from './pages/ExecutiveDashboard';
+import { BusinessAnalyticsDashboard } from './pages/BusinessAnalyticsDashboard';
+import { ExecutiveGrowthDashboard } from './pages/ExecutiveGrowthDashboard';
+import { CloudCostsDashboard } from './pages/CloudCostsDashboard';
+import { AdminUsersDashboard } from './pages/AdminUsersDashboard';
+import { AdminRolesDashboard } from './pages/AdminRolesDashboard';
+import { AdminOrganizationsDashboard } from './pages/AdminOrganizationsDashboard';
+import { AdminFeatureFlagsDashboard } from './pages/AdminFeatureFlagsDashboard';
+import { AdminApiKeysDashboard } from './pages/AdminApiKeysDashboard';
+import { AdminBillingDashboard } from './pages/AdminBillingDashboard';
+import { AdminSettingsDashboard } from './pages/AdminSettingsDashboard';
+import { DocumentationPortalDashboard } from './pages/DocumentationPortalDashboard';
+import { ApiExplorerDashboard } from './pages/ApiExplorerDashboard';
+import { RunbooksPortalDashboard } from './pages/RunbooksPortalDashboard';
+import { UserGuidePortalDashboard } from './pages/UserGuidePortalDashboard';
+import { AdminGuidePortalDashboard } from './pages/AdminGuidePortalDashboard';
 
 function App() {
   return (
@@ -149,6 +165,22 @@ function App() {
               <Route path="/researchlab/experiments" element={<ResearchExperimentsDashboard />} />
               <Route path="/researchlab/models" element={<ResearchModelsDashboard />} />
               <Route path="/researchlab/modelregistry" element={<ResearchModelRegistryDashboard />} />
+              <Route path="/executive/dashboard" element={<ExecutiveDashboard />} />
+              <Route path="/executive/business-analytics" element={<BusinessAnalyticsDashboard />} />
+              <Route path="/executive/growth" element={<ExecutiveGrowthDashboard />} />
+              <Route path="/executive/cloud-costs" element={<CloudCostsDashboard />} />
+              <Route path="/admin/users" element={<AdminUsersDashboard />} />
+              <Route path="/admin/roles" element={<AdminRolesDashboard />} />
+              <Route path="/admin/organizations" element={<AdminOrganizationsDashboard />} />
+              <Route path="/admin/feature-flags" element={<AdminFeatureFlagsDashboard />} />
+              <Route path="/admin/api-keys" element={<AdminApiKeysDashboard />} />
+              <Route path="/admin/billing" element={<AdminBillingDashboard />} />
+              <Route path="/admin/settings" element={<AdminSettingsDashboard />} />
+              <Route path="/knowledge/documentation" element={<DocumentationPortalDashboard />} />
+              <Route path="/knowledge/api-explorer" element={<ApiExplorerDashboard />} />
+              <Route path="/knowledge/runbooks" element={<RunbooksPortalDashboard />} />
+              <Route path="/knowledge/user-guide" element={<UserGuidePortalDashboard />} />
+              <Route path="/knowledge/admin-guide" element={<AdminGuidePortalDashboard />} />
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<TradingDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
