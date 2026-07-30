@@ -14,8 +14,10 @@ from rest_framework import status
 from users.models import (
     User, Portfolio, Holding, PaperTrade, UserPaperOrder,
     UserPaperPosition, SmartOrderExecution, ModelVersion,
-    UploadedDataset, Payment, ActivityLog, ErrorLog, AppSetting, ApiKey
+    UploadedDataset, Payment, ActivityLog, ErrorLog, AppSetting, ApiKey,
+    PredictionHistory
 )
+
 
 logger = logging.getLogger(__name__)
 

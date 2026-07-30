@@ -9,8 +9,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from django.db.models import Sum, Count, Avg
+from users.models import PaperTrade, UserPaperOrder, UserPaperPosition, SmartOrderExecution, ErrorLog, ActivityLog, Portfolio, Holding
 
 logger = logging.getLogger(__name__)
+
 
 
 class SupervisorDashboardView(APIView):
