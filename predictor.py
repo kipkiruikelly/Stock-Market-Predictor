@@ -770,16 +770,14 @@ def run_prediction(ticker: str, interval: str = "1d") -> dict:
     if df.empty:
         raise ValueError("Feature engineering failed, insufficient data history.")
 
-    current_price = float(df["Close"].iloc[-1])
-
-    # Ensure feature_cols are present and valid
     if not feature_cols:
         from train_all_tickers import _feature_list
         feature_cols = [c for c in _feature_list(interval) if c in df.columns]
 
     df_clean = df[feature_cols + ["Close"]].dropna()
 
-    if scaler is None or not hasattr(scaler, "n_features_in_") or getattr(scaler, "n_features_in_", None) != len(feature_cols):
+    n_feats = len(feature_cols)
+    if scaler is None or getattr(scaler, "n_features_in_", None) != n_feats:
         from sklearn.preprocessing import MinMaxScaler
         scaler = MinMaxScaler().fit(df_clean[feature_cols].values)
         lr_model = None
