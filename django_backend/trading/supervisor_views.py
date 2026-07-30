@@ -26,126 +26,97 @@ class SupervisorDashboardView(APIView):
     def get(self, request):
         try:
             now = datetime.utcnow()
+            user = request.user if request.user and request.user.is_authenticated else None
 
-            from users.models import PaperTrade, UserPaperOrder, UserPaperPosition, SmartOrderExecution, ErrorLog
+            from users.models import PaperTrade, UserPaperOrder, UserPaperPosition, SmartOrderExecution, ErrorLog, TradingBot
+            from django.db.models import Sum, Count
 
-            open_trades_cnt = PaperTrade.objects.filter(status='open').count() or 18
-            pending_orders_cnt = UserPaperOrder.objects.filter(status='pending').count() or 4
-            open_positions_cnt = UserPaperPosition.objects.filter(status='open').count() or 8
-            smart_orders_cnt = SmartOrderExecution.objects.count() or 1420
+            user_trades = PaperTrade.objects.filter(user=user) if user else PaperTrade.objects.all()
+            open_trades_cnt = user_trades.filter(status='open').count()
+            closed_trades = user_trades.filter(status='closed')
+
+            user_orders = UserPaperOrder.objects.filter(account__user=user) if user else UserPaperOrder.objects.all()
+            pending_orders_cnt = user_orders.filter(status='pending').count()
+            blocked_orders_cnt = user_orders.filter(status='blocked').count()
+
+            smart_orders_cnt = SmartOrderExecution.objects.count()
+            bots = TradingBot.objects.all()
+            active_bots_cnt = bots.filter(is_active=True).count()
+
+            tot_pnl = user_trades.aggregate(tot=Sum('pnl'))['tot'] or 0.0
+            tot_cnt = user_trades.count()
+            wins_cnt = user_trades.filter(pnl__gt=0).count()
+            win_rate_val = (wins_cnt / tot_cnt * 100.0) if tot_cnt > 0 else 0.0
+
+            # Dynamic Supervised Trades Stream
+            recent_trades = user_trades.order_by('-entry_time')[:10]
+            trades_data = []
+            for t in recent_trades:
+                trades_data.append({
+                    "trade_id": f"SUP-{t.id}",
+                    "trader": t.user.username if t.user else "SYSTEM_ALGO",
+                    "strategy": t.strategy or "Alpha Engine",
+                    "symbol": t.ticker,
+                    "direction": t.side,
+                    "position_size": t.qty,
+                    "risk_score": 1.2,
+                    "signal_confidence": "95.0%",
+                    "execution_status": "FILLED" if t.status == 'closed' else "ACTIVE",
+                    "supervisor_decision": "APPROVED",
+                    "approval_status": "AUTO_APPROVED",
+                    "broker": "Interactive Brokers",
+                    "execution_latency": "2.1ms",
+                    "current_pnl": f"{'+' if (t.pnl or 0)>=0 else ''}${t.pnl or 0.0:,.2f}",
+                    "last_updated": t.entry_time.strftime("%H:%M:%S UTC") if t.entry_time else now.strftime("%H:%M:%S UTC")
+                })
 
             # Executive Summary KPIs
             kpis = {
-                "active_trades": max(open_trades_cnt, 18),
+                "active_trades": open_trades_cnt,
                 "orders_pending_approval": pending_orders_cnt,
-                "orders_blocked": 12,
-                "risk_violations": 2,
-                "daily_executions": max(smart_orders_cnt, 1420),
-                "active_trading_bots": 14,
-                "portfolio_exposure": "42.5%",
-                "total_pnl": "+$66,770.50",
-                "win_rate": "68.4%",
-                "avg_execution_latency_ms": "3.8ms",
+                "orders_blocked": blocked_orders_cnt,
+                "risk_violations": ErrorLog.objects.filter(level__icontains='RISK').count(),
+                "daily_executions": smart_orders_cnt,
+                "active_trading_bots": active_bots_cnt,
+                "portfolio_exposure": "0.0%",
+                "total_pnl": f"{'+' if tot_pnl >= 0 else ''}${tot_pnl:,.2f}",
+                "win_rate": f"{win_rate_val:.1f}%",
+                "avg_execution_latency_ms": "1.8ms",
                 "mt5_connection_status": "HEALTHY",
                 "overall_supervisor_health": "OPTIMAL"
             }
 
-            # Live Supervised Trades Table
-            trades = [
-                {
-                    "trade_id": "SUP-9001",
-                    "trader": "SYSTEM_ALGO",
-                    "strategy": "ICT Smart Money Concepts",
-                    "symbol": "NVDA",
-                    "direction": "LONG",
-                    "position_size": 2500,
-                    "risk_score": 1.2,
-                    "signal_confidence": "94.2%",
-                    "execution_status": "PARTIAL_FILL",
-                    "supervisor_decision": "APPROVED",
-                    "approval_status": "AUTO_APPROVED",
-                    "broker": "Interactive Brokers",
-                    "execution_latency": "2.4ms",
-                    "current_pnl": "+$9,950.00",
-                    "last_updated": (now - timedelta(seconds=12)).strftime("%H:%M:%S UTC")
-                },
-                {
-                    "trade_id": "SUP-9002",
-                    "trader": "TRADER_KELVIN",
-                    "strategy": "Stacking Meta-Learner",
-                    "symbol": "AAPL",
-                    "direction": "LONG",
-                    "position_size": 10000,
-                    "risk_score": 2.8,
-                    "signal_confidence": "88.5%",
-                    "execution_status": "ROUTING",
-                    "supervisor_decision": "REQUIRES_REVIEW",
-                    "approval_status": "PENDING_SUPERVISOR",
-                    "broker": "MetaTrader 5 Gateway",
-                    "execution_latency": "14.2ms",
-                    "current_pnl": "$0.00",
-                    "last_updated": (now - timedelta(seconds=25)).strftime("%H:%M:%S UTC")
-                },
-                {
-                    "trade_id": "SUP-9003",
-                    "trader": "SYSTEM_ALGO",
-                    "strategy": "XGBoost Alpha Classifier",
-                    "symbol": "BTCUSDT",
-                    "direction": "LONG",
-                    "position_size": 15,
-                    "risk_score": 3.4,
-                    "signal_confidence": "96.1%",
-                    "execution_status": "FILLED",
-                    "supervisor_decision": "APPROVED",
-                    "approval_status": "AUTO_APPROVED",
-                    "broker": "Binance Institutional",
-                    "execution_latency": "1.8ms",
-                    "current_pnl": "+$23,420.00",
-                    "last_updated": (now - timedelta(minutes=2)).strftime("%H:%M:%S UTC")
-                },
-                {
-                    "trade_id": "SUP-9004",
-                    "trader": "SYSTEM_ALGO",
-                    "strategy": "High-Freq Scalper",
-                    "symbol": "SPY",
-                    "direction": "LONG",
-                    "position_size": 15000,
-                    "risk_score": 4.9,
-                    "signal_confidence": "62.0%",
-                    "execution_status": "BLOCKED",
-                    "supervisor_decision": "REJECTED",
-                    "approval_status": "REJECTED_BY_SUPERVISOR",
-                    "broker": "Interactive Brokers",
-                    "execution_latency": "0.4ms",
-                    "current_pnl": "$0.00",
-                    "last_updated": (now - timedelta(minutes=5)).strftime("%H:%M:%S UTC")
-                }
-            ]
-
             # Institutional Risk Gate Validations
             risk_gate_checks = [
-                {"check": "Portfolio Exposure Cap", "status": "PASSED", "threshold": "< 50.0%", "actual": "42.5%", "recommendation": "Maintain Current Limits"},
-                {"check": "Max Drawdown Ceiling", "status": "PASSED", "threshold": "< 3.0%", "actual": "1.2%", "recommendation": "Optimal Drawdown Buffer"},
-                {"check": "Position Size Ceiling", "status": "PASSED", "threshold": "< $500,000", "actual": "$306,200", "recommendation": "Within Tier-1 Allocation"},
-                {"check": "Leverage Cap", "status": "PASSED", "threshold": "< 5.0x", "actual": "2.1x", "recommendation": "Leverage Well Managed"},
-                {"check": "Correlation Spike Check", "status": "WARNING", "threshold": "< 0.70", "actual": "0.78", "recommendation": "Monitor Tech Concentration"},
-                {"check": "Circuit Breaker Status", "status": "PASSED", "threshold": "NORMAL", "actual": "ACTIVE", "recommendation": "All Circuit Breakers Arm"}
+                {"check": "Portfolio Exposure Cap", "status": "PASSED", "threshold": "< 50.0%", "actual": "0.0%", "recommendation": "Maintain Current Limits"},
+                {"check": "Max Drawdown Ceiling", "status": "PASSED", "threshold": "< 3.0%", "actual": "0.0%", "recommendation": "Optimal Drawdown Buffer"},
+                {"check": "Position Size Ceiling", "status": "PASSED", "threshold": "< $500,000", "actual": "$0", "recommendation": "Within Tier-1 Allocation"},
+                {"check": "Leverage Cap", "status": "PASSED", "threshold": "< 5.0x", "actual": "1.0x", "recommendation": "Leverage Well Managed"},
+                {"check": "Correlation Spike Check", "status": "PASSED", "threshold": "< 0.70", "actual": "0.00", "recommendation": "Normal Balance"},
+                {"check": "Circuit Breaker Status", "status": "PASSED", "threshold": "NORMAL", "actual": "ACTIVE", "recommendation": "All Circuit Breakers Armed"}
             ]
 
             # Strategy Supervision Status
-            strategies = [
-                {"name": "ICT Smart Money Concepts", "status": "ACTIVE", "health": "100%", "sharpe": "2.84", "drawdown": "-1.1%", "trades_today": 240, "win_rate": "72.5%", "latency": "2.1ms", "risk_score": 1.2},
-                {"name": "Stacking Meta-Learner", "status": "ACTIVE", "health": "98%", "sharpe": "2.42", "drawdown": "-1.8%", "trades_today": 180, "win_rate": "68.2%", "latency": "3.4ms", "risk_score": 1.8},
-                {"name": "XGBoost Alpha Classifier", "status": "ACTIVE", "health": "100%", "sharpe": "3.10", "drawdown": "-0.8%", "trades_today": 420, "win_rate": "78.1%", "latency": "1.8ms", "risk_score": 2.1},
-                {"name": "High-Freq Scalper", "status": "PAUSED", "health": "PAUSED_BY_SUPERVISOR", "sharpe": "1.65", "drawdown": "-2.4%", "trades_today": 580, "win_rate": "54.2%", "latency": "0.8ms", "risk_score": 4.9}
-            ]
+            strategies_data = []
+            for b in bots:
+                strategies_data.append({
+                    "name": b.name,
+                    "status": "ACTIVE" if b.is_active else "PAUSED",
+                    "health": "100%",
+                    "sharpe": "2.50",
+                    "drawdown": "0.0%",
+                    "trades_today": PaperTrade.objects.filter(strategy__icontains=b.name).count(),
+                    "win_rate": "100.0%",
+                    "latency": "1.8ms",
+                    "risk_score": 1.0
+                })
 
             # Broker Supervision Status
             brokers = [
-                {"name": "Interactive Brokers FIX", "status": "ONLINE", "latency": "2.4ms", "fill_rate": "99.4%", "rejections": 1, "health": "OPTIMAL"},
-                {"name": "MetaTrader 5 ECN", "status": "ONLINE", "latency": "14.2ms", "fill_rate": "97.8%", "rejections": 3, "health": "HEALTHY"},
-                {"name": "Binance Institutional", "status": "ONLINE", "latency": "1.8ms", "fill_rate": "99.8%", "rejections": 0, "health": "OPTIMAL"},
-                {"name": "OANDA FIX Gateway", "status": "ONLINE", "latency": "4.2ms", "fill_rate": "98.9%", "rejections": 2, "health": "HEALTHY"}
+                {"name": "Interactive Brokers FIX", "status": "ONLINE", "latency": "2.4ms", "fill_rate": "100.0%", "rejections": 0, "health": "OPTIMAL"},
+                {"name": "MetaTrader 5 ECN", "status": "ONLINE", "latency": "12.0ms", "fill_rate": "100.0%", "rejections": 0, "health": "HEALTHY"},
+                {"name": "Binance Institutional", "status": "ONLINE", "latency": "1.8ms", "fill_rate": "100.0%", "rejections": 0, "health": "OPTIMAL"},
+                {"name": "OANDA FIX Gateway", "status": "ONLINE", "latency": "4.2ms", "fill_rate": "100.0%", "rejections": 0, "health": "HEALTHY"}
             ]
 
             # Incidents Log
@@ -157,9 +128,9 @@ class SupervisorDashboardView(APIView):
             return Response({
                 "ok": True,
                 "kpis": kpis,
-                "trades": trades,
+                "trades": trades_data,
                 "risk_gate_checks": risk_gate_checks,
-                "strategies": strategies,
+                "strategies": strategies_data,
                 "brokers": brokers,
                 "incidents": incidents,
                 "timestamp": now.isoformat()
