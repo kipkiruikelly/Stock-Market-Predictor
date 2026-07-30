@@ -18,6 +18,7 @@ const INDEX_ITEMS: SearchItem[] = [
   { title: 'Position Management Workspace (PMS) & Greeks', category: 'Trading', route: '/trading/positions', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Trading Supervisor Command Center & Risk Circuit Breakers', category: 'Trading', route: '/trading/supervisor', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Trading Strategies Workspace & Backtesting', category: 'Trading', route: '/trading/strategies', icon: <Compass size={16} className="text-nexus-blu" /> },
+  { title: 'Institutional Bloomberg Trading Terminal Workspace', category: 'Trading', route: '/trading/tradingterminal', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Portfolio Open Holdings & Rebalancing Actions', category: 'Portfolio', route: '/portfolio/holdings', icon: <Compass size={16} className="text-nexus-pur" /> },
   { title: 'Portfolio Quantitative Analytics & Sharpe / CAGR', category: 'Portfolio', route: '/portfolio/analytics', icon: <Compass size={16} className="text-nexus-pur" /> },
   { title: 'Portfolio Target vs Current Allocation Matrix', category: 'Portfolio', route: '/portfolio/allocation', icon: <Compass size={16} className="text-nexus-pur" /> },

@@ -69,6 +69,7 @@ import { RunbooksPortalDashboard } from './pages/RunbooksPortalDashboard';
 import { UserGuidePortalDashboard } from './pages/UserGuidePortalDashboard';
 import { AdminGuidePortalDashboard } from './pages/AdminGuidePortalDashboard';
 import { EnterpriseMarketOverviewDashboard } from './pages/EnterpriseMarketOverviewDashboard';
+import { TradingTerminalDashboard } from './pages/TradingTerminalDashboard';
 
 function App() {
   return (
@@ -187,6 +188,7 @@ function App() {
               <Route path="/trading/portfolio" element={<TradingDashboard />} />
               <Route path="/trading/performance" element={<PortfolioPerformanceDashboard />} />
               <Route path="/trading/journal" element={<JournalDashboard />} />
+              <Route path="/trading/tradingterminal" element={<TradingTerminalDashboard />} />
               <Route path="/trading/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/dashboard/strategies" element={<TradingStrategiesDashboard />} />

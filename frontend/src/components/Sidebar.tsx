@@ -36,7 +36,7 @@ export const Sidebar: React.FC = () => {
       {"name": "Smart Execution", "route": "/trading/smartexecution"},
       {"name": "Trading Signals", "route": "/trading/signals"},
       {"name": "Performance", "route": "/portfolio/performance"},
-      {"name": "Trading Terminal", "route": "/live"},
+      {"name": "Trading Terminal", "route": "/trading/tradingterminal"},
       {"name": "Markets Analytics", "route": "/markets"},
       {"name": "AI Robots", "route": "/bots"},
       {"name": "Strategy Tools", "route": "/tools"}
