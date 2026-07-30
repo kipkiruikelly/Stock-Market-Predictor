@@ -73,6 +73,7 @@ import { TradingTerminalDashboard } from './pages/TradingTerminalDashboard';
 import { TradingPerformanceDashboard } from './pages/TradingPerformanceDashboard';
 import { MarketAnalyticsDashboard } from './pages/MarketAnalyticsDashboard';
 import { AIRobotsDashboard } from './pages/AIRobotsDashboard';
+import { StrategyToolsDashboard } from './pages/StrategyToolsDashboard';
 
 function App() {
   return (
@@ -194,6 +195,7 @@ function App() {
               <Route path="/trading/tradingterminal" element={<TradingTerminalDashboard />} />
               <Route path="/trading/marketanalytics" element={<MarketAnalyticsDashboard />} />
               <Route path="/trading/airobots" element={<AIRobotsDashboard />} />
+              <Route path="/trading/strategytools" element={<StrategyToolsDashboard />} />
               <Route path="/trading/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/strategies" element={<TradingStrategiesDashboard />} />
               <Route path="/dashboard/strategies" element={<TradingStrategiesDashboard />} />

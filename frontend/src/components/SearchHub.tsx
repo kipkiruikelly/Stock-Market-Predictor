@@ -22,6 +22,7 @@ const INDEX_ITEMS: SearchItem[] = [
   { title: 'Trader Execution Analytics & Strategy Quality Performance', category: 'Trading', route: '/trading/performance', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Institutional Global Market Analytics & Volatility Intelligence', category: 'Trading', route: '/trading/marketanalytics', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Autonomous AI Trading Robots & Multi-Agent Control Center', category: 'Trading', route: '/trading/airobots', icon: <Compass size={16} className="text-nexus-blu" /> },
+  { title: 'Institutional Strategy Engineering & Optimization Studio', category: 'Trading', route: '/trading/strategytools', icon: <Compass size={16} className="text-nexus-blu" /> },
   { title: 'Portfolio Open Holdings & Rebalancing Actions', category: 'Portfolio', route: '/portfolio/holdings', icon: <Compass size={16} className="text-nexus-pur" /> },
   { title: 'Portfolio Quantitative Analytics & Sharpe / CAGR', category: 'Portfolio', route: '/portfolio/analytics', icon: <Compass size={16} className="text-nexus-pur" /> },
   { title: 'Portfolio Target vs Current Allocation Matrix', category: 'Portfolio', route: '/portfolio/allocation', icon: <Compass size={16} className="text-nexus-pur" /> },

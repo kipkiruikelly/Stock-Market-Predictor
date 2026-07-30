@@ -461,4 +461,91 @@ class TradingMarketAnalyticsView(APIView):
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+class TradingStrategyToolsView(APIView):
+    """
+    GET /api/trading/strategytools/dashboard
+    Returns strategy engineering workspace telemetry: Strategy Library, Technical Indicators, Backtesting, Walk-Forward, Monte Carlo Analysis, and AI Strategy Assistant.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        try:
+            now = datetime.utcnow()
+
+            executive_summary = {
+                "total_strategies": 18,
+                "active_strategies": 8,
+                "draft_strategies": 4,
+                "live_deployed": 5,
+                "retired_strategies": 1,
+                "avg_win_rate": "71.2%",
+                "total_net_profit": "+$142,800.00",
+                "portfolio_allocation": "62.5%",
+                "health_score": "96.8%"
+            }
+
+            strategy_library = [
+                {"id": "STRAT-01", "name": "ICT Smart Money Concepts", "category": "Institutional Order Flow", "symbol": "NVDA, SPY", "timeframe": "15m / 1H", "status": "LIVE", "win_rate": "78.2%", "sharpe": 2.84, "net_profit": "+$58,400.00"},
+                {"id": "STRAT-02", "name": "XGBoost Alpha Classifier", "category": "Machine Learning", "symbol": "BTCUSDT", "timeframe": "1H", "status": "LIVE", "win_rate": "74.1%", "sharpe": 2.21, "net_profit": "+$42,150.00"},
+                {"id": "STRAT-03", "name": "Stacking Meta-Learner", "category": "Ensemble ML", "symbol": "AAPL, MSFT", "timeframe": "1H", "status": "LIVE", "win_rate": "68.4%", "sharpe": 1.95, "net_profit": "+$28,840.00"},
+                {"id": "STRAT-04", "name": "Volatility Breakout Scalper", "category": "Volatility / ATR", "symbol": "QQQ", "timeframe": "5m", "status": "DRAFT", "win_rate": "62.0%", "sharpe": 1.45, "net_profit": "+$13,410.00"}
+            ]
+
+            indicators = [
+                {"name": "Exponential Moving Average (EMA)", "category": "Trend", "params": "20, 50, 200", "usage": "HIGH"},
+                {"name": "Relative Strength Index (RSI)", "category": "Momentum", "params": "14 (Overbought 70, Oversold 30)", "usage": "HIGH"},
+                {"name": "MACD Histogram & Signal", "category": "Momentum", "params": "12, 26, 9", "usage": "MEDIUM"},
+                {"name": "Volume Weighted Average Price (VWAP)", "category": "Institutional Volume", "params": "Session Anchored", "usage": "VERY_HIGH"},
+                {"name": "Average True Range (ATR)", "category": "Volatility", "params": "14 (Slippage Multiplier 2.0x)", "usage": "HIGH"}
+            ]
+
+            backtest_results = {
+                "cagr": "+34.2%",
+                "sharpe_ratio": 2.41,
+                "sortino_ratio": 3.82,
+                "profit_factor": "2.35x",
+                "max_drawdown": "-2.8%",
+                "expectancy": "$520.00/trade",
+                "total_backtest_trades": 840
+            }
+
+            walk_forward = {
+                "training_window": "2023 - 2025 (Out-of-Sample)",
+                "validation_window": "2025 - 2026",
+                "stability_score": "94.2 / 100",
+                "overfitting_risk": "LOW (0.12 Score)",
+                "forward_efficiency": "88.4%"
+            }
+
+            monte_carlo = {
+                "simulations": 1000,
+                "confidence_95_equity": "$240,000.00 - $380,000.00",
+                "probability_of_ruin": "0.01%",
+                "worst_case_drawdown": "-4.8%"
+            }
+
+            ai_recommendations = [
+                "Recommend tightening stop-loss multiplier on Volatility Breakout Scalper from 2.0x ATR to 1.5x ATR.",
+                "High correlation detected between STRAT-01 and STRAT-03 (0.82). Recommend diversifying asset universe.",
+                "Walk-forward validation confirms strategy parameter stability across changing volatility regimes."
+            ]
+
+            return Response({
+                "ok": True,
+                "executive_summary": executive_summary,
+                "strategy_library": strategy_library,
+                "indicators": indicators,
+                "backtest_results": backtest_results,
+                "walk_forward": walk_forward,
+                "monte_carlo": monte_carlo,
+                "ai_recommendations": ai_recommendations,
+                "timestamp": now.isoformat()
+            })
+
+        except Exception as e:
+            logger.error("Error in TradingStrategyToolsView: %s", str(e), exc_info=True)
+            return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
 

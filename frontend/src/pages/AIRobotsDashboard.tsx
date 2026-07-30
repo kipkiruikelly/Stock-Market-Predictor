@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  RefreshCw, Download, Sparkles, Activity, ShieldCheck, 
-  TrendingUp, TrendingDown, Cpu, ArrowUpRight, CheckCircle, AlertTriangle,
-  Play, Pause, XCircle, Sliders, Layers, Users
+  RefreshCw, Download, Sparkles, Activity, Cpu, AlertTriangle, Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
@@ -277,6 +275,25 @@ export const AIRobotsDashboard: React.FC = () => {
                 <span className="font-mono font-bold text-emerald-400">{exp.impact}</span>
               </div>
             ))}
+          </div>
+
+          <div className="pt-2 border-t border-nexus-border/40 flex flex-col gap-2">
+            <span className="text-[10px] font-bold text-nexus-muted uppercase">Live AI Decisions Feed ({decisions.length})</span>
+            {decisions.map((dec, i) => (
+              <div key={i} className="p-2 rounded bg-nexus-bg/40 border border-nexus-border/30 text-xs">
+                <div className="flex items-center justify-between font-mono font-bold">
+                  <span className="text-nexus-white">{dec.bot} ({dec.symbol})</span>
+                  <span className="text-emerald-400">{dec.action}</span>
+                </div>
+                <p className="text-[10px] text-nexus-muted mt-0.5">{dec.reasoning}</p>
+              </div>
+            ))}
+            <button 
+              onClick={() => handleAiAsk("Generate AI Robots risk and performance evaluation")}
+              className="w-full py-2 bg-nexus-bg hover:bg-nexus-bg2 text-[11px] font-bold text-nexus-pur rounded-lg border border-nexus-pur/30 transition cursor-pointer mt-1"
+            >
+              🤖 Generate AI Robot Evaluation
+            </button>
           </div>
         </div>
 

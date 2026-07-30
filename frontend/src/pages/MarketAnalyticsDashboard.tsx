@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  RefreshCw, Download, Sparkles, Activity, ShieldCheck, 
-  TrendingUp, TrendingDown, Layers, BarChart2, Calendar, Globe, AlertTriangle
+  RefreshCw, Download, Sparkles, Activity, 
+  Layers, BarChart2, Calendar, Globe, AlertTriangle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
