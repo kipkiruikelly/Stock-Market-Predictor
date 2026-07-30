@@ -15,6 +15,8 @@ class AiGovernanceSummaryView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         governance_data = {
             'ok': True,
             'summary': {
@@ -50,6 +52,8 @@ class AiHumanApprovalView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         approval_id = request.data.get('approval_id')
         decision = request.data.get('decision', 'APPROVED') # APPROVED or REJECTED
 

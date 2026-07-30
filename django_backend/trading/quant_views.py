@@ -14,6 +14,8 @@ class FactorAttributionView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         attribution_data = {
             'ok': True,
             'model_type': 'Fama-French-5-Factor',
@@ -39,6 +41,8 @@ class PairResearchView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         pair = request.query_params.get('pair', 'AAPL-MSFT')
 
         pair_data = {

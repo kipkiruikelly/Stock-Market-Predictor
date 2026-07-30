@@ -50,6 +50,8 @@ class WorkflowToggleScannerView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         enabled = request.data.get("enabled", True)
         current_status = set_scanner_enabled(bool(enabled))
         return Response({
@@ -64,6 +66,8 @@ class WorkflowTriggerScanView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         t = threading.Thread(
             target = run_market_scan_cycle,
             daemon = True,
@@ -82,6 +86,8 @@ class WorkflowUpdateTickersView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         tickers = request.data.get("tickers", [])
         if not isinstance(tickers, list) or not tickers:
             return Response({"ok": False, "error": "tickers must be a non-empty list."}, status=400)

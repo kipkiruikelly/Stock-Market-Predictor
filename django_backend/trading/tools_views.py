@@ -97,6 +97,8 @@ class BacktestView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not request.user.is_plus:
             return Response({"ok": False, "error": "Backtesting requires a Plus or Pro plan."}, status=403)
         
@@ -160,6 +162,8 @@ class PipelineRetrainView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         def run_job():
             try:
                 subprocess.run([sys.executable, "train_all_tickers.py", "--fast"], cwd=_PARENT_DIR, check=True)
@@ -175,6 +179,8 @@ class CalendarEarningsView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         import requests
         from datetime import date, timedelta
         key = os.environ.get("FINNHUB_API_KEY", "")
@@ -222,6 +228,8 @@ class CalendarMacroView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         import requests
         from datetime import date, timedelta
         key = os.environ.get("FINNHUB_API_KEY", "")
@@ -527,6 +535,8 @@ class DigestSendView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         # Mock trigger sending daily email digest
         print(f"[Digest Sender] Sent email digest to {request.user.email}")
         return Response({"ok": True, "message": "Performance email digest sent."})

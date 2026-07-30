@@ -43,6 +43,8 @@ class MT5StatusView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         return Response(_get_trader_status())
 
 
@@ -52,6 +54,8 @@ class MT5ConnectView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not request.user.is_pro:
             return Response({'ok': False, 'error': 'MT5 connection requires a Pro plan.'}, status=403)
         if not MT5_AVAILABLE or not _mt5 or not hasattr(_mt5, 'trader'):
@@ -79,6 +83,8 @@ class MT5DisconnectView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not MT5_AVAILABLE or not _mt5 or not hasattr(_mt5, 'trader'):
             return Response({'ok': False, 'error': 'MT5 module not available.'}, status=503)
         try:
@@ -94,6 +100,8 @@ class MT5StartView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not request.user.is_pro:
             return Response({'ok': False, 'error': 'MT5 algo trading requires a Pro plan.'}, status=403)
 
@@ -121,6 +129,8 @@ class MT5StopView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not MT5_AVAILABLE or not _mt5 or not hasattr(_mt5, 'trader'):
             return Response({'ok': False, 'error': 'MT5 module not available on this server.'}, status=503)
 
@@ -137,6 +147,8 @@ class MT5CloseAllView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not MT5_AVAILABLE or not _mt5 or not hasattr(_mt5, 'trader'):
             return Response({'ok': False, 'error': 'MT5 module not available on this server.'}, status=503)
 
@@ -224,4 +236,6 @@ class LiveTradesView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         return Response({"ok": True, "simulated": False, "page": 1, "total": 0, "trades": []})

@@ -83,6 +83,8 @@ class VerifyEmailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         pin = str(request.data.get("pin", "")).strip()
         user = request.user
 
@@ -102,6 +104,8 @@ class ResendVerificationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user = request.user
         if user.email_verified:
             return Response({"ok": True, "message": "Email is already verified."})

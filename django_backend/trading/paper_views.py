@@ -212,6 +212,8 @@ class PaperOptInView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         request.user.paper_trading_opted_in = True
         request.user.save(update_fields=["paper_trading_opted_in"])
         return Response({"ok": True, "opted_in": True})
@@ -222,6 +224,8 @@ class PaperOptOutView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         request.user.paper_trading_opted_in = False
         request.user.save(update_fields=["paper_trading_opted_in"])
         return Response({"ok": True, "opted_in": False})
@@ -232,6 +236,8 @@ class PaperMyPortfolioView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         cfg = load_config()
         return Response({
             "ok": True,

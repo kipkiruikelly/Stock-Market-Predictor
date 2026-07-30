@@ -146,6 +146,8 @@ class AdminUserToggleStatusApiView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request, user_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         if request.user.role_level < 3:
             return Response({'ok': False, 'error': 'Admin access required.'}, status=403)
         target_user = get_object_or_404(User, id=user_id)
@@ -160,6 +162,8 @@ class AdminUserUpdatePlanApiView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request, user_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         if request.user.role_level < 3:
             return Response({'ok': False, 'error': 'Admin access required.'}, status=403)
         target_user = get_object_or_404(User, id=user_id)
@@ -177,6 +181,8 @@ class AdminUserUpdateRoleApiView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request, user_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         if request.user.role_level < 3:
             return Response({'ok': False, 'error': 'Admin access required.'}, status=403)
         target_user = get_object_or_404(User, id=user_id)

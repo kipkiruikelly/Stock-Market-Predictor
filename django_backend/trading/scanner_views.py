@@ -23,6 +23,8 @@ class ScannerVolumeView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         results = []
 
         def _chk(t):
@@ -58,6 +60,8 @@ class ScannerSqueezeView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         results = []
 
         def _chk(t):
@@ -100,6 +104,8 @@ class ScannerSectorView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         results = []
 
         def _chk(item):

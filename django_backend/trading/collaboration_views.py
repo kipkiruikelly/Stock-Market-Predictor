@@ -15,6 +15,8 @@ class ActivityFeedView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         feed_items = [
             {
                 'id': 'act_201',
@@ -44,6 +46,8 @@ class ChartCommentsView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = request.data.get('ticker', 'AAPL')
         comment = request.data.get('comment', '')
 

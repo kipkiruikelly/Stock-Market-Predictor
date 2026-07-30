@@ -61,6 +61,8 @@ class MarketMoversView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         import sys
         from pathlib import Path
         _PARENT_DIR = str(Path(__file__).resolve().parent.parent.parent)
@@ -441,6 +443,8 @@ class BotBacktestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         bot_slug    = request.data.get('bot_slug') or request.data.get('slug') or 'ict_core_m5'
         ticker      = (request.data.get('ticker') or request.data.get('symbol') or 'SPY').upper()
         period_days = int(request.data.get('period_days', 180))

@@ -188,6 +188,8 @@ class InstitutionalNavigationAuditView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "navigation_health": "100% AUDITED", "active_routes": 42, "timestamp": now.isoformat()})

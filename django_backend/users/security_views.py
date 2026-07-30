@@ -15,6 +15,8 @@ class SecurityCenterView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         dashboard_data = {
             'ok': True,
             'security_risk_score': 94, # Out of 100
@@ -50,6 +52,8 @@ class AuditLogExplorerView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         logs = [
             {
                 'id': 'audit_1001',

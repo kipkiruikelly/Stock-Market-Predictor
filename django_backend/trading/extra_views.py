@@ -77,6 +77,8 @@ class ScreenerView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         interval = request.query_params.get("interval", "1d").lower()
         asset_class = request.query_params.get("asset_class", "ALL").upper()
         q = request.query_params.get("q", "")
@@ -530,6 +532,8 @@ class ContentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, page_id):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({
             'ok': True,
             'page_id': page_id,
@@ -542,6 +546,8 @@ class ForgotPasswordView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         email = request.data.get('email', '')
         return Response({'ok': True, 'message': f'If {email} exists, a reset link has been sent.'})
 
@@ -550,6 +556,8 @@ class ResetPasswordView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({'ok': True, 'message': 'Password has been reset successfully.'})
 
 
@@ -557,6 +565,8 @@ class VerifyEmailView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({'ok': True, 'message': 'Email verified successfully.'})
 
 
@@ -564,6 +574,8 @@ class StripeCheckoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({'ok': True, 'url': '/portfolio', 'message': 'Simulated checkout initiated.'})
 
 
@@ -571,6 +583,8 @@ class StripeWebhookView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({'ok': True, 'received': True})
 
 
@@ -578,6 +592,8 @@ class RedeemGiftView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         code = request.data.get('code', '')
         return Response({'ok': True, 'message': f'Gift code {code} redeemed successfully!'})
 
@@ -586,6 +602,8 @@ class MpesaPayView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         phone = request.data.get('phone', '')
         amount = request.data.get('amount', 0)
         return Response({'ok': True, 'CheckoutRequestID': 'ws_CO_001', 'message': f'STK Push sent to {phone}'})
@@ -595,6 +613,8 @@ class MpesaCallbackView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({'ResultCode': 0, 'ResultDesc': 'Success'})
 
 
@@ -604,6 +624,8 @@ class MarketOverviewView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from django.core.cache import cache
         cache_key = "market_overview_data"
         cached_data = cache.get(cache_key)
@@ -789,6 +811,8 @@ class OperationsHealthView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import PlatformHealthGraph, AutonomousDecisionEngine
         import random
         
@@ -819,6 +843,8 @@ class ApiPerformanceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import PredictiveFailureEngine
         
         # Calculate regression projections
@@ -854,6 +880,8 @@ class ModelHealthView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         import json
         import random
@@ -953,6 +981,8 @@ class StrategyMarketplaceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         user_role = request.user.role if hasattr(request.user, "role") else "trader"
         
         strategies = [
@@ -1078,6 +1108,8 @@ class EmbeddedAiAssistantView(APIView):
         return "unknown", None
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from django.core.cache import cache
         from trading.autonomous_engine import get_db_connection, PlatformHealthGraph
 
@@ -1235,6 +1267,8 @@ class IncidentsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         status_filter = request.query_params.get("status")
         severity_filter = request.query_params.get("severity")
@@ -1272,6 +1306,8 @@ class IncidentsUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, incident_id):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         operator_notes = request.data.get("operator_notes")
         new_status = request.data.get("status")
@@ -1309,6 +1345,8 @@ class PredictiveForecastView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import PredictiveFailureEngine
         forecast_data = PredictiveFailureEngine.forecast_trends()
         return Response(forecast_data)
@@ -1319,6 +1357,8 @@ class PoliciesConfigView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         try:
             with get_db_connection() as conn:
@@ -1365,6 +1405,8 @@ class ChaosTriggerView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         import random
         scenario = request.data.get("scenario")
@@ -1413,6 +1455,8 @@ class SocEventsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         try:
             with get_db_connection() as conn:
@@ -1449,6 +1493,8 @@ class ExecutiveKpisView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         return Response({
             "ok": True,
             "business_quadrant": {
@@ -1492,6 +1538,8 @@ class OperationsTimelineView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _db_count = User.objects.count()
         from trading.autonomous_engine import get_db_connection
         search_query = request.query_params.get("search")
         

@@ -54,6 +54,8 @@ class TradingSignalsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             asset_class_filter = request.query_params.get('asset_class', 'All')
             timeframe_filter = request.query_params.get('timeframe', 'All')
@@ -211,6 +213,8 @@ class TradingSignalExplanationView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, signal_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             # Build explanation payload dynamically for any signal ID
             clean_id = str(signal_id).upper()

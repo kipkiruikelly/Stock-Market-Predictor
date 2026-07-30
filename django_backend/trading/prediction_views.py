@@ -198,6 +198,8 @@ class AiAnalyzeView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request, ticker):
+        from users.models import User
+        _orm_check = User.objects.count()
         deepseek_key = os.environ.get("DEEPSEEK_API_KEY", "")
         anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
         gemini_key = os.environ.get("GEMINI_API_KEY", "") or os.environ.get("GOOGLE_API_KEY", "")
@@ -319,6 +321,8 @@ class ModelMetricsView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         BASE_DIR = Path(__file__).resolve().parent.parent.parent
         path = os.path.join(BASE_DIR, "Data", "model_metrics.json")
         if not os.path.exists(path):
@@ -340,6 +344,8 @@ class ResearchView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request, ticker):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = ticker.upper().strip()
         import yfinance as yf
         from concurrent.futures import ThreadPoolExecutor
@@ -464,6 +470,8 @@ class FeatureImportanceView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request, ticker):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             import joblib
             ticker = ticker.upper().strip()
@@ -572,6 +580,8 @@ class HealthView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             from predictor import _ML_AVAILABLE
             ml_ok = _ML_AVAILABLE
@@ -591,6 +601,8 @@ class SignalView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = (request.data.get("ticker") or "").strip().upper()
         interval = request.data.get("interval", "1d")
 

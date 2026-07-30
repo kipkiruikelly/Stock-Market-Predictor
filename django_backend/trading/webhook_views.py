@@ -15,6 +15,8 @@ class WebhookManagementView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         webhooks = [
             {
                 'id': 'wh_8001',

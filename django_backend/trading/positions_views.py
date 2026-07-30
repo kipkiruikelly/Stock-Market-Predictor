@@ -21,6 +21,8 @@ class PositionsDashboardView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
 
@@ -239,6 +241,8 @@ class PositionDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, position_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             clean_id = str(position_id).upper()
             now = datetime.utcnow()
@@ -278,6 +282,8 @@ class PositionActionView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, position_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             clean_id = str(position_id).upper()
             action = request.data.get("action", "CLOSE").upper()

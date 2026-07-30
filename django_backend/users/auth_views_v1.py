@@ -149,6 +149,8 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         refresh_token = request.data.get("refresh")
         if refresh_token:
             blacklist_refresh_token(refresh_token)
@@ -202,6 +204,8 @@ class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user = request.user
         return StandardAPIResponse(
             data={
@@ -323,6 +327,8 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 

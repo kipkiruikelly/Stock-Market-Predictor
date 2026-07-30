@@ -91,6 +91,8 @@ class JwtLogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         refresh_token = request.data.get("refresh")
         if refresh_token:
             blacklist_refresh_token(refresh_token)

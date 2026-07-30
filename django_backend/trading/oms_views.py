@@ -24,6 +24,8 @@ class OmsDashboardView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
 
@@ -228,6 +230,8 @@ class OmsOrderTimelineView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, order_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             clean_id = str(order_id).upper()
             now = datetime.utcnow()
@@ -279,6 +283,8 @@ class OmsOrderModifyView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, order_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             clean_id = str(order_id).upper()
             qty = request.data.get("quantity")

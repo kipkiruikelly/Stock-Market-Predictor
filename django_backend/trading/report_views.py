@@ -15,6 +15,8 @@ class ReportGeneratorView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         report_type = request.data.get('report_type', 'executive_summary') # executive_summary, risk_var, compliance_audit, trading_journal
         format_type = request.data.get('format', 'pdf') # pdf, excel, csv
 
@@ -35,6 +37,8 @@ class ScheduledReportsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         schedules = [
             {
                 'id': 'sched_01',

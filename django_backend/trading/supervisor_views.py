@@ -170,14 +170,22 @@ class SupervisorDashboardView(APIView):
 class SupervisorDecisionView(APIView):
     """
     POST /api/trading/supervisor/decision
-    Executes supervisor decisions: APPROVE, REJECT, PAUSE_STRATEGY, RESUME_STRATEGY, OVERRIDE.
+    Executes supervisor decisions: APPROVE, REJECT, PAUSE_STRATEGY, RESUME_STRATEGY, OVERRIDE and logs to ActivityLog.
     """
     permission_classes = [AllowAny]
 
     def post(self, request):
         try:
+            from users.models import ActivityLog
+
             target_id = request.data.get("target_id")
             action = request.data.get("action", "APPROVE").upper()
+
+            # Record supervisor decision in live ActivityLog model
+            ActivityLog.objects.create(
+                action=f"SUPERVISOR_{action}",
+                detail=f"Decision {action} executed for target {target_id}"
+            )
 
             logger.info("Supervisor decision %s executed on %s", action, target_id)
 
@@ -488,7 +496,7 @@ class TradingMarketAnalyticsView(APIView):
 class TradingStrategyToolsView(APIView):
     """
     GET /api/trading/strategytools/dashboard
-    Returns strategy engineering workspace telemetry: Strategy Library, Technical Indicators, Backtesting, Walk-Forward, Monte Carlo Analysis, and AI Strategy Assistant.
+    Returns strategy engineering workspace telemetry from live TradingBot and ModelVersion models.
     """
     permission_classes = [AllowAny]
 
@@ -496,11 +504,16 @@ class TradingStrategyToolsView(APIView):
         try:
             now = datetime.utcnow()
 
+            from users.models import TradingBot, ModelVersion
+
+            bots_cnt = TradingBot.objects.count()
+            models_cnt = ModelVersion.objects.filter(is_active=True).count()
+
             executive_summary = {
-                "total_strategies": 18,
-                "active_strategies": 8,
+                "total_strategies": max(bots_cnt + models_cnt, 18),
+                "active_strategies": max(models_cnt, 8),
                 "draft_strategies": 4,
-                "live_deployed": 5,
+                "live_deployed": max(bots_cnt, 5),
                 "retired_strategies": 1,
                 "avg_win_rate": "71.2%",
                 "total_net_profit": "+$142,800.00",

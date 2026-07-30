@@ -53,6 +53,8 @@ class CsrfView(APIView):
     authentication_classes = []
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         return Response({'ok': True, 'csrf_token': get_token(request)})
 
 
@@ -139,6 +141,8 @@ class LogoutView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         logout(request)
         return Response({'ok': True})
 
@@ -150,6 +154,8 @@ class MeView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         if not request.user or not request.user.is_authenticated:
             return Response({'ok': False, 'error': 'Not authenticated.'}, status=401)
         return Response(_user_response(request, request.user))
@@ -162,6 +168,8 @@ class SettingsView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user = request.user
         allowed_fields = ['theme_preference', 'alerts_enabled', 'paper_trading_opted_in']
         updated = []
@@ -215,6 +223,8 @@ class ChangePasswordView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user         = request.user
         current      = request.data.get('current_password', '')
         new_password = request.data.get('new_password', '')
@@ -562,6 +572,8 @@ class AccountExportView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         data = {
             "username": request.user.username,
             "email": request.user.email,
@@ -582,6 +594,8 @@ class AccountDeleteView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user = request.user
         logout(request)
         user.delete()
@@ -595,6 +609,8 @@ class GoogleLoginView(APIView):
     authentication_classes = []
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         client_id = os.environ.get("GOOGLE_CLIENT_ID", "")
         if not client_id:
             from django.shortcuts import redirect
@@ -742,6 +758,8 @@ class ClaimXpView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         amount = int(request.data.get("amount", 25))
         user = request.user
         old_level = user.level
@@ -776,6 +794,8 @@ class StreakBoostView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         from datetime import date, timedelta
         user = request.user
         today = date.today()

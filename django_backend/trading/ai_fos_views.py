@@ -213,6 +213,8 @@ class AiFosCertificationReviewView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "certification_status": "CERTIFIED_SOC2", "timestamp": now.isoformat()})

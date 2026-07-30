@@ -53,6 +53,8 @@ class EventStreamView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         user_id = request.user.id if request.user.is_authenticated else 0
         response = StreamingHttpResponse(event_generator(user_id), content_type='text/event-stream')
         response['Cache-Control'] = 'no-cache'
@@ -68,6 +70,8 @@ class MultiAgentProvenanceView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = request.query_params.get('ticker', 'AAPL').upper()
 
         provenance_data = {

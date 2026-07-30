@@ -24,6 +24,8 @@ class PipelineConfigView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             if not os.path.exists(CONFIG_PATH):
                 return Response({"ok": False, "error": "Configuration file not found"}, status=404)
@@ -52,6 +54,8 @@ class PipelineRunView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         mode = request.data.get("mode") # "ingest", "train", "predict"
         symbol = request.data.get("symbol", "SPY")
         interval = request.data.get("interval", "1d")
@@ -79,6 +83,8 @@ class PipelineTaskStatusView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, task_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             from django.core.cache import cache
             from celery.result import AsyncResult
@@ -130,6 +136,8 @@ class CronRetrainView(APIView):
     permission_classes = []
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         auth_token = request.headers.get("X-CRON-KEY") or request.query_params.get("token")
         expected_token = os.environ.get("ADMIN_CRON_TOKEN", "bull-logic-midnight-cron-secret")
         

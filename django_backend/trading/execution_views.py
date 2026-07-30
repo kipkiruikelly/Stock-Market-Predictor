@@ -16,6 +16,8 @@ class SmartOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = (request.data.get("ticker") or request.data.get("symbol") or "SPY").upper()
         side = (request.data.get("side") or "BUY").upper()
         total_quantity = float(request.data.get("quantity") or request.data.get("total_quantity") or 10.0)

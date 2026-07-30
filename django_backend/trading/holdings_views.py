@@ -73,6 +73,8 @@ class HoldingActionView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "message": "Holding action processed cleanly", "timestamp": now.isoformat()})

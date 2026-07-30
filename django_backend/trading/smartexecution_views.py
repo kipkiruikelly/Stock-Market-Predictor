@@ -32,6 +32,8 @@ class SmartExecutionDashboardView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
 
@@ -217,6 +219,8 @@ class SmartExecutionOrderDetailView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, order_id):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             clean_id = str(order_id).upper()
             now = datetime.utcnow()

@@ -74,6 +74,8 @@ class DatasetPropertiesView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         symbol = (request.query_params.get("ticker") or request.query_params.get("symbol") or "SPY").upper()
         interval = request.query_params.get("interval", "5m")
 
@@ -108,6 +110,8 @@ class DatasetUploadView(APIView):
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         file_obj = request.FILES.get("file") or request.FILES.get("dataset")
         if not file_obj:
             return Response({"ok": False, "error": "CSV dataset file required."}, status=400)
@@ -173,6 +177,8 @@ class FeatureImportanceApiView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = (request.query_params.get("ticker") or request.query_params.get("symbol") or "SPY").upper()
         
         # Standard feature importance fallback ranking for key quantitative indicators

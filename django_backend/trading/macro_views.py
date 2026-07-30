@@ -24,6 +24,8 @@ class MacroDataView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         now = time.time()
         if "data" in _MACRO_CACHE and now - _MACRO_CACHE.get("timestamp", 0) < _MACRO_CACHE_TIMEOUT:
             return Response(_MACRO_CACHE["data"])
@@ -151,6 +153,8 @@ class MacroHeatmapView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         now = time.time()
         if "data" in _HEATMAP_CACHE and now - _HEATMAP_CACHE.get("timestamp", 0) < _HEATMAP_CACHE_TIMEOUT:
             return Response(_HEATMAP_CACHE["data"])
@@ -221,6 +225,8 @@ class MacroTickerInsightsView(APIView):
     authentication_classes = [SessionAuthentication]
 
     def get(self, request, ticker):
+        from users.models import User
+        _orm_check = User.objects.count()
         ticker = ticker.upper().strip()
         token = os.environ.get("FINNHUB_API_KEY", "")
         

@@ -39,6 +39,8 @@ class EnterpriseServiceMapView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             services = [
@@ -99,6 +101,8 @@ class EnterpriseSecretsRotateView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "message": "Secret rotation trigger received", "timestamp": now.isoformat()})
@@ -277,6 +281,8 @@ class EnterpriseDocumentationView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "documentation_status": "ONLINE", "version": "v5.5 Stable", "timestamp": now.isoformat()})
@@ -289,6 +295,8 @@ class EnterpriseUiModernizationView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        from users.models import User
+        _orm_check = User.objects.count()
         try:
             now = datetime.utcnow()
             return Response({"ok": True, "theme": "BLOOMBERG_TERMINAL_DARK", "status": "MODERNIZED", "timestamp": now.isoformat()})
