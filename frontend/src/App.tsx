@@ -74,6 +74,7 @@ import { TradingPerformanceDashboard } from './pages/TradingPerformanceDashboard
 import { MarketAnalyticsDashboard } from './pages/MarketAnalyticsDashboard';
 import { AIRobotsDashboard } from './pages/AIRobotsDashboard';
 import { StrategyToolsDashboard } from './pages/StrategyToolsDashboard';
+import { OperationsScreenerDashboard } from './pages/OperationsScreenerDashboard';
 
 function App() {
   return (
@@ -210,6 +211,7 @@ function App() {
               <Route path="/risk/stress-testing" element={<RiskDashboard />} />
 
               {/* Alternative Operations Routes */}
+              <Route path="/operations/screener" element={<OperationsScreenerDashboard />} />
               <Route path="/ops/incidents" element={<ScreenerDashboard />} />
               <Route path="/ops/traces" element={<AdminDashboard />} />
               <Route path="/ops/metrics" element={<AdminDashboard />} />

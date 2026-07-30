@@ -90,6 +90,7 @@ urlpatterns = [
     path('trading/performance/dashboard', supervisor_views.TradingPerformanceAnalyticsView.as_view(), name='api-trading-performance'),
     path('trading/marketanalytics/dashboard', supervisor_views.TradingMarketAnalyticsView.as_view(), name='api-trading-marketanalytics'),
     path('trading/strategytools/dashboard', supervisor_views.TradingStrategyToolsView.as_view(), name='api-trading-strategytools'),
+    path('operations/screener/dashboard', supervisor_views.OperationsScreenerView.as_view(), name='api-operations-screener'),
     # ── Institutional Position Management System (PMS) Suite ────
     path('trading/positions/dashboard', positions_views.PositionsDashboardView.as_view(), name='api-positions-dashboard'),
     path('trading/positions/<str:position_id>/details', positions_views.PositionDetailView.as_view(), name='api-position-details'),

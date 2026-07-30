@@ -75,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {"name": "Model Governance Registry", "route": "/researchlab/modelregistry"}
     ],
     "Operations": [
-      {"name": "Screener Monitor", "route": "/screener"},
+      {"name": "Screener Monitor", "route": "/operations/screener"},
       {"name": "Settings Controls", "route": "/settings"}
     ],
     "Executive": [
