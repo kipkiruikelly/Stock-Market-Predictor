@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
-  RefreshCw, Activity, ShieldCheck, 
+  RefreshCw, Activity, 
   Download, AlertTriangle, Sparkles, Cpu,
-  Clock, CheckCircle2,
-  Search, X, Scale, Play, Pause, Layers, Zap, Sliders, Box, ArrowUpRight
+  Clock, 
+  Search, X, Scale, Play, Pause, Zap, Box, ArrowUpRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
@@ -69,7 +69,6 @@ export const TradingStrategiesDashboard: React.FC = () => {
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
 
   // Sorting
   const [sortField, setSortField] = useState<keyof StrategyItem>('sharpe_ratio');
@@ -187,9 +186,8 @@ export const TradingStrategiesDashboard: React.FC = () => {
         s.author.toLowerCase().includes(q);
 
       const matchesStatus = statusFilter === 'All' || s.status === statusFilter;
-      const matchesCategory = categoryFilter === 'All' || s.category.toLowerCase().includes(categoryFilter.toLowerCase());
 
-      return matchesSearch && matchesStatus && matchesCategory;
+      return matchesSearch && matchesStatus;
     });
 
     result.sort((a, b) => {
@@ -202,7 +200,7 @@ export const TradingStrategiesDashboard: React.FC = () => {
     });
 
     return result;
-  }, [strategies, searchQuery, statusFilter, categoryFilter, sortField, sortDir]);
+  }, [strategies, searchQuery, statusFilter, sortField, sortDir]);
 
   // Pagination Slice
   const paginatedStrategies = useMemo(() => {

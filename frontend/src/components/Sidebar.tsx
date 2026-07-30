@@ -134,6 +134,7 @@ export const Sidebar: React.FC = () => {
     { name: 'Promo & Gift Codes', path: '/admin?tab=gift-codes', icon: <Ticket size={20} /> },
     { name: 'System Admin & Settings', path: '/admin?tab=system-admin', icon: <Settings size={20} /> },
   ] : [
+    { name: 'Trading Strategies', path: '/trading/strategies', icon: <Sliders size={20} /> },
     { name: 'Trading Supervisor', path: '/trading/supervisor', icon: <ShieldCheck size={20} /> },
     { name: 'Positions Management (PMS)', path: '/trading/positions', icon: <PieChart size={20} /> },
     { name: 'Order Management (OMS)', path: '/trading/orders', icon: <Layers size={20} /> },
