@@ -37,8 +37,32 @@ from . import strategy_management_views
 from . import holdings_views
 from . import portfolio_suite_views
 from . import research_lab_suite_views
+from . import executive_suite_views
+from . import admin_suite_views
+from . import knowledge_suite_views
 
 urlpatterns = [
+    # ── Executive Suite Endpoints ────────────────────────────────
+    path('executive/dashboard/dashboard', executive_suite_views.ExecutiveDashboardView.as_view(), name='api-executive-dashboard'),
+    path('executive/business-analytics/dashboard', executive_suite_views.BusinessAnalyticsView.as_view(), name='api-executive-analytics'),
+    path('executive/growth/dashboard', executive_suite_views.ExecutiveGrowthView.as_view(), name='api-executive-growth'),
+    path('executive/cloud-costs/dashboard', executive_suite_views.CloudCostsView.as_view(), name='api-executive-cloud-costs'),
+
+    # ── Administration Suite Endpoints ───────────────────────────
+    path('admin/users/dashboard', admin_suite_views.AdminUsersView.as_view(), name='api-admin-users'),
+    path('admin/roles/dashboard', admin_suite_views.AdminRolesView.as_view(), name='api-admin-roles'),
+    path('admin/organizations/dashboard', admin_suite_views.AdminOrganizationsView.as_view(), name='api-admin-orgs'),
+    path('admin/feature-flags/dashboard', admin_suite_views.AdminFeatureFlagsView.as_view(), name='api-admin-flags'),
+    path('admin/api-keys/dashboard', admin_suite_views.AdminApiKeysView.as_view(), name='api-admin-keys'),
+    path('admin/billing/dashboard', admin_suite_views.AdminBillingView.as_view(), name='api-admin-billing'),
+    path('admin/settings/dashboard', admin_suite_views.AdminSettingsView.as_view(), name='api-admin-settings'),
+
+    # ── Knowledge Center Suite Endpoints ──────────────────────────
+    path('knowledge/documentation/dashboard', knowledge_suite_views.KnowledgeDocumentationView.as_view(), name='api-knowledge-docs'),
+    path('knowledge/api-explorer/dashboard', knowledge_suite_views.KnowledgeApiExplorerView.as_view(), name='api-knowledge-api-explorer'),
+    path('knowledge/runbooks/dashboard', knowledge_suite_views.KnowledgeRunbooksView.as_view(), name='api-knowledge-runbooks'),
+    path('knowledge/user-guide/dashboard', knowledge_suite_views.KnowledgeUserGuideView.as_view(), name='api-knowledge-user-guide'),
+    path('knowledge/admin-guide/dashboard', knowledge_suite_views.KnowledgeAdminGuideView.as_view(), name='api-knowledge-admin-guide'),
     # ── Institutional Research Lab Suite Endpoints ───────────────
     path('researchlab/projects/dashboard', research_lab_suite_views.ResearchLabProjectsView.as_view(), name='api-researchlab-projects'),
     path('researchlab/datasets/dashboard', research_lab_suite_views.ResearchLabDatasetsView.as_view(), name='api-researchlab-datasets'),
