@@ -338,9 +338,10 @@ class ResearchLabModelsView(APIView):
 
             from users.models import ModelVersion
 
-            db_models = ModelVersion.objects.all().order_by('-trained_at')[:50]
-            tot_cnt = db_models.count()
-            active_cnt = db_models.filter(is_active=True).count()
+            qs_all = ModelVersion.objects.all()
+            tot_cnt = qs_all.count()
+            active_cnt = qs_all.filter(is_active=True).count()
+            db_models = qs_all.order_by('-trained_at')[:50]
 
             models = []
             for idx, m in enumerate(db_models):
@@ -402,9 +403,10 @@ class ResearchLabModelRegistryView(APIView):
 
             from users.models import ModelVersion, ActivityLog
 
-            db_models = ModelVersion.objects.all().order_by('-trained_at')[:50]
-            tot_cnt = db_models.count()
-            active_cnt = db_models.filter(is_active=True).count()
+            qs_all = ModelVersion.objects.all()
+            tot_cnt = qs_all.count()
+            active_cnt = qs_all.filter(is_active=True).count()
+            db_models = qs_all.order_by('-trained_at')[:50]
 
             registry = []
             for idx, m in enumerate(db_models):
