@@ -43,6 +43,56 @@ from sklearn.model_selection import KFold, cross_val_predict
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+
+# ── Purged Cross-Validation & Regime Estimator ───────────────────────────────
+
+class PurgedKFold:
+    """
+    Marcos Lopez de Prado Purged K-Fold splitter implementation.
+    Drops training indices near test boundaries to prevent data leakage.
+    """
+    def __init__(self, n_splits=5, embargo_limit=10):
+        self.n_splits = n_splits
+        self.embargo_limit = embargo_limit
+
+    def split(self, X, y=None, groups=None):
+        n_samples = len(X)
+        fold_size = n_samples // self.n_splits
+        for i in range(self.n_splits):
+            test_start = i * fold_size
+            test_end = (i + 1) * fold_size if i < self.n_splits - 1 else n_samples
+            test_idx = np.arange(test_start, test_end)
+            
+            train_idx = []
+            for j in range(n_samples):
+                if test_start <= j < test_end:
+                    continue
+                # Apply embargo window limit (drop index ranges directly after test sets)
+                if test_end <= j < (test_end + self.embargo_limit):
+                    continue
+                train_idx.append(j)
+            yield np.array(train_idx), test_idx
+
+    def get_n_splits(self, X=None, y=None, groups=None):
+        return self.n_splits
+
+
+class RegimeAwareRidge(Ridge):
+    """
+    Ridge Meta-Learner that adapts stacking weights dynamically based on market regimes.
+    """
+    def predict(self, X):
+        try:
+            # Volatility threshold of the base predictions
+            vol = float(np.std(X[:, 0]))
+            if vol > 1.5:
+                X_adj = X.copy()
+                X_adj[:, 0] = X_adj[:, 0] * 0.8  # De-weight standard LR prediction in high volatility
+                return super().predict(X_adj)
+        except Exception:
+            pass
+        return super().predict(X)
+
 # ── Configuration ───────────────────────────────────────────────────────────────
 
 BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
@@ -319,7 +369,34 @@ def build_stacking_ensemble(
     X_val   = data["X_val"]
     y_val_close    = data["y_val_close"]
 
-    kf = KFold(n_splits=cv_folds, shuffle=True, random_state=42)
+    # Declare PurgedKFold splits to prevent serial correlation data leakage
+    class PurgedKFold:
+        def __init__(self, n_splits=5, embargo_limit=10):
+            self.n_splits = n_splits
+            self.embargo_limit = embargo_limit
+
+        def split(self, X, y=None, groups=None):
+            n_samples = len(X)
+            fold_size = n_samples // self.n_splits
+            for i in range(self.n_splits):
+                test_start = i * fold_size
+                test_end = (i + 1) * fold_size if i < self.n_splits - 1 else n_samples
+                test_idx = np.arange(test_start, test_end)
+                
+                train_idx = []
+                for j in range(n_samples):
+                    if test_start <= j < test_end:
+                        continue
+                    # Apply embargo window limit (drop index ranges directly after test sets)
+                    if test_end <= j < (test_end + self.embargo_limit):
+                        continue
+                    train_idx.append(j)
+                yield np.array(train_idx), test_idx
+
+        def get_n_splits(self, X=None, y=None, groups=None):
+            return self.n_splits
+
+    kf = PurgedKFold(n_splits=cv_folds, embargo_limit=10)
 
     # Container for out-of-fold predictions + original features
     n_train = len(X_train)
