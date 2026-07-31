@@ -241,12 +241,21 @@ def _tech_signal(lookback: pd.DataFrame) -> dict:
     atr_val  = _atr(highs, lows, closes)
     price    = float(closes[-1])
     ema20    = float(pd.Series(closes).ewm(span=20, adjust=False).mean().iloc[-1])
+    
+    # Dynamic volatility-spread bounds scaling
+    vol_spread = (atr_val / max(float(price), 1.0)) * 100.0
+    if vol_spread > 2.0:
+        rsi_oversold = 25.0
+        rsi_overbought = 75.0
+    else:
+        rsi_oversold = 35.0
+        rsi_overbought = 65.0
 
     buy = sell = 0
-    if prev_rsi < 30 and rsi >= 30:    buy  += 1
-    elif rsi < 35:                      buy  += 1
-    if prev_rsi > 70 and rsi <= 70:    sell += 1
-    elif rsi > 65:                     sell += 1
+    if prev_rsi < rsi_oversold and rsi >= rsi_oversold:    buy  += 1
+    elif rsi < (rsi_oversold + 5.0):                       buy  += 1
+    if prev_rsi > rsi_overbought and rsi <= rsi_overbought:  sell += 1
+    elif rsi > (rsi_overbought - 5.0):                     sell += 1
     if ph < 0 and hist >= 0:           buy  += 2
     elif hist > 0 and hist > ph:       buy  += 1
     if ph > 0 and hist <= 0:           sell += 2
