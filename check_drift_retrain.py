@@ -50,6 +50,18 @@ def monitor_and_trigger_retraining():
             action="model_drift_alert",
             detail=f"Drift score of {drift_score} detected for {model.ticker} v{model.version}."
         )
+
+        # Dispatch Slack Webhook alert
+        try:
+            sys.path.insert(0, 'django_backend')
+            from trading.alerts import send_slack_alert
+            send_slack_alert(
+                message_title=f"MLOps Model Drift Warning: {model.ticker}",
+                message_detail=f"Model {model.ticker} {model.model_type} v{model.version} has drift score = {drift_score} (limit 0.25). Auto-retraining triggered.",
+                severity="WARNING"
+            )
+        except Exception as alert_err:
+            logger.warning("Could not dispatch drift Slack alert: %s", alert_err)
         
         # Trigger retraining pipeline
         logger.info("Triggering automated retraining pipeline model_training.py...")

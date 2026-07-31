@@ -134,11 +134,11 @@ class OmsDashboardView(APIView):
                 defaults={"balance": 1000000.0, "buying_power": 1000000.0}
             )
 
-            ticker = request.data.get("ticker", "NVDA").upper()
+            ticker = (request.data.get("ticker") or request.data.get("symbol") or "NVDA").upper()
             order_type = request.data.get("order_type", "market").lower()
             side = request.data.get("side", "buy").lower()
             quantity = float(request.data.get("quantity", 100))
-            price = float(request.data.get("target_price" or "limit_price", 120.00))
+            price = float(request.data.get("target_price") or request.data.get("price") or request.data.get("limit_price") or 120.00)
 
             # --- Pre-Trade Risk Gate Controls ---
             cost = quantity * price
@@ -169,6 +169,14 @@ class OmsDashboardView(APIView):
                 if not size_passed: fail_reasons.append("Single trade position size ceiling exceeded ($500k max)")
                 if not leverage_passed: fail_reasons.append("Leverage threshold cap exceeded (5x max)")
                 
+                # Dispatch Slack Alert for pre-trade gate breach
+                from trading.alerts import send_slack_alert
+                send_slack_alert(
+                    message_title=f"Pre-Trade Risk Block: {side.upper()} {quantity} {ticker}",
+                    message_detail=f"Pre-trade checks FAILED: {', '.join(fail_reasons)}. Order has been auto-rejected.",
+                    severity="CRITICAL"
+                )
+
                 return Response({
                     "ok": False,
                     "order_id": f"OMS-{order.id}",
