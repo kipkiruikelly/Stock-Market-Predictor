@@ -281,51 +281,51 @@ export const TradingSupervisorDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-2.5">
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Active Trades</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_trades ?? 18}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_trades ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-yellow-400">Pending Review</span>
-          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.orders_pending_approval ?? 4}</div>
+          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.orders_pending_approval ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Blocked Orders</span>
-          <div className="text-base font-black text-rose-400 mt-1">{kpis?.orders_blocked ?? 12}</div>
+          <div className="text-base font-black text-rose-400 mt-1">{kpis?.orders_blocked ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Violations</span>
-          <div className="text-base font-black text-rose-400 mt-1">{kpis?.risk_violations ?? 2}</div>
+          <div className="text-base font-black text-rose-400 mt-1">{kpis?.risk_violations ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-blue-400">Executions</span>
-          <div className="text-base font-black text-blue-400 mt-1">{kpis?.daily_executions ?? 1420}</div>
+          <div className="text-base font-black text-blue-400 mt-1">{kpis?.daily_executions ?? 00}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Active Bots</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_trading_bots ?? 14}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_trading_bots ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Exposure</span>
-          <div className="text-base font-black text-purple-400 mt-1">{kpis?.portfolio_exposure ?? '42.5%'}</div>
+          <div className="text-base font-black text-purple-400 mt-1">{kpis?.portfolio_exposure ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Total P&L</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.total_pnl ?? '+$66.7K'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.total_pnl ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Win Rate</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.win_rate ?? '68.4%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.win_rate ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Avg Latency</span>
-          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.avg_execution_latency_ms ?? '3.8ms'}</div>
+          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.avg_execution_latency_ms ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">MT5 Gateway</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.mt5_connection_status ?? 'HEALTHY'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.mt5_connection_status ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Supervisor</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.overall_supervisor_health ?? 'OPTIMAL'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.overall_supervisor_health ?? '—'}</div>
         </div>
       </div>
 

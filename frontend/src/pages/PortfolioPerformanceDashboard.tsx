@@ -90,27 +90,27 @@ export const PortfolioPerformanceDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Daily Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.daily ?? '+0.52%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.daily ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Weekly Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.weekly ?? '+1.84%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.weekly ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Monthly Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.monthly ?? '+3.51%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.monthly ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Quarterly Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.quarterly ?? '+8.42%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{returnsSummary?.quarterly ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Yearly (YTD)</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{returnsSummary?.yearly ?? '+18.20%'}</div>
+          <div className="text-lg font-black text-purple-400 mt-1">{returnsSummary?.yearly ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">Lifetime Return</span>
-          <div className="text-lg font-black text-nexus-pur mt-1">{returnsSummary?.lifetime ?? '+142.80%'}</div>
+          <div className="text-lg font-black text-nexus-pur mt-1">{returnsSummary?.lifetime ?? '—'}</div>
         </div>
       </div>
 
@@ -192,15 +192,15 @@ export const PortfolioPerformanceDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Total Trades</span>
-                <span className="font-mono font-bold text-nexus-white text-sm">{tradeAnalytics?.total_trades ?? 1420}</span>
+                <span className="font-mono font-bold text-nexus-white text-sm">{tradeAnalytics?.total_trades ?? 00}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Winning Trades</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">{tradeAnalytics?.winning_trades ?? 1028}</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">{tradeAnalytics?.winning_trades ?? 0}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Largest Winner</span>
-                <span className="font-mono font-bold text-emerald-400 text-xs block">{tradeAnalytics?.largest_winner ?? '+$34.2K'}</span>
+                <span className="font-mono font-bold text-emerald-400 text-xs block">{tradeAnalytics?.largest_winner ?? '—'}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Largest Loser</span>

@@ -89,49 +89,49 @@ export const CloudCostsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">Monthly Spend</span>
-          <div className="text-base sm:text-lg font-black text-yellow-400 mt-1">{summary?.current_month_spend ?? '$42.8K'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Projected: {summary?.projected_monthend ?? '$43.5K'}</span>
+          <div className="text-base sm:text-lg font-black text-yellow-400 mt-1">{summary?.current_month_spend ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Projected: {summary?.projected_monthend ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Budget Health</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.budget_utilization ?? '85.6%'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Remaining: {summary?.remaining_budget ?? '$7.2K'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.budget_utilization ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Remaining: {summary?.remaining_budget ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">GPU Compute</span>
-          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.gpu_cost ?? '$18.4K'}</div>
+          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.gpu_cost ?? '—'}</div>
           <span className="text-[9px] font-bold text-nexus-muted">43.0% of Total</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Potential Savings</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.cost_savings ?? '$6.2K/mo'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Efficiency: {summary?.efficiency_score ?? '92.8'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.cost_savings ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Efficiency: {summary?.efficiency_score ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Reserved Savings</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.reserved_instance_savings ?? '$4.2K/mo'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Spot: {summary?.spot_instance_savings ?? '$3.8K'}</span>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.reserved_instance_savings ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Spot: {summary?.spot_instance_savings ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Cost / Customer</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.cost_per_customer ?? '$301.40'}</div>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.cost_per_customer ?? '—'}</div>
           <span className="text-[9px] font-bold text-nexus-muted">Per Org / Month</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Cost / Trade</span>
-          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.cost_per_trade ?? '$0.03'}</div>
+          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.cost_per_trade ?? '—'}</div>
           <span className="text-[9px] font-bold text-purple-400">Per Pred: $0.00003</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Annual Run-Rate</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.annual_spend ?? '$513.6K'}</div>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.annual_spend ?? '—'}</div>
           <span className="text-[9px] font-bold text-emerald-400">Optimal FinOps</span>
         </div>
       </div>
@@ -259,7 +259,7 @@ export const CloudCostsDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">Monthly Budget</span>
-                    <span className="font-bold text-nexus-white">{budget?.monthly_budget ?? '$50.0K'}</span>
+                    <span className="font-bold text-nexus-white">{budget?.monthly_budget ?? '—'}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">Variance</span>
@@ -267,11 +267,11 @@ export const CloudCostsDashboard: React.FC = () => {
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">ML Training Cost</span>
-                    <span className="font-bold text-nexus-pur">{aiAnalytics?.model_training_cost ?? '$12.2K/mo'}</span>
+                    <span className="font-bold text-nexus-pur">{aiAnalytics?.model_training_cost ?? '—'}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">Inference Cost</span>
-                    <span className="font-bold text-purple-400">{aiAnalytics?.inference_cost ?? '$6.2K/mo'}</span>
+                    <span className="font-bold text-purple-400">{aiAnalytics?.inference_cost ?? '—'}</span>
                   </div>
                 </div>
               </div>
@@ -287,11 +287,11 @@ export const CloudCostsDashboard: React.FC = () => {
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
                     <span className="text-nexus-white font-sans font-bold">Green Energy Score</span>
-                    <span className="font-bold text-emerald-400">{sustainability?.green_energy_score ?? '94.2 / 100'}</span>
+                    <span className="font-bold text-emerald-400">{sustainability?.green_energy_score ?? '—'}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
                     <span className="text-nexus-white font-sans font-bold">Renewable Energy</span>
-                    <span className="font-bold text-nexus-pur">{sustainability?.renewable_energy_usage ?? '92.0%'}</span>
+                    <span className="font-bold text-nexus-pur">{sustainability?.renewable_energy_usage ?? '—'}</span>
                   </div>
                 </div>
               </div>

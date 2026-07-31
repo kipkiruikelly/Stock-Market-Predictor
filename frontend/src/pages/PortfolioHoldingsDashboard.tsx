@@ -278,35 +278,35 @@ export const PortfolioHoldingsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Portfolio Value</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{summary?.portfolio_value ?? '$2.48M'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{summary?.portfolio_value ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Unrealized P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.unrealized_pnl ?? '+$48.3K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.unrealized_pnl ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Realized P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.realized_pnl ?? '+$18.4K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.realized_pnl ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Daily Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.daily_return ?? '+$12.8K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.daily_return ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.total_return ?? '+14.8%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.total_return ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Cash Balance</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{summary?.cash_balance ?? '$316.7K'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{summary?.cash_balance ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">Buying Power</span>
-          <div className="text-lg font-black text-yellow-400 mt-1">{summary?.buying_power ?? '$1.57M'}</div>
+          <div className="text-lg font-black text-yellow-400 mt-1">{summary?.buying_power ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Positions</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{summary?.num_positions ?? 8} Holdings</div>
+          <div className="text-lg font-black text-purple-400 mt-1">{summary?.num_positions ?? 0} Holdings</div>
         </div>
       </div>
 
@@ -577,19 +577,19 @@ export const PortfolioHoldingsDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Sharpe Ratio</span>
-                <span className="font-mono font-bold text-emerald-400">{performance?.sharpe_ratio ?? '2.48'}</span>
+                <span className="font-mono font-bold text-emerald-400">{performance?.sharpe_ratio ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Sortino Ratio</span>
-                <span className="font-mono font-bold text-emerald-400">{performance?.sortino_ratio ?? '3.12'}</span>
+                <span className="font-mono font-bold text-emerald-400">{performance?.sortino_ratio ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">VaR (95% Daily)</span>
-                <span className="font-mono font-bold text-yellow-400">{riskMetrics?.var_95_daily ?? '$18,420.00'}</span>
+                <span className="font-mono font-bold text-yellow-400">{riskMetrics?.var_95_daily ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Diversification Score</span>
-                <span className="font-mono font-bold text-purple-400">{performance?.diversification_score ?? '88 / 100'}</span>
+                <span className="font-mono font-bold text-purple-400">{performance?.diversification_score ?? '—'}</span>
               </div>
             </div>
           </div>

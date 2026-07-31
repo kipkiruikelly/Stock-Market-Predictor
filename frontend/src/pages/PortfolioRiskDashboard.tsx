@@ -90,23 +90,23 @@ export const PortfolioRiskDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">VaR (95% Daily)</span>
-          <div className="text-lg font-black text-yellow-400 mt-1">{riskSummary?.var_95 ?? '$18,420.00'}</div>
+          <div className="text-lg font-black text-yellow-400 mt-1">{riskSummary?.var_95 ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">VaR (99% Daily)</span>
-          <div className="text-lg font-black text-rose-400 mt-1">{riskSummary?.var_99 ?? '$28,950.00'}</div>
+          <div className="text-lg font-black text-rose-400 mt-1">{riskSummary?.var_99 ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">Expected Shortfall</span>
-          <div className="text-lg font-black text-rose-400 mt-1">{riskSummary?.expected_shortfall ?? '$26,100.00'}</div>
+          <div className="text-lg font-black text-rose-400 mt-1">{riskSummary?.expected_shortfall ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Portfolio Beta</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{riskSummary?.portfolio_beta ?? '0.92'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{riskSummary?.portfolio_beta ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">Volatility</span>
-          <div className="text-lg font-black text-nexus-pur mt-1">{riskSummary?.portfolio_volatility ?? '14.2%'}</div>
+          <div className="text-lg font-black text-nexus-pur mt-1">{riskSummary?.portfolio_volatility ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Correlation</span>
@@ -118,7 +118,7 @@ export const PortfolioRiskDashboard: React.FC = () => {
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Liquidity Risk</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{riskSummary?.liquidity_risk ?? 'LOW'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{riskSummary?.liquidity_risk ?? '—'}</div>
         </div>
       </div>
 
@@ -161,11 +161,11 @@ export const PortfolioRiskDashboard: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[9px] text-nexus-muted block uppercase font-bold">Alpha</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">{quantMetrics?.alpha ?? '+3.80%'}</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">{quantMetrics?.alpha ?? '—'}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[9px] text-nexus-muted block uppercase font-bold">Tracking Error</span>
-                <span className="font-mono font-bold text-nexus-pur text-sm">{quantMetrics?.tracking_error ?? '2.10%'}</span>
+                <span className="font-mono font-bold text-nexus-pur text-sm">{quantMetrics?.tracking_error ?? '—'}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[9px] text-nexus-muted block uppercase font-bold">Information Ratio</span>

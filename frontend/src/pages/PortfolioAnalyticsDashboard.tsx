@@ -92,27 +92,27 @@ export const PortfolioAnalyticsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Total Value</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{kpis?.total_value ?? '$2.48M'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{kpis?.total_value ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Unrealized P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.unrealized_pnl ?? '+$48.3K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.unrealized_pnl ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Realized P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.realized_pnl ?? '+$18.4K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.realized_pnl ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Daily Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.daily_return ?? '+$12.8K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.daily_return ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Monthly Return</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.monthly_return ?? '+$84.2K'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.monthly_return ?? '—'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Annual Return</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{kpis?.annual_return ?? '+$324.5K'}</div>
+          <div className="text-lg font-black text-purple-400 mt-1">{kpis?.annual_return ?? '—'}</div>
         </div>
       </div>
 
@@ -139,31 +139,31 @@ export const PortfolioAnalyticsDashboard: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">CAGR</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.cagr ?? '+18.2%'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.cagr ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Sharpe Ratio</span>
-                  <span className="font-mono font-bold text-nexus-pur text-sm">{stats?.sharpe_ratio ?? '2.48'}</span>
+                  <span className="font-mono font-bold text-nexus-pur text-sm">{stats?.sharpe_ratio ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Sortino Ratio</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.sortino_ratio ?? '3.12'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.sortino_ratio ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Calmar Ratio</span>
-                  <span className="font-mono font-bold text-nexus-pur text-sm">{stats?.calmar_ratio ?? '8.66'}</span>
+                  <span className="font-mono font-bold text-nexus-pur text-sm">{stats?.calmar_ratio ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Profit Factor</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.profit_factor ?? '2.68'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.profit_factor ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Win Rate</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.win_rate ?? '72.4%'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.win_rate ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Avg Win</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.avg_win ?? '+$1.8K'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.avg_win ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Avg Loss</span>
@@ -171,11 +171,11 @@ export const PortfolioAnalyticsDashboard: React.FC = () => {
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Expectancy</span>
-                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.expectancy ?? '+$1.1K'}</span>
+                  <span className="font-mono font-bold text-emerald-400 text-sm">{stats?.expectancy ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[9px] text-nexus-muted block uppercase font-bold">Max Drawdown</span>
-                  <span className="font-mono font-bold text-rose-400 text-sm">{stats?.max_drawdown ?? '-2.1%'}</span>
+                  <span className="font-mono font-bold text-rose-400 text-sm">{stats?.max_drawdown ?? '—'}</span>
                 </div>
               </div>
             )}

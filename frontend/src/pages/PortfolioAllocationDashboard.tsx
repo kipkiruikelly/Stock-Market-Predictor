@@ -11,7 +11,7 @@ export const PortfolioAllocationDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [diversificationScore, setDiversificationScore] = useState<string>('88 / 100');
+  const [diversificationScore, setDiversificationScore] = useState<string>('—');
   const [breakdowns, setBreakdowns] = useState<any[]>([]);
   const [rebalancingTrades, setRebalancingTrades] = useState<any[]>([]);
 
@@ -21,7 +21,7 @@ export const PortfolioAllocationDashboard: React.FC = () => {
     try {
       const res = await apiFetch('/api/portfolio/allocation/dashboard');
       if (res && res.ok) {
-        setDiversificationScore(res.diversification_score || '88 / 100');
+        setDiversificationScore(res.diversification_score || '—');
         setBreakdowns(res.breakdowns || []);
         setRebalancingTrades(res.rebalancing_trades || []);
       } else {

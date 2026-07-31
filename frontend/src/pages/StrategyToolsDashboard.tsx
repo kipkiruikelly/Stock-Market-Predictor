@@ -99,38 +99,38 @@ export const StrategyToolsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Strategies</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{summary?.active_strategies ?? 8} Active / {summary?.total_strategies ?? 18}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{summary?.active_strategies ?? 0} Active / {summary?.total_strategies ?? 0}</div>
           <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Deployed Live: {summary?.live_deployed ?? 5}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Average Win Rate</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.avg_win_rate ?? '71.2%'}</div>
-          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Sharpe: {backtest?.sharpe_ratio ?? 2.41}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.avg_win_rate ?? '—'}</div>
+          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Sharpe: {backtest?.sharpe_ratio ?? 0.41}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Total Net Profit</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.total_net_profit ?? '+$142,800.00'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Backtest CAGR: {backtest?.cagr ?? '+34.2%'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{summary?.total_net_profit ?? '—'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Backtest CAGR: {backtest?.cagr ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Max Drawdown</span>
-          <div className="text-lg font-black text-rose-400 mt-1">{backtest?.max_drawdown ?? '-2.8%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Expectancy: {backtest?.expectancy ?? '$520/tr'}</span>
+          <div className="text-lg font-black text-rose-400 mt-1">{backtest?.max_drawdown ?? '—'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Expectancy: {backtest?.expectancy ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Walk-Forward Stability</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{walkForward?.stability_score ?? '94.2 / 100'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Risk: {walkForward?.overfitting_risk ?? 'LOW'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{walkForward?.stability_score ?? '—'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Risk: {walkForward?.overfitting_risk ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Monte Carlo Ruin</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{monteCarlo?.probability_of_ruin ?? '0.01%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">{monteCarlo?.simulations ?? 1000} Runs</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{monteCarlo?.probability_of_ruin ?? '—'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">{monteCarlo?.simulations ?? 0} Runs</span>
         </div>
       </div>
 

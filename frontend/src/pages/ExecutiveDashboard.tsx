@@ -106,49 +106,49 @@ export const ExecutiveDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total AUM</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.aum ?? '$248.5M'}</div>
-          <span className="text-[9px] font-bold text-nexus-muted">Net: {summary?.net_portfolio_value ?? '$268.4M'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.aum ?? '—'}</div>
+          <span className="text-[9px] font-bold text-nexus-muted">Net: {summary?.net_portfolio_value ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Daily P&L</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.daily_pnl ?? '+$12.45K'}</div>
-          <span className="text-[9px] font-bold text-nexus-muted">Monthly: {summary?.monthly_pnl ?? '+$182.5K'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.daily_pnl ?? '—'}</div>
+          <span className="text-[9px] font-bold text-nexus-muted">Monthly: {summary?.monthly_pnl ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">ARR / MRR</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.arr ?? '$14.85M'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">MRR: {summary?.mrr ?? '$1.23M'}</span>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.arr ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">MRR: {summary?.mrr ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Sharpe / Return</span>
-          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.sharpe_ratio ?? '2.84'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Return: {summary?.annual_return ?? '+18.2%'}</span>
+          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.sharpe_ratio ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Return: {summary?.annual_return ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">AI Confidence</span>
-          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.ai_confidence_score ?? '94.2%'}</div>
-          <span className="text-[9px] font-bold text-nexus-muted">Models: {summary?.active_models ?? 24} Active</span>
+          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.ai_confidence_score ?? '—'}</div>
+          <span className="text-[9px] font-bold text-nexus-muted">Models: {summary?.active_models ?? 0} Active</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Availability</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.platform_availability ?? '99.99%'}</div>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.platform_availability ?? '—'}</div>
           <span className="text-[9px] font-bold text-emerald-400">Incidents: {summary?.active_incidents ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Active Orgs</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.active_orgs ?? 142}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Growth: {summary?.customer_growth ?? '+42.8%'}</span>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.active_orgs ?? 0}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Growth: {summary?.customer_growth ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-yellow-400">Cloud Spend</span>
-          <div className="text-base sm:text-lg font-black text-yellow-400 mt-1">{summary?.cloud_spend_monthly ?? '$42.8K'}</div>
+          <div className="text-base sm:text-lg font-black text-yellow-400 mt-1">{summary?.cloud_spend_monthly ?? '—'}</div>
           <span className="text-[9px] font-bold text-nexus-muted">FinOps Optimal</span>
         </div>
       </div>
@@ -186,7 +186,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <div className="p-4 rounded-xl bg-nexus-sf border border-nexus-border flex flex-col gap-3 shadow-xl">
               <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center justify-between border-b border-nexus-border/50 pb-2">
                 <span className="flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> SaaS Revenue, ARR & Cloud FinOps Trend</span>
-                <span className="text-[10px] text-emerald-400 font-bold">Q4 ARR Forecast: {forecasting?.arr_forecast_q4 ?? '$18.4M'}</span>
+                <span className="text-[10px] text-emerald-400 font-bold">Q4 ARR Forecast: {forecasting?.arr_forecast_q4 ?? '—'}</span>
               </span>
 
               {loading ? (
@@ -215,7 +215,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <div className="p-4 rounded-xl bg-nexus-sf border border-nexus-border flex flex-col gap-3 shadow-xl">
               <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center justify-between border-b border-nexus-border/50 pb-2">
                 <span className="flex items-center gap-2"><Layers size={16} className="text-nexus-pur" /> Asset Class Allocation & Risk Metrics</span>
-                <span className="text-[10px] text-emerald-400 font-bold">Total Net Value: {portfolioIntel?.total_value ?? '$268.4M'}</span>
+                <span className="text-[10px] text-emerald-400 font-bold">Total Net Value: {portfolioIntel?.total_value ?? '—'}</span>
               </span>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
@@ -231,15 +231,15 @@ export const ExecutiveDashboard: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mt-2 text-xs font-mono">
                 <div className="p-2.5 rounded-lg bg-nexus-bg/30 border border-nexus-border/20">
                   <span className="text-[9px] text-nexus-muted block font-sans">VaR (95% Daily)</span>
-                  <span className="font-bold text-purple-400">{portfolioIntel?.var_95 ?? '$4.25K'}</span>
+                  <span className="font-bold text-purple-400">{portfolioIntel?.var_95 ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-nexus-bg/30 border border-nexus-border/20">
                   <span className="text-[9px] text-nexus-muted block font-sans">Expected Shortfall</span>
-                  <span className="font-bold text-purple-400">{portfolioIntel?.expected_shortfall ?? '$6.12K'}</span>
+                  <span className="font-bold text-purple-400">{portfolioIntel?.expected_shortfall ?? '—'}</span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-nexus-bg/30 border border-nexus-border/20">
                   <span className="text-[9px] text-nexus-muted block font-sans">Monte Carlo Forecast CAGR</span>
-                  <span className="font-bold text-emerald-400">{portfolioIntel?.monte_carlo_cagr ?? '+34.2%'}</span>
+                  <span className="font-bold text-emerald-400">{portfolioIntel?.monte_carlo_cagr ?? '—'}</span>
                 </div>
               </div>
             </div>
@@ -249,33 +249,33 @@ export const ExecutiveDashboard: React.FC = () => {
             <div className="p-4 rounded-xl bg-nexus-sf border border-nexus-border flex flex-col gap-3 shadow-xl">
               <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center justify-between border-b border-nexus-border/50 pb-2">
                 <span className="flex items-center gap-2"><Activity size={16} className="text-emerald-400" /> Trading Execution & Broker Connectivity</span>
-                <span className="text-[10px] text-emerald-400 font-bold">{tradingIntel?.broker_connectivity ?? 'MT5 FIX Connected'}</span>
+                <span className="text-[10px] text-emerald-400 font-bold">{tradingIntel?.broker_connectivity ?? '—'}</span>
               </span>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Orders Today</span>
-                  <span className="font-bold text-nexus-white text-sm">{tradingIntel?.orders_today ?? 142}</span>
+                  <span className="font-bold text-nexus-white text-sm">{tradingIntel?.orders_today ?? 0}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Open Orders</span>
-                  <span className="font-bold text-nexus-white text-sm">{tradingIntel?.open_orders ?? 14}</span>
+                  <span className="font-bold text-nexus-white text-sm">{tradingIntel?.open_orders ?? 0}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Execution Success</span>
-                  <span className="font-bold text-emerald-400 text-sm">{tradingIntel?.execution_success_rate ?? '99.8%'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{tradingIntel?.execution_success_rate ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Avg Slippage</span>
-                  <span className="font-bold text-emerald-400 text-sm">{tradingIntel?.avg_slippage ?? '0.02 bps'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{tradingIntel?.avg_slippage ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Execution Latency</span>
-                  <span className="font-bold text-purple-400 text-sm">{tradingIntel?.execution_latency ?? '1.8ms'}</span>
+                  <span className="font-bold text-purple-400 text-sm">{tradingIntel?.execution_latency ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Signal Accuracy</span>
-                  <span className="font-bold text-nexus-pur text-sm">{tradingIntel?.signal_accuracy ?? '94.2%'}</span>
+                  <span className="font-bold text-nexus-pur text-sm">{tradingIntel?.signal_accuracy ?? '—'}</span>
                 </div>
               </div>
             </div>
@@ -290,27 +290,27 @@ export const ExecutiveDashboard: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Active Models</span>
-                  <span className="font-bold text-nexus-white text-sm">{aiMlIntel?.active_models ?? 24}</span>
+                  <span className="font-bold text-nexus-white text-sm">{aiMlIntel?.active_models ?? 0}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Champion Models</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.champion_models ?? 8}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.champion_models ?? 0}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Prediction Accuracy</span>
-                  <span className="font-bold text-nexus-pur text-sm">{aiMlIntel?.prediction_accuracy ?? '94.2%'}</span>
+                  <span className="font-bold text-nexus-pur text-sm">{aiMlIntel?.prediction_accuracy ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Model Drift</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.model_drift ?? '0.02%'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.model_drift ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Explainability (SHAP)</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.explainability_coverage ?? '100%'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{aiMlIntel?.explainability_coverage ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Inference Latency</span>
-                  <span className="font-bold text-purple-400 text-sm">{aiMlIntel?.inference_latency ?? '1.8ms'}</span>
+                  <span className="font-bold text-purple-400 text-sm">{aiMlIntel?.inference_latency ?? '—'}</span>
                 </div>
               </div>
             </div>
@@ -325,27 +325,27 @@ export const ExecutiveDashboard: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Infrastructure Health</span>
-                  <span className="font-bold text-emerald-400 text-sm">{opsCenter?.infrastructure_health ?? '99.8%'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{opsCenter?.infrastructure_health ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Enterprise Risk Score</span>
-                  <span className="font-bold text-emerald-400 text-sm">{riskCenter?.enterprise_risk_score ?? '12.4 / 100'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{riskCenter?.enterprise_risk_score ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">SOC 2 Type II Status</span>
-                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.soc2_status ?? 'COMPLIANT'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.soc2_status ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">ISO 27001 Status</span>
-                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.iso27001_status ?? 'COMPLIANT'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.iso27001_status ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">GDPR Compliance</span>
-                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.gdpr_status ?? 'COMPLIANT'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.gdpr_status ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Audit Status</span>
-                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.audit_status ?? 'PASSED'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{complianceCenter?.audit_status ?? '—'}</span>
                 </div>
               </div>
 

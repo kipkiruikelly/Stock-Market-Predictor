@@ -265,19 +265,19 @@ export const TradingStrategiesDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-2.5">
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Active Strats</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_strategies ?? 12}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.active_strategies ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Running</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.running_strategies ?? 8}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.running_strategies ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-yellow-400">Paused</span>
-          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.paused_strategies ?? 4}</div>
+          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.paused_strategies ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Avg Win Rate</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.avg_win_rate ?? '72.4%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.avg_win_rate ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-pur">Avg Sharpe</span>
@@ -285,31 +285,31 @@ export const TradingStrategiesDashboard: React.FC = () => {
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Max Drawdown</span>
-          <div className="text-base font-black text-rose-400 mt-1">{kpis?.avg_drawdown ?? '-1.4%'}</div>
+          <div className="text-base font-black text-rose-400 mt-1">{kpis?.avg_drawdown ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-blue-400">Signals Today</span>
-          <div className="text-base font-black text-blue-400 mt-1">{kpis?.today_signals_generated ?? 340}</div>
+          <div className="text-base font-black text-blue-400 mt-1">{kpis?.today_signals_generated ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-white">Orders Gen</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.orders_generated ?? 1280}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.orders_generated ?? 080}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Capital Alloc</span>
-          <div className="text-base font-black text-purple-400 mt-1">{kpis?.live_capital_allocated ?? '$1.85M'}</div>
+          <div className="text-base font-black text-purple-400 mt-1">{kpis?.live_capital_allocated ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Avg Return</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.avg_return ?? '+18.2%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.avg_return ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Health Score</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.strategy_health_score ?? '98.4%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.strategy_health_score ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-pur">AI Confidence</span>
-          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.ai_confidence_score ?? '94.2%'}</div>
+          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.ai_confidence_score ?? '—'}</div>
         </div>
       </div>
 
@@ -471,19 +471,19 @@ export const TradingStrategiesDashboard: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">3-Yr Backtest Return</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.historical_return ?? '+412.8%'}</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.historical_return ?? '—'}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">Profit Factor</span>
-                <span className="font-mono font-bold text-nexus-pur text-sm">{backtest?.profit_factor ?? '2.68'}</span>
+                <span className="font-mono font-bold text-nexus-pur text-sm">{backtest?.profit_factor ?? '—'}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">Winning Trades</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.winning_trades ?? 1842}</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.winning_trades ?? 042}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">Avg Trade P&L</span>
-                <span className="font-mono font-bold text-yellow-400 text-sm">{backtest?.avg_trade_pnl ?? '+$284.50'}</span>
+                <span className="font-mono font-bold text-yellow-400 text-sm">{backtest?.avg_trade_pnl ?? '—'}</span>
               </div>
             </div>
           </div>

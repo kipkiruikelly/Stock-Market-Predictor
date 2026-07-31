@@ -280,51 +280,51 @@ export const PositionsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-12 gap-2.5">
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Open Pos</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.open_positions ?? 8}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.open_positions ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Portfolio Val</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.total_portfolio_value ?? '$2.48M'}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.total_portfolio_value ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Unrealized P&L</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.unrealized_pnl ?? '+$48.3K'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.unrealized_pnl ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Realized P&L</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.realized_pnl ?? '+$18.4K'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.realized_pnl ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Daily P&L</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.daily_pnl ?? '+$12.8K'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.daily_pnl ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Total Exposure</span>
-          <div className="text-base font-black text-purple-400 mt-1">{kpis?.total_exposure ?? '$1.85M'}</div>
+          <div className="text-base font-black text-purple-400 mt-1">{kpis?.total_exposure ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-yellow-400">Margin Used</span>
-          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.margin_used ?? '$320K'}</div>
+          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.margin_used ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Free Margin</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.free_margin ?? '$2.16M'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.free_margin ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Winners</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.winning_positions ?? 6}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.winning_positions ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Losers</span>
-          <div className="text-base font-black text-rose-400 mt-1">{kpis?.losing_positions ?? 2}</div>
+          <div className="text-base font-black text-rose-400 mt-1">{kpis?.losing_positions ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Return %</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.portfolio_return_pct ?? '+14.8%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.portfolio_return_pct ?? '—'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-white">Equity</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.account_equity ?? '$2.50M'}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.account_equity ?? '—'}</div>
         </div>
       </div>
 
@@ -598,28 +598,28 @@ export const PositionsDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">VaR (95% Daily)</span>
-                <span className="font-mono font-bold text-yellow-400">{riskMetrics?.var_95_daily ?? '$18,420.00'}</span>
+                <span className="font-mono font-bold text-yellow-400">{riskMetrics?.var_95_daily ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Expected Shortfall</span>
-                <span className="font-mono font-bold text-rose-400">{riskMetrics?.expected_shortfall ?? '$26,100.00'}</span>
+                <span className="font-mono font-bold text-rose-400">{riskMetrics?.expected_shortfall ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Sharpe Ratio</span>
-                <span className="font-mono font-bold text-emerald-400">{riskMetrics?.sharpe_ratio ?? '2.48'}</span>
+                <span className="font-mono font-bold text-emerald-400">{riskMetrics?.sharpe_ratio ?? '—'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Portfolio Beta</span>
-                <span className="font-mono font-bold text-purple-400">{riskMetrics?.portfolio_beta ?? '0.92'}</span>
+                <span className="font-mono font-bold text-purple-400">{riskMetrics?.portfolio_beta ?? '—'}</span>
               </div>
             </div>
 
             {/* Greeks Panel */}
             <div className="p-2.5 rounded-lg bg-nexus-bg2/40 border border-nexus-border/40 flex items-center justify-between text-[11px] font-mono">
               <span className="text-nexus-muted uppercase font-bold">Portfolio Greeks:</span>
-              <span className="text-nexus-white">Delta: <b className="text-emerald-400">{riskMetrics?.greeks?.delta ?? '+1420'}</b></span>
-              <span className="text-nexus-white">Gamma: <b className="text-purple-400">{riskMetrics?.greeks?.gamma ?? '+84'}</b></span>
-              <span className="text-nexus-white">Vega: <b className="text-yellow-400">{riskMetrics?.greeks?.vega ?? '+12'}</b></span>
+              <span className="text-nexus-white">Delta: <b className="text-emerald-400">{riskMetrics?.greeks?.delta ?? '—'}</b></span>
+              <span className="text-nexus-white">Gamma: <b className="text-purple-400">{riskMetrics?.greeks?.gamma ?? '—'}</b></span>
+              <span className="text-nexus-white">Vega: <b className="text-yellow-400">{riskMetrics?.greeks?.vega ?? '—'}</b></span>
             </div>
           </div>
 

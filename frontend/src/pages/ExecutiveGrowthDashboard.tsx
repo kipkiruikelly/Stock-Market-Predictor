@@ -85,49 +85,49 @@ export const ExecutiveGrowthDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total ARR</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.arr ?? '$14.85M'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">YoY: {summary?.arr_growth_yoy ?? '+42.8%'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.arr ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">YoY: {summary?.arr_growth_yoy ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total MRR</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.mrr ?? '$1.23M'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">MoM: {summary?.mrr_growth_mom ?? '+3.5%'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.mrr ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">MoM: {summary?.mrr_growth_mom ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Net New MRR</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.net_new_mrr ?? '+$41.8K'}</div>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.net_new_mrr ?? '—'}</div>
           <span className="text-[9px] font-bold text-nexus-muted">Monthly Delta</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Expansion MRR</span>
-          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.expansion_mrr ?? '+$28.4K'}</div>
+          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.expansion_mrr ?? '—'}</div>
           <span className="text-[9px] font-bold text-purple-400">Upsell Rate</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">NRR / GRR</span>
-          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.nrr ?? '128.4%'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">GRR: {summary?.grr ?? '99.58%'}</span>
+          <div className="text-base sm:text-lg font-black text-nexus-pur mt-1">{summary?.nrr ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">GRR: {summary?.grr ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Active Orgs</span>
-          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.active_orgs ?? 142}</div>
-          <span className="text-[9px] font-bold text-nexus-muted">Seats: {summary?.active_seats ?? 1840}</span>
+          <div className="text-base sm:text-lg font-black text-nexus-white mt-1">{summary?.active_orgs ?? 0}</div>
+          <span className="text-[9px] font-bold text-nexus-muted">Seats: {summary?.active_seats ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Expansion Score</span>
-          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.market_expansion_score ?? '88.4/100'}</div>
-          <span className="text-[9px] font-bold text-emerald-400">Velocity: {summary?.growth_velocity_index ?? '92.8'}</span>
+          <div className="text-base sm:text-lg font-black text-emerald-400 mt-1">{summary?.market_expansion_score ?? '—'}</div>
+          <span className="text-[9px] font-bold text-emerald-400">Velocity: {summary?.growth_velocity_index ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">AI Adoption</span>
-          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.ai_adoption_rate ?? '94.2%'}</div>
+          <div className="text-base sm:text-lg font-black text-purple-400 mt-1">{summary?.ai_adoption_rate ?? '—'}</div>
           <span className="text-[9px] font-bold text-emerald-400">Optimal Scale</span>
         </div>
       </div>
@@ -238,7 +238,7 @@ export const ExecutiveGrowthDashboard: React.FC = () => {
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Trading Volume Capacity</span>
-                  <span className="font-bold text-emerald-400 text-sm">{capacity?.trading_volume_capacity ?? '$1.42B / $10B Daily'}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{capacity?.trading_volume_capacity ?? '—'}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">GPU Inference Capacity</span>
