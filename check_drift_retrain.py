@@ -17,11 +17,12 @@ sys.path.insert(0, 'django_backend')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bulllogic.settings')
 django.setup()
 
-from users.models import ModelVersion, ActivityLog
+from users.models import ModelVersion, ActivityLog, User
 
 def monitor_and_trigger_retraining():
     logger.info("Scanning Model Registry for drift status...")
     active_models = ModelVersion.objects.filter(is_active=True)
+    user = User.objects.first()
     
     if not active_models.exists():
         logger.warning("No active models in registry to monitor. Seeding default model.")
@@ -45,6 +46,7 @@ def monitor_and_trigger_retraining():
         
         # Log drift incident in system
         ActivityLog.objects.create(
+            user=user,
             action="model_drift_alert",
             detail=f"Drift score of {drift_score} detected for {model.ticker} v{model.version}."
         )
@@ -74,6 +76,7 @@ def monitor_and_trigger_retraining():
             model.save()
             
             ActivityLog.objects.create(
+                user=user,
                 action="model_retrained_promoted",
                 detail=f"Successfully retrained and promoted {model.ticker} {model.model_type} to version {new_version}."
             )
