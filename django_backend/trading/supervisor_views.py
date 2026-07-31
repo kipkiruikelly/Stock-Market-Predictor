@@ -546,12 +546,18 @@ class TradingStrategyToolsView(APIView):
             now = datetime.utcnow()
             user = request.user if request.user and request.user.is_authenticated else None
 
-            from users.models import TradingBot, ModelVersion, PaperTrade
+            from users.models import TradingBot, ModelVersion, PaperTrade, Portfolio
             from django.db.models import Sum
 
             bots_cnt = TradingBot.objects.count()
             active_bots = TradingBot.objects.filter(is_active=True).count()
             models_cnt = ModelVersion.objects.filter(is_active=True).count()
+
+            user_trades = PaperTrade.objects.filter(user=user) if user else PaperTrade.objects.all()
+            tot_trades = user_trades.count()
+            winning_trades = user_trades.filter(pnl__gt=0).count()
+            win_rate_val = (winning_trades / tot_trades * 100.0) if tot_trades > 0 else 0.0
+            tot_net_profit = user_trades.aggregate(tot=Sum('pnl'))['tot'] or 0.0
 
             from trading.analytics_utils import calculate_portfolio_kpis
             kpis_math = calculate_portfolio_kpis(user_trades, Portfolio.objects.all())

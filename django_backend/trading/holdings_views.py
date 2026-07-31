@@ -75,10 +75,11 @@ class HoldingsDashboardView(APIView):
                 "num_positions": len(holdings_list) + user_positions.count()
             }
 
+            div_score = 100 if len(holdings_list) > 3 else (len(holdings_list) * 25)
             performance = {
                 "sharpe_ratio": f"{kpis['sharpe_ratio']:.2f}",
                 "sortino_ratio": f"{kpis['sortino_ratio']:.2f}",
-                "diversification_score": f"{kpis['diversification_score']} / 100"
+                "diversification_score": f"{div_score} / 100"
             }
 
             risk_metrics_payload = {

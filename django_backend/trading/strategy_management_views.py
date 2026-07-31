@@ -25,7 +25,7 @@ class StrategyDashboardView(APIView):
             now = datetime.utcnow()
             user = request.user if request.user and request.user.is_authenticated else None
 
-            from users.models import TradingBot, PaperTrade, PredictionHistory, SmartOrderExecution
+            from users.models import TradingBot, PaperTrade, PredictionHistory, SmartOrderExecution, Portfolio
             from django.db.models import Sum, Avg, Count
 
             bots = TradingBot.objects.all()
