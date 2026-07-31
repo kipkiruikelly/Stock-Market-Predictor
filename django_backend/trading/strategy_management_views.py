@@ -81,33 +81,36 @@ class StrategyDashboardView(APIView):
                     "time": "Just now"
                 })
 
+            from trading.analytics_utils import calculate_portfolio_kpis
+            kpis_math = calculate_portfolio_kpis(user_trades, Portfolio.objects.all())
+
             # Executive Summary KPIs
             kpis = {
                 "active_strategies": bot_count,
                 "running_strategies": running_cnt,
                 "paused_strategies": paused_cnt,
                 "avg_win_rate": f"{avg_win_rate:.1f}%",
-                "avg_sharpe_ratio": "0.00" if bot_count == 0 else "2.58",
-                "avg_drawdown": "0.0%" if bot_count == 0 else "-1.4%",
+                "avg_sharpe_ratio": f"{kpis_math['sharpe_ratio']:.2f}",
+                "avg_drawdown": f"-{kpis_math['max_drawdown']:.1f}%",
                 "today_signals_generated": PredictionHistory.objects.count(),
                 "orders_generated": SmartOrderExecution.objects.count(),
                 "live_capital_allocated": f"${tot_capital:,.2f}",
-                "avg_return": "0.0%" if bot_count == 0 else "+18.2%",
+                "avg_return": "0.0%",
                 "strategy_health_score": "100.0%",
                 "ai_confidence_score": "95.0%" if bot_count > 0 else "0.0%"
             }
 
             backtest = {
-                "historical_return": "+412.8% (3-Year)",
-                "max_drawdown": "-4.2%",
-                "sharpe_ratio": "2.94",
-                "sortino_ratio": "3.85",
-                "profit_factor": "2.68",
+                "historical_return": "0.0%",
+                "max_drawdown": f"-{kpis_math['max_drawdown']:.1f}%",
+                "sharpe_ratio": f"{kpis_math['sharpe_ratio']:.2f}",
+                "sortino_ratio": f"{kpis_math['sortino_ratio']:.2f}",
+                "profit_factor": f"{kpis_math['profit_factor']:.2f}x",
                 "winning_trades": wins_cnt,
                 "losing_trades": tot_trades - wins_cnt,
                 "avg_trade_pnl": f"${(user_trades.aggregate(avg=Avg('pnl'))['avg'] or 0.0):,.2f}",
-                "exposure_time_pct": "38.2%",
-                "estimated_slippage_bps": "-0.8 bps"
+                "exposure_time_pct": "0.0%",
+                "estimated_slippage_bps": "0.0 bps"
             }
 
             # Marketplace Templates

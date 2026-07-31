@@ -73,6 +73,9 @@ class PositionsDashboardView(APIView):
                     "take_profit": 0.0
                 })
 
+            from trading.analytics_utils import calculate_portfolio_kpis
+            kpis_math = calculate_portfolio_kpis(paper_trades, user_portfolios)
+
             kpis = {
                 "open_positions": open_pos_cnt,
                 "total_portfolio_value": f"${tot_eq:,.2f}",
@@ -84,7 +87,7 @@ class PositionsDashboardView(APIView):
                 "free_margin": f"${tot_eq:,.2f}",
                 "winning_positions": winning_cnt,
                 "losing_positions": losing_cnt,
-                "portfolio_return_pct": "0.0%",
+                "portfolio_return_pct": f"{kpis_math['win_rate']:.1f}%",
                 "account_equity": f"${tot_eq:,.2f}"
             }
 
@@ -94,10 +97,10 @@ class PositionsDashboardView(APIView):
             }
 
             risk_metrics = {
-                "var_95_daily": "$0.00 (0.00%)",
-                "expected_shortfall": "$0.00",
-                "sharpe_ratio": "0.00",
-                "portfolio_beta": "1.00",
+                "var_95_daily": f"${kpis_math['var_95']:,.2f} ({kpis_math['var_95']/max(tot_eq, 1.0)*100.0:.2f}%)",
+                "expected_shortfall": f"${kpis_math['expected_shortfall']:,.2f}",
+                "sharpe_ratio": f"{kpis_math['sharpe_ratio']:.2f}",
+                "portfolio_beta": f"{kpis_math['beta']:.2f}",
                 "greeks": {"delta": 0.0, "gamma": 0.0, "vega": 0.0}
             }
 

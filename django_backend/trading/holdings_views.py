@@ -61,24 +61,35 @@ class HoldingsDashboardView(APIView):
                     "unrealized_pnl": round(h.unrealized_profit_loss or 0.0, 2)
                 })
 
+            from trading.analytics_utils import calculate_portfolio_kpis
+            kpis = calculate_portfolio_kpis(user_trades, user_portfolios)
+
             summary = {
                 "portfolio_value": f"${tot_eq:,.2f}",
                 "unrealized_pnl": f"{'+' if unrealized_pnl >= 0 else ''}${unrealized_pnl:,.2f}",
                 "realized_pnl": f"{'+' if realized_pnl >= 0 else ''}${realized_pnl:,.2f}",
                 "daily_return": f"{'+' if tot_pnl >= 0 else ''}${tot_pnl:,.2f}",
-                "total_return_pct": "0.0%",
+                "total_return": "0.0%",
                 "cash_balance": f"${tot_cash:,.2f}",
                 "buying_power": f"${tot_cash:,.2f}",
-                "positions_count": len(holdings_list) + user_positions.count(),
-                "sharpe_ratio": "0.00",
-                "sortino_ratio": "0.00",
-                "var_95_daily": "$0.00",
-                "diversification_score": 100 if len(holdings_list) > 0 else 0
+                "num_positions": len(holdings_list) + user_positions.count()
+            }
+
+            performance = {
+                "sharpe_ratio": f"{kpis['sharpe_ratio']:.2f}",
+                "sortino_ratio": f"{kpis['sortino_ratio']:.2f}",
+                "diversification_score": f"{kpis['diversification_score']} / 100"
+            }
+
+            risk_metrics_payload = {
+                "var_95_daily": f"${kpis['var_95']:,.2f}"
             }
 
             return Response({
                 "ok": True,
                 "summary": summary,
+                "performance": performance,
+                "riskMetrics": risk_metrics_payload,
                 "holdings_count": len(holdings_list),
                 "holdings": holdings_list,
                 "timestamp": now.isoformat()
