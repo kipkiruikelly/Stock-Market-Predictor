@@ -96,38 +96,38 @@ export const OperationsScreenerDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">System Health</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.system_health ?? '99.8%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.system_health ?? '—'}</div>
           <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Incidents: {overview?.active_incidents ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">Healthy Services</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.healthy_services ?? '18 / 18'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.healthy_services ?? '—'}</div>
           <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Degraded: {overview?.degraded_services ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Response Time</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.avg_response_time ?? '14.2ms'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Error Rate: {overview?.error_rate ?? '0.001%'}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.avg_response_time ?? '—'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Error Rate: {overview?.error_rate ?? '—'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Active Users</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.active_users ?? 28}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Brokers: {overview?.connected_brokers ?? 4}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.active_users ?? 0}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Brokers: {overview?.connected_brokers ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">API Availability</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{overview?.api_availability ?? '99.99%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">MT5: {overview?.mt5_connections ?? 2} Conn</span>
+          <div className="text-lg font-black text-purple-400 mt-1">{overview?.api_availability ?? '—'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">MT5: {overview?.mt5_connections ?? 0} Conn</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">AI Engine Status</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">ONLINE</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Open Alerts: {overview?.open_alerts ?? 2}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.ai_engine_status ?? '—'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Open Alerts: {overview?.open_alerts ?? 0}</span>
         </div>
       </div>
 
@@ -282,28 +282,32 @@ export const OperationsScreenerDashboard: React.FC = () => {
                 <Cpu size={16} className="text-nexus-pur" /> AI Agent Operations & Consensus
               </span>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Active AI Agents</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.active_agents ?? 6}</span>
+              {aiMonitoring ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Active AI Agents</span>
+                    <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.active_agents ?? 0}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Consensus Score</span>
+                    <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.agent_consensus_score ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Knowledge Graph Nodes</span>
+                    <span className="font-bold text-nexus-white text-sm">{aiMonitoring?.knowledge_graph_nodes ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Inference Queue</span>
+                    <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.inference_queue ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Context Storage</span>
+                    <span className="font-bold text-nexus-white text-sm">{aiMonitoring?.context_storage ?? '—'}</span>
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Consensus Score</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.agent_consensus_score ?? '98.4%'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Knowledge Graph Nodes</span>
-                  <span className="font-bold text-nexus-white text-sm">{aiMonitoring?.knowledge_graph_nodes ?? '14,280'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Inference Queue</span>
-                  <span className="font-bold text-emerald-400 text-sm">{aiMonitoring?.inference_queue ?? '0 Pending'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Context Storage</span>
-                  <span className="font-bold text-nexus-white text-sm">{aiMonitoring?.context_storage ?? '18.4 MB'}</span>
-                </div>
-              </div>
+              ) : (
+                <div className="py-8 text-center text-nexus-muted text-xs">No AI monitoring telemetry available.</div>
+              )}
             </div>
           )}
 

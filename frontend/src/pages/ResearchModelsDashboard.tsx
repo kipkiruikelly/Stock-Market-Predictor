@@ -24,7 +24,7 @@ export const ResearchModelsDashboard: React.FC = () => {
     try {
       const res = await apiFetch('/api/researchlab/models/dashboard');
       if (res && res.ok) {
-        setOverview(res.overview);
+        setOverview(res.summary);
         setModels(res.models || []);
         setTimeline(res.lifecycle_timeline || []);
         setXai(res.xai_explainability || []);
@@ -94,38 +94,38 @@ export const ResearchModelsDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Total Models</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.total_models ?? 24}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Production: {overview?.production_models ?? 12}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.total_models ?? 0}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Production: {overview?.production_models ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-pur">Avg Accuracy</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.avg_accuracy ?? '94.2%'}</div>
-          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Latency: {overview?.avg_latency ?? '1.8ms'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.avg_accuracy ?? '0.0%'}</div>
+          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Latency: {overview?.avg_latency ?? '0.0ms'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-white">Champion Models</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.champion_models ?? 8}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Challengers: {overview?.challenger_models ?? 6}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.champion_models ?? 0}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Challengers: {overview?.challenger_models ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Shadow Models</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{overview?.shadow_models ?? 4}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Approvals: {overview?.awaiting_approval ?? 3}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{overview?.shadow_models ?? 0}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Approvals: {overview?.approvals_pending ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-purple-400">Avg Drift Score</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{overview?.avg_drift_score ?? '0.02%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Retraining: {overview?.retraining_models ?? 2}</span>
+          <div className="text-lg font-black text-purple-400 mt-1">{overview?.avg_drift_score ?? '0.00%'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Retraining: {overview?.retraining_jobs ?? 0}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Last Deployment</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.last_deployment ?? '12m ago'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Retrained: {overview?.last_retraining ?? '1h ago'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{overview?.last_deployment ?? 'None'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Retrained: {overview?.last_retraining ?? 'None'}</span>
         </div>
       </div>
 
@@ -275,32 +275,36 @@ export const ResearchModelsDashboard: React.FC = () => {
                 <Activity size={16} className="text-purple-400" /> Model Drift Sentinel Summary
               </span>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Current Drift</span>
-                  <span className="font-bold text-emerald-400 text-sm">{drift?.current_drift ?? '0.02%'}</span>
+              {drift ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Current Drift</span>
+                    <span className="font-bold text-emerald-400 text-sm">{drift?.current_drift ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Concept Drift</span>
+                    <span className="font-bold text-emerald-400 text-sm">{drift?.concept_drift ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">PSI Score</span>
+                    <span className="font-bold text-nexus-white text-sm">{drift?.psi_score ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">KS Statistic</span>
+                    <span className="font-bold text-nexus-white text-sm">{drift?.ks_statistic ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Retraining Status</span>
+                    <span className="font-bold text-emerald-400 text-sm">{drift?.retraining_recommendation ?? '—'}</span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
+                    <span className="text-[10px] text-nexus-muted block font-sans">Model Health</span>
+                    <span className="font-bold text-emerald-400 text-sm">{drift?.status ?? '—'}</span>
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Concept Drift</span>
-                  <span className="font-bold text-emerald-400 text-sm">{drift?.concept_drift ?? '0.01%'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">PSI Score</span>
-                  <span className="font-bold text-nexus-white text-sm">{drift?.psi_score ?? '0.012'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">KS Statistic</span>
-                  <span className="font-bold text-nexus-white text-sm">{drift?.ks_statistic ?? '0.018'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Retraining Status</span>
-                  <span className="font-bold text-emerald-400 text-sm">{drift?.retraining_recommendation ?? 'NOT_REQUIRED'}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
-                  <span className="text-[10px] text-nexus-muted block font-sans">Model Health</span>
-                  <span className="font-bold text-emerald-400 text-sm">{drift?.status ?? 'OPTIMAL'}</span>
-                </div>
-              </div>
+              ) : (
+                <div className="py-8 text-center text-nexus-muted text-xs">No drift monitoring data available. Train and register models to enable drift tracking.</div>
+              )}
             </div>
           )}
 

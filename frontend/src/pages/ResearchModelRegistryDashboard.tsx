@@ -21,7 +21,7 @@ export const ResearchModelRegistryDashboard: React.FC = () => {
       const res = await apiFetch('/api/researchlab/modelregistry/dashboard');
       if (res && res.ok) {
         setRegistry(res.registry || []);
-        setAuditLogs(res.audit_logs || []);
+        setAuditLogs(res.audit_trail || []);
       } else {
         setError(res?.error || 'Failed to fetch Model Registry.');
       }
@@ -107,36 +107,40 @@ export const ResearchModelRegistryDashboard: React.FC = () => {
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
                     <tr className="border-b border-nexus-border text-[10px] font-bold uppercase tracking-wider text-nexus-muted bg-nexus-bg/50 select-none">
-                      <th className="p-2.5">Model Name</th>
-                      <th className="p-2.5">Owner</th>
+                      <th className="p-2.5">Model</th>
+                      <th className="p-2.5">Ticker</th>
                       <th className="p-2.5 text-center">Stage</th>
-                      <th className="p-2.5 text-center">Approval</th>
-                      <th className="p-2.5 text-center">Deployment</th>
+                      <th className="p-2.5 text-center">Status</th>
+                      <th className="p-2.5 text-center">Trained At</th>
                       <th className="p-2.5 font-mono text-right">Drift</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                    {registry.map((r, idx) => (
+                    {registry.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-10 text-center text-nexus-muted text-xs">No models registered yet. Train and save models to populate the registry.</td>
+                      </tr>
+                    ) : registry.map((r, idx) => (
                       <tr key={idx} className="hover:bg-nexus-bg2/60 transition cursor-pointer">
                         <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">
-                          {r.model}
-                          <span className="text-[10px] text-nexus-muted block font-normal">{r.version}</span>
+                          {r.model_type ?? r.model ?? '—'}
+                          <span className="text-[10px] text-nexus-muted block font-normal">{r.version ?? '—'}</span>
                         </td>
-                        <td className="p-2.5 text-nexus-muted font-bold whitespace-nowrap">{r.owner}</td>
+                        <td className="p-2.5 text-nexus-muted font-bold whitespace-nowrap">{r.ticker ?? '—'}</td>
                         <td className="p-2.5 text-center whitespace-nowrap">
                           <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-nexus-pur/15 text-nexus-pur">
-                            {r.stage}
+                            {r.stage ?? '—'}
                           </span>
                         </td>
                         <td className="p-2.5 text-center whitespace-nowrap">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                            r.approval === 'APPROVED' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-yellow-500/15 text-yellow-400'
+                            r.status === 'DEPLOYED_LIVE' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-yellow-500/15 text-yellow-400'
                           }`}>
-                            {r.approval}
+                            {r.status ?? '—'}
                           </span>
                         </td>
-                        <td className="p-2.5 text-center font-mono text-emerald-400 font-bold whitespace-nowrap">{r.deployment}</td>
-                        <td className="p-2.5 text-right font-mono text-emerald-400 font-bold whitespace-nowrap">{r.drift}</td>
+                        <td className="p-2.5 text-center font-mono text-emerald-400 font-bold whitespace-nowrap text-[10px]">{r.trained_at ?? '—'}</td>
+                        <td className="p-2.5 text-right font-mono text-emerald-400 font-bold whitespace-nowrap">{r.drift ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -151,11 +155,13 @@ export const ResearchModelRegistryDashboard: React.FC = () => {
               <Clock size={16} className="text-emerald-400" /> Governance & Promotion Audit Trail
             </span>
             <div className="flex flex-col gap-1.5 text-xs">
-              {auditLogs.map((al, i) => (
+              {auditLogs.length === 0 ? (
+                <div className="py-6 text-center text-nexus-muted text-xs">No governance audit events recorded yet.</div>
+              ) : auditLogs.map((al, i) => (
                 <div key={i} className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                  <span className="text-nexus-white font-bold">{al.detail}</span>
+                  <span className="text-nexus-white font-bold">{al.action ?? al.detail ?? '—'}</span>
                   <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/15 text-emerald-400">
-                    {al.event}
+                    {al.timestamp ?? al.event ?? '—'}
                   </span>
                 </div>
               ))}
