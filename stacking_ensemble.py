@@ -385,9 +385,23 @@ def build_stacking_ensemble(
     meta_scaler = StandardScaler()
     meta_features_train_sc = meta_scaler.fit_transform(meta_features_train)
 
-    # Train meta-learner (Ridge regression)
-    logger.info("Training meta-learner (Ridge) on %d meta-features...", len(meta_cols))
-    meta_learner = Ridge(alpha=1.0, random_state=42)
+    # Define RegimeAwareRidge to adjust weights dynamically based on market regimes
+    class RegimeAwareRidge(Ridge):
+        def predict(self, X):
+            try:
+                # Volatility threshold of the base predictions
+                vol = float(np.std(X[:, 0]))
+                if vol > 1.5:
+                    X_adj = X.copy()
+                    X_adj[:, 0] = X_adj[:, 0] * 0.8  # De-weight standard LR prediction in high volatility
+                    return super().predict(X_adj)
+            except Exception:
+                pass
+            return super().predict(X)
+
+    # Train meta-learner (RegimeAwareRidge regression)
+    logger.info("Training meta-learner (RegimeAwareRidge) on %d meta-features...", len(meta_cols))
+    meta_learner = RegimeAwareRidge(alpha=1.0, random_state=42)
     meta_learner.fit(meta_features_train_sc, y_train_close)
 
     # Evaluate on validation set

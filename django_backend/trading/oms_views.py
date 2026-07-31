@@ -184,12 +184,28 @@ class OmsDashboardView(APIView):
                     "error": f"Pre-trade Risk Gate Violation: {', '.join(fail_reasons)}"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # --- Simulate MT5 / FIX Broker execution ---
+            # --- Simulate MT5 / FIX Broker execution with TWAP/VWAP Slicing ---
+            import math
+            num_slices = 1
+            slice_size = quantity
+            slippage_pct = 0.0
+            
+            if quantity > 500:
+                num_slices = 5
+                slice_size = quantity / 5
+                # Square-root market impact/slippage model estimation
+                slippage_pct = 0.0001 * math.sqrt(quantity / 500.0)
+
+            # Adjust execution price based on simulated slippage
+            executed_price = price * (1.0 + slippage_pct) if side == "buy" else price * (1.0 - slippage_pct)
+            slippage_usd = quantity * abs(executed_price - price)
+            execution_cost = quantity * executed_price
+
             # Update account balances
             if side == "buy":
-                account.balance = float(account.balance) - cost
+                account.balance = float(account.balance) - execution_cost
             else:
-                account.balance = float(account.balance) + cost
+                account.balance = float(account.balance) + execution_cost
             account.save()
 
             # Create or update positions
@@ -197,7 +213,7 @@ class OmsDashboardView(APIView):
                 account=account,
                 ticker=ticker,
                 status="open",
-                defaults={"quantity": 0.0, "entry_price": price, "current_price": price}
+                defaults={"quantity": 0.0, "entry_price": executed_price, "current_price": executed_price}
             )
             if side == "buy":
                 pos.quantity = float(pos.quantity) + quantity
@@ -215,11 +231,11 @@ class OmsDashboardView(APIView):
                 ticker=ticker,
                 qty=quantity,
                 side=side.upper(),
-                entry_price=price,
+                entry_price=executed_price,
                 entry_time=now,
-                entry_mkt=price,
-                stop_price=price * 0.98,
-                target_price=price * 1.05,
+                entry_mkt=executed_price,
+                stop_price=executed_price * 0.98,
+                target_price=executed_price * 1.05,
                 max_hold_hours=24,
                 strategy="Alpha OMS Engine",
                 asset_class="equity",
@@ -231,7 +247,13 @@ class OmsDashboardView(APIView):
                 "ok": True,
                 "order_id": f"OMS-{order.id}",
                 "status": "FILLED",
-                "message": f"Pre-trade risk checks PASSED. Order filled and routed to MT5 FIX gateway socket connection."
+                "message": f"Pre-trade risk checks PASSED. Order filled and routed to MT5 FIX gateway socket connection.",
+                "execution_metrics": {
+                    "num_slices": num_slices,
+                    "average_slice_size": slice_size,
+                    "slippage_usd": round(slippage_usd, 2),
+                    "execution_price": round(executed_price, 4)
+                }
             })
 
         except Exception as e:

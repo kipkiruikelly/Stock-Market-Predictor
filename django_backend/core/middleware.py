@@ -16,11 +16,27 @@ class RequestTimingMiddleware:
         t0 = time.monotonic()
         response = self.get_response(request)
         elapsed_ms = (time.monotonic() - t0) * 1000
+        
+        # --- Telemetry, Sentry & Prometheus Performance Metrics Tracing ---
+        try:
+            # Simulate Prometheus metric increment (API request counter/histogram)
+            # path_clean: request.path
+            logger.debug("PROMETHEUS_METRIC: http_request_duration_seconds{method='%s', path='%s'} = %.4f",
+                         request.method, request.path, elapsed_ms / 1000.0)
+        except Exception:
+            pass
+
         if elapsed_ms > 500:
             logger.warning(
                 'Slow request: %s %s took %.0f ms',
                 request.method, request.path, elapsed_ms,
             )
+            try:
+                # Simulate Sentry transaction trace event logging
+                logger.info("SENTRY_EVENT: Slow transaction traced -> Name: %s %s, Duration: %.2fms",
+                            request.method, request.path, elapsed_ms)
+            except Exception:
+                pass
         return response
 
 
