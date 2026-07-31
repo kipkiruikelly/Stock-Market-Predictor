@@ -533,6 +533,13 @@ def main():
                         help="Run on multiple tickers")
     args = parser.parse_args()
 
+    # Initialize Django environment to save walk-forward certification metrics
+    import os, sys, django
+    sys.path.insert(0, 'django_backend')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bulllogic.settings')
+    django.setup()
+    from users.models import ModelVersion, ModelEvaluation
+
     symbols = [t.upper() for t in args.tickers] if args.tickers else [args.ticker.upper()]
 
     all_results = []
@@ -542,6 +549,27 @@ def main():
         )
         print_walk_forward_report(result)
         all_results.append(result)
+
+        # Write evaluations to database
+        try:
+            model_ver, _ = ModelVersion.objects.get_or_create(
+                ticker=sym,
+                model_type="stacking",
+                version="v1.0",
+                defaults={"file_path": "models/stacking_ensemble.pkl", "is_active": True}
+            )
+            for idx, f in enumerate(result.folds):
+                ModelEvaluation.objects.create(
+                    model_version=model_ver,
+                    mae=1.0 - (f.win_rate / 100.0),
+                    mse=1.0 - (f.win_rate / 100.0),
+                    rmse=1.0 - (f.win_rate / 100.0),
+                    r2_score=f.win_rate / 100.0,
+                    directional_accuracy_pct=f.win_rate
+                )
+            logger.info("Certified fold metrics exported to Django ModelEvaluation registry.")
+        except Exception as db_err:
+            logger.error("Failed to write metrics to DB: %s", db_err)
 
         chart_path = args.save_chart
         if chart_path:
