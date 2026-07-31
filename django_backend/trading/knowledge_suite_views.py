@@ -38,7 +38,7 @@ class KnowledgeHubArticlesView(APIView):
             now = datetime.utcnow()
             logs = ActivityLog.objects.filter(action__icontains='kb')[:10]
             articles = [{"id": l.id, "title": f"Article: {l.action}", "time": l.created_at.strftime("%Y-%m-%d")} for l in logs]
-            return Response({"ok": True, "total_articles": max(len(articles), 12), "articles": articles, "timestamp": now.isoformat()})
+            return Response({"ok": True, "total_articles": len(articles), "articles": articles, "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -83,7 +83,7 @@ class KnowledgeHubGovernanceView(APIView):
         try:
             now = datetime.utcnow()
             settings_cnt = AppSetting.objects.count()
-            return Response({"ok": True, "governance_policies": max(settings_cnt, 14), "status": "COMPLIANT", "timestamp": now.isoformat()})
+            return Response({"ok": True, "governance_policies": settings_cnt, "status": "COMPLIANT" if settings_cnt > 0 else "PENDING_SETUP", "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -109,8 +109,9 @@ class KnowledgeApiExplorerView(APIView):
     def get(self, request):
         try:
             now = datetime.utcnow()
-            settings_cnt = AppSetting.objects.count()
-            return Response({"ok": True, "registered_apis": max(settings_cnt + 30, 80), "status": "ACTIVE", "timestamp": now.isoformat()})
+            from trading.urls import urlpatterns
+            api_cnt = sum(1 for p in urlpatterns if str(p.pattern).startswith('api/') or 'api' in str(p.pattern))
+            return Response({"ok": True, "registered_apis": api_cnt, "status": "ACTIVE", "timestamp": now.isoformat()})
         except Exception as e:
             return Response({"ok": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
