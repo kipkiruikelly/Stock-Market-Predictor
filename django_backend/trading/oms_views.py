@@ -184,22 +184,40 @@ class OmsDashboardView(APIView):
                     "error": f"Pre-trade Risk Gate Violation: {', '.join(fail_reasons)}"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # --- Simulate MT5 / FIX Broker execution with TWAP/VWAP Slicing ---
+            # --- Simulate MT5 / FIX Broker execution with SOR v2.0 Adaptive Slicing ---
             import math
             num_slices = 1
             slice_size = quantity
             slippage_pct = 0.0
             
-            if quantity > 500:
-                num_slices = 5
-                slice_size = quantity / 5
-                # Square-root market impact/slippage model estimation
-                slippage_pct = 0.0001 * math.sqrt(quantity / 500.0)
+            # Dynamic volatility regime computation
+            vol_spread = 1.2
+            if quantity > 1000 or ticker in ["TSLA", "BTC", "ETH"]:
+                vol_spread = 2.4
+
+            # Route based on Volatility Regime
+            if vol_spread <= 1.5:
+                routing_strategy = "TWAP"
+                if quantity > 500:
+                    num_slices = 5
+                    slice_size = quantity / 5
+                    # Passive limit order pricing slippage
+                    slippage_pct = 0.0001 * math.sqrt(quantity / 500.0)
+            else:
+                routing_strategy = "VWAP"
+                if quantity > 500:
+                    num_slices = 8
+                    slice_size = quantity / 8
+                    # Aggressive market impact pricing slippage
+                    slippage_pct = 0.0003 * math.sqrt(quantity / 500.0)
 
             # Adjust execution price based on simulated slippage
             executed_price = price * (1.0 + slippage_pct) if side == "buy" else price * (1.0 - slippage_pct)
             slippage_usd = quantity * abs(executed_price - price)
             execution_cost = quantity * executed_price
+            
+            # Simulated routing efficiency metric
+            routing_efficiency = 99.8 - (slippage_pct * 100.0)
 
             # Update account balances
             if side == "buy":
@@ -237,7 +255,7 @@ class OmsDashboardView(APIView):
                 stop_price=executed_price * 0.98,
                 target_price=executed_price * 1.05,
                 max_hold_hours=24,
-                strategy="Alpha OMS Engine",
+                strategy=f"Alpha OMS Router ({routing_strategy})",
                 asset_class="equity",
                 status="open" if pos.status == "open" else "closed",
                 pnl=0.0
@@ -247,12 +265,15 @@ class OmsDashboardView(APIView):
                 "ok": True,
                 "order_id": f"OMS-{order.id}",
                 "status": "FILLED",
-                "message": f"Pre-trade risk checks PASSED. Order filled and routed to MT5 FIX gateway socket connection.",
+                "message": f"Pre-trade risk checks PASSED. SOR v2.0 routed order via {routing_strategy} execution.",
                 "execution_metrics": {
+                    "routing_strategy": routing_strategy,
+                    "volatility_regime_spread": f"{vol_spread:.1f}%",
                     "num_slices": num_slices,
                     "average_slice_size": slice_size,
                     "slippage_usd": round(slippage_usd, 2),
-                    "execution_price": round(executed_price, 4)
+                    "execution_price": round(executed_price, 4),
+                    "routing_efficiency_pct": f"{routing_efficiency:.2f}%"
                 }
             })
 
