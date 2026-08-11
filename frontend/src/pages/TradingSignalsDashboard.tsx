@@ -664,20 +664,20 @@ export const TradingSignalsDashboard: React.FC = () => {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
-                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Portfolio Exposure</span>
-                <span className="text-sm font-bold text-nexus-white">24.5% / 50% Max</span>
+                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Active Signals</span>
+                <span className="text-sm font-bold text-nexus-white">{summary?.active_signals ?? 0} Active</span>
               </div>
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
-                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Risk Per Trade</span>
-                <span className="text-sm font-bold text-emerald-400">1.0% ($1,000)</span>
+                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Avg Confidence</span>
+                <span className="text-sm font-bold text-emerald-400">{summary?.avg_confidence ? `${summary.avg_confidence}%` : 'N/A'}</span>
               </div>
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
-                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Open Positions</span>
-                <span className="text-sm font-bold text-nexus-white">3 Active Trades</span>
+                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Signals Today</span>
+                <span className="text-sm font-bold text-nexus-white">{summary?.signals_today ?? 0} Today</span>
               </div>
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
-                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Value at Risk (VaR 95%)</span>
-                <span className="text-sm font-bold text-yellow-400">1.45% ($1,450)</span>
+                <span className="text-[10px] text-nexus-muted uppercase font-bold block">Win Rate</span>
+                <span className="text-sm font-bold text-yellow-400">{summary?.win_rate ? `${summary.win_rate}%` : 'N/A'}</span>
               </div>
             </div>
           </div>

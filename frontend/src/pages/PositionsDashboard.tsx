@@ -406,63 +406,71 @@ export const PositionsDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                    {paginatedPositions.map(pos => {
-                      const isSelected = selectedPositionId === pos.position_id;
-                      const isWin = pos.unrealized_pnl >= 0;
-                      return (
-                        <tr 
-                          key={pos.position_id}
-                          onClick={() => setSelectedPositionId(pos.position_id)}
-                          className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
-                            isSelected ? 'bg-nexus-pur/10 font-medium' : ''
-                          }`}
-                        >
-                          <td className="p-2.5 font-mono font-bold text-nexus-pur whitespace-nowrap">{pos.position_id}</td>
-                          <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">{pos.symbol}</td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                              pos.direction === 'LONG' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-                            }`}>
-                              {pos.direction}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{pos.quantity.toLocaleString()}</td>
-                          <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">${pos.avg_entry}</td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${pos.current_price}</td>
-                          <td className={`p-2.5 text-right font-mono font-bold whitespace-nowrap ${isWin ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {isWin ? '+' : ''}${pos.unrealized_pnl.toLocaleString()}
-                          </td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${pos.market_value.toLocaleString()}</td>
-                          <td className="p-2.5 text-center font-mono text-purple-400 whitespace-nowrap">{pos.leverage}</td>
-                          <td className="p-2.5 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              <button 
-                                onClick={() => {
-                                  setActingPosition(pos);
-                                  setActionType('CLOSE');
-                                }}
-                                title="Close Position"
-                                className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
-                              >
-                                <X size={12} />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setActingPosition(pos);
-                                  setActionType('MODIFY_SL_TP');
-                                  setEditSl(pos.stop_loss.toString());
-                                  setEditTp(pos.take_profit.toString());
-                                }}
-                                title="Modify SL/TP"
-                                className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
-                              >
-                                <Edit3 size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {paginatedPositions.length === 0 ? (
+                      <tr>
+                        <td colSpan={10} className="p-6 text-center text-nexus-muted">
+                          No open positions found.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedPositions.map(pos => {
+                        const isSelected = selectedPositionId === pos.position_id;
+                        const isWin = pos.unrealized_pnl >= 0;
+                        return (
+                          <tr 
+                            key={pos.position_id}
+                            onClick={() => setSelectedPositionId(pos.position_id)}
+                            className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
+                              isSelected ? 'bg-nexus-pur/10 font-medium' : ''
+                            }`}
+                          >
+                            <td className="p-2.5 font-mono font-bold text-nexus-pur whitespace-nowrap">{pos.position_id}</td>
+                            <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">{pos.symbol}</td>
+                            <td className="p-2.5 whitespace-nowrap">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                pos.direction === 'LONG' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+                              }`}>
+                                {pos.direction}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{pos.quantity.toLocaleString()}</td>
+                            <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">${pos.avg_entry}</td>
+                            <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${pos.current_price}</td>
+                            <td className={`p-2.5 text-right font-mono font-bold whitespace-nowrap ${isWin ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {isWin ? '+' : ''}${pos.unrealized_pnl.toLocaleString()}
+                            </td>
+                            <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${pos.market_value.toLocaleString()}</td>
+                            <td className="p-2.5 text-center font-mono text-purple-400 whitespace-nowrap">{pos.leverage}</td>
+                            <td className="p-2.5 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                <button 
+                                  onClick={() => {
+                                    setActingPosition(pos);
+                                    setActionType('CLOSE');
+                                  }}
+                                  title="Close Position"
+                                  className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
+                                >
+                                  <X size={12} />
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    setActingPosition(pos);
+                                    setActionType('MODIFY_SL_TP');
+                                    setEditSl(pos.stop_loss.toString());
+                                    setEditTp(pos.take_profit.toString());
+                                  }}
+                                  title="Modify SL/TP"
+                                  className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
+                                >
+                                  <Edit3 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -514,12 +522,16 @@ export const PositionsDashboard: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-bold text-nexus-muted uppercase">By Asset Class</span>
                 <div className="flex flex-col gap-1.5">
-                  {allocations?.by_asset_class?.map((al: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
-                      <span className="font-bold text-nexus-white">{al.category}</span>
-                      <span className="font-mono text-emerald-400 font-bold">${al.value.toLocaleString()} ({al.pct}%)</span>
-                    </div>
-                  ))}
+                  {!allocations?.by_asset_class || allocations.by_asset_class.length === 0 ? (
+                    <div className="p-3 text-center text-nexus-muted">No asset class allocation data.</div>
+                  ) : (
+                    allocations.by_asset_class.map((al: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
+                        <span className="font-bold text-nexus-white">{al.category}</span>
+                        <span className="font-mono text-emerald-400 font-bold">${al.value.toLocaleString()} ({al.pct}%)</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -527,12 +539,16 @@ export const PositionsDashboard: React.FC = () => {
               <div className="flex flex-col gap-2">
                 <span className="text-[10px] font-bold text-nexus-muted uppercase">By Sector</span>
                 <div className="flex flex-col gap-1.5">
-                  {allocations?.by_sector?.map((sc: any, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
-                      <span className="font-bold text-nexus-white">{sc.category}</span>
-                      <span className="font-mono text-purple-400 font-bold">${sc.value.toLocaleString()} ({sc.pct}%)</span>
-                    </div>
-                  ))}
+                  {!allocations?.by_sector || allocations.by_sector.length === 0 ? (
+                    <div className="p-3 text-center text-nexus-muted">No sector allocation data.</div>
+                  ) : (
+                    allocations.by_sector.map((sc: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
+                        <span className="font-bold text-nexus-white">{sc.category}</span>
+                        <span className="font-mono text-purple-400 font-bold">${sc.value.toLocaleString()} ({sc.pct}%)</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -629,19 +645,23 @@ export const PositionsDashboard: React.FC = () => {
               <AlertOctagon size={16} className="text-yellow-400" /> Active PMS Alerts
             </span>
             <div className="flex flex-col gap-1.5 text-xs">
-              {alerts.map((al, idx) => (
-                <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-nexus-white block text-[11px]">{al.message}</span>
-                    <span className="text-[9px] text-nexus-muted">{al.time}</span>
+              {alerts.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No active PMS alerts.</div>
+              ) : (
+                alerts.map((al, idx) => (
+                  <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-nexus-white block text-[11px]">{al.message}</span>
+                      <span className="text-[9px] text-nexus-muted">{al.time}</span>
+                    </div>
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                      al.severity === 'WARNING' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-emerald-500/15 text-emerald-400'
+                    }`}>
+                      {al.type}
+                    </span>
                   </div>
-                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                    al.severity === 'WARNING' ? 'bg-yellow-500/15 text-yellow-400' : 'bg-emerald-500/15 text-emerald-400'
-                  }`}>
-                    {al.type}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

@@ -90,40 +90,42 @@ export const TradingPerformanceDashboard: React.FC = () => {
 
       {/* ── Executive KPI Cards ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* ── Executive KPI Cards ────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Net P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.net_pnl ?? '+$68,420.50'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Growth: {kpis?.account_growth ?? '+27.37%'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.net_pnl ?? '$0.00'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Growth: {kpis?.account_growth ?? '0.0%'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Win Rate</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{stats?.win_rate ?? '68.3%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">{stats?.winning_trades ?? 97} W / {stats?.losing_trades ?? 45} L</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{stats?.win_rate ?? '0.0%'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">{stats?.winning_trades ?? 0} W / {stats?.losing_trades ?? 0} L</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Profit Factor</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{stats?.profit_factor ?? '2.41x'}</div>
-          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Expectancy: {stats?.expectancy ?? '$481.83'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{stats?.profit_factor ?? '0.00x'}</div>
+          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Expectancy: {stats?.expectancy ?? '$0.00'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Today's P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.today_pnl ?? '+$11,190.00'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Weekly: {kpis?.weekly_pnl ?? '+$34,820'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.today_pnl ?? '$0.00'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Weekly: {kpis?.weekly_pnl ?? '$0.00'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Avg R-Multiple</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{stats?.avg_r_multiple ?? '2.48R'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Avg Win: {stats?.avg_win ?? '$868.04'}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{stats?.avg_r_multiple ?? '0.0R'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Avg Win: {stats?.avg_win ?? '$0.00'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Max Drawdown</span>
-          <div className="text-lg font-black text-rose-400 mt-1">{kpis?.max_drawdown ?? '-2.4%'}</div>
-          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">High: {kpis?.high_watermark ?? '$268.4k'}</span>
+          <div className="text-lg font-black text-rose-400 mt-1">{kpis?.max_drawdown ?? '0.0%'}</div>
+          <span className="text-[10px] font-bold text-nexus-muted mt-1 block">High: {kpis?.high_watermark ?? '$0.00'}</span>
         </div>
       </div>
 
@@ -155,26 +157,34 @@ export const TradingPerformanceDashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-nexus-border/20">
-              {strategies.map((st, i) => (
-                <tr key={i} className="hover:bg-nexus-bg/40 font-mono">
-                  <td className="py-2.5 font-bold text-nexus-white font-sans">{st.name}</td>
-                  <td className="py-2.5">{st.trades}</td>
-                  <td className="py-2.5 font-bold text-emerald-400">{st.win_rate}</td>
-                  <td className="py-2.5 font-bold text-emerald-400">{st.net_profit}</td>
-                  <td className="py-2.5 font-bold text-nexus-pur">{st.sharpe}</td>
-                  <td className="py-2.5 font-bold text-nexus-pur">{st.sortino}</td>
-                  <td className="py-2.5 text-rose-400">{st.max_dd}</td>
-                  <td className="py-2.5 text-right font-sans">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      st.status === 'ACTIVE' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                    }`}>
-                      {st.status}
-                    </span>
+              {strategies.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-6 text-center text-nexus-muted">
+                    No strategy execution statistics available.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                strategies.map((st, i) => (
+                  <tr key={i} className="hover:bg-nexus-bg/40 font-mono">
+                    <td className="py-2.5 font-bold text-nexus-white font-sans">{st.name}</td>
+                    <td className="py-2.5">{st.trades}</td>
+                    <td className="py-2.5 font-bold text-emerald-400">{st.win_rate}</td>
+                    <td className="py-2.5 font-bold text-emerald-400">{st.net_profit}</td>
+                    <td className="py-2.5 font-bold text-nexus-pur">{st.sharpe}</td>
+                    <td className="py-2.5 font-bold text-nexus-pur">{st.sortino}</td>
+                    <td className="py-2.5 text-rose-400">{st.max_dd}</td>
+                    <td className="py-2.5 text-right font-sans">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        st.status === 'ACTIVE' 
+                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                          : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                      }`}>
+                        {st.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         )}
@@ -191,20 +201,26 @@ export const TradingPerformanceDashboard: React.FC = () => {
           </span>
 
           <div className="space-y-2 text-xs">
-            {symbols.map((sym, i) => (
-              <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                <div>
-                  <span className="font-bold text-nexus-white block">{sym.symbol}</span>
-                  <span className="text-[10px] text-nexus-muted">{sym.trades} Trades</span>
-                </div>
-                <div className="text-right">
-                  <span className={`font-mono font-bold block ${sym.best ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {sym.net_profit}
-                  </span>
-                  <span className="text-[10px] text-nexus-muted">Win Rate: {sym.win_rate}</span>
-                </div>
+            {symbols.length === 0 ? (
+              <div className="p-6 text-center text-nexus-muted">
+                No symbol performance data.
               </div>
-            ))}
+            ) : (
+              symbols.map((sym, i) => (
+                <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-nexus-white block">{sym.symbol}</span>
+                    <span className="text-[10px] text-nexus-muted">{sym.trades} Trades</span>
+                  </div>
+                  <div className="text-right">
+                    <span className={`font-mono font-bold block ${sym.best ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {sym.net_profit}
+                    </span>
+                    <span className="text-[10px] text-nexus-muted">Win Rate: {sym.win_rate}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -217,19 +233,19 @@ export const TradingPerformanceDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block">Avg Slippage</span>
-                <span className="font-mono font-bold text-emerald-400">{execution?.avg_slippage ?? '0.02 bps'}</span>
+                <span className="font-mono font-bold text-emerald-400">{execution?.avg_slippage ?? '0.0 bps'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block">Latency</span>
-                <span className="font-mono font-bold text-nexus-white">{execution?.execution_latency ?? '1.8ms'}</span>
+                <span className="font-mono font-bold text-nexus-white">{execution?.execution_latency ?? '0.0ms'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block">Fill Quality</span>
-                <span className="font-mono font-bold text-emerald-400">{execution?.fill_quality ?? '99.4%'}</span>
+                <span className="font-mono font-bold text-emerald-400">{execution?.fill_quality ?? '0.0%'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block">Rejections</span>
-                <span className="font-mono font-bold text-nexus-white">{execution?.order_rejections ?? '0.01%'}</span>
+                <span className="font-mono font-bold text-nexus-white">{execution?.order_rejections ?? '0.0%'}</span>
               </div>
             </div>
           </div>
@@ -240,12 +256,16 @@ export const TradingPerformanceDashboard: React.FC = () => {
             </span>
 
             <div className="space-y-2">
-              {insights.map((ins, i) => (
-                <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 text-xs text-nexus-text flex items-start gap-2">
-                  <span className="text-nexus-pur font-bold">💡</span>
-                  <span>{ins}</span>
-                </div>
-              ))}
+              {insights.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No AI strategy recommendations generated yet.</div>
+              ) : (
+                insights.map((ins, i) => (
+                  <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 text-xs text-nexus-text flex items-start gap-2">
+                    <span className="text-nexus-pur font-bold">💡</span>
+                    <span>{ins}</span>
+                  </div>
+                ))
+              )}
             </div>
 
             <button 

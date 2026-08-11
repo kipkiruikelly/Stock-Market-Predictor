@@ -395,62 +395,6 @@ export const TradingSupervisorDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                    {paginatedTrades.map(tr => {
-                      const isSelected = selectedTradeId === tr.trade_id;
-                      return (
-                        <tr 
-                          key={tr.trade_id}
-                          onClick={() => setSelectedTradeId(tr.trade_id)}
-                          className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
-                            isSelected ? 'bg-nexus-pur/10 font-medium' : ''
-                          }`}
-                        >
-                          <td className="p-2.5 font-mono font-bold text-nexus-pur whitespace-nowrap">{tr.trade_id}</td>
-                          <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">{tr.symbol}</td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                              tr.direction === 'LONG' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-                            }`}>
-                              {tr.direction}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{tr.position_size.toLocaleString()}</td>
-                          <td className="p-2.5 text-center font-mono font-bold text-emerald-400 whitespace-nowrap">{tr.signal_confidence}</td>
-                          <td className="p-2.5 text-center whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                              tr.supervisor_decision === 'APPROVED' ? 'bg-emerald-500/15 text-emerald-400' :
-                              tr.supervisor_decision === 'REQUIRES_REVIEW' ? 'bg-yellow-500/15 text-yellow-400 animate-pulse' :
-                              'bg-rose-500/15 text-rose-400'
-                            }`}>
-                              {tr.supervisor_decision}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{tr.current_pnl}</td>
-                          <td className="p-2.5 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              <button 
-                                onClick={() => {
-                                  setActingPosition(tr);
-                                  setDecisionAction('APPROVE');
-                                }}
-                                title="Approve Trade"
-                                className="p-1 rounded bg-nexus-bg hover:bg-emerald-500/20 text-emerald-400 transition cursor-pointer"
-                              >
-                                <Check size={12} />
-                              </button>
-                              <button 
-                                onClick={() => {
-                                  setActingPosition(tr);
-                                  setDecisionAction('REJECT');
-                                }}
-                                title="Reject Trade"
-                                className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
-                              >
-                                <XCircle size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
                       );
                     })}
                   </tbody>
@@ -546,17 +490,23 @@ export const TradingSupervisorDashboard: React.FC = () => {
               <Power size={16} className="text-emerald-400" /> Multi-Broker FIX Gateway Supervision
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              {brokers.map((b, i) => (
-                <div key={i} className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-nexus-white block">{b.name}</span>
-                    <span className="text-[10px] text-nexus-muted">Latency: {b.latency} | Fill: {b.fill_rate}</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    {b.status}
-                  </span>
+              {brokers.length === 0 ? (
+                <div className="col-span-2 p-4 text-center text-nexus-muted text-xs">
+                  No connected broker gateways.
                 </div>
-              ))}
+              ) : (
+                brokers.map((b, i) => (
+                  <div key={i} className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-nexus-white block">{b.name}</span>
+                      <span className="text-[10px] text-nexus-muted">Latency: {b.latency} | Fill: {b.fill_rate}</span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      {b.status}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -577,21 +527,27 @@ export const TradingSupervisorDashboard: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-1.5 text-xs">
-              {riskGateChecks.map((rg, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={14} className={rg.status === 'PASSED' ? 'text-emerald-400' : 'text-yellow-400'} />
-                    <div>
-                      <span className="font-bold text-nexus-white block text-[11px]">{rg.check}</span>
-                      <span className="text-[9px] text-nexus-muted">{rg.recommendation}</span>
+              {riskGateChecks.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">
+                  No risk gate checks available.
+                </div>
+              ) : (
+                riskGateChecks.map((rg, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className={rg.status === 'PASSED' ? 'text-emerald-400' : 'text-yellow-400'} />
+                      <div>
+                        <span className="font-bold text-nexus-white block text-[11px]">{rg.check}</span>
+                        <span className="text-[9px] text-nexus-muted">{rg.recommendation}</span>
+                      </div>
+                    </div>
+                    <div className="text-right font-mono">
+                      <span className="font-bold text-nexus-white block">{rg.actual}</span>
+                      <span className="text-[9px] text-nexus-muted">Cap {rg.threshold}</span>
                     </div>
                   </div>
-                  <div className="text-right font-mono">
-                    <span className="font-bold text-nexus-white block">{rg.actual}</span>
-                    <span className="text-[9px] text-nexus-muted">Cap {rg.threshold}</span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -602,7 +558,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
                 <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center gap-2">
                   <Clock size={16} className="text-nexus-pur" /> Execution Supervision Workflow ({selectedTrade.trade_id})
                 </span>
-                <span className="text-[10px] text-emerald-400 font-bold">{selectedTrade.execution_latency} Latency</span>
+                <span className="text-[10px] text-emerald-400 font-bold">{selectedTrade.execution_latency || '0.0ms'} Latency</span>
               </div>
 
               <div className="flex flex-col gap-2 text-xs">
@@ -613,7 +569,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <span className="text-nexus-muted text-[10px] block uppercase font-bold">Signal Confidence</span>
-                    <span className="font-bold text-emerald-400">{selectedTrade.signal_confidence}</span>
+                    <span className="font-bold text-emerald-400">{selectedTrade.signal_confidence || 'N/A'}</span>
                   </div>
                 </div>
 
@@ -622,7 +578,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
                     Supervisor Risk Rationale
                   </span>
                   <p className="text-nexus-text leading-relaxed">
-                    Trade {selectedTrade.trade_id} ({selectedTrade.symbol} {selectedTrade.direction}) passed all tier-1 risk parameters. Position weight (1.2%) remains well below the 5.0% single-trade threshold.
+                    Trade {selectedTrade.trade_id} ({selectedTrade.symbol} {selectedTrade.direction}) — Status: {selectedTrade.supervisor_decision || 'ACTIVE'}. Position size: {selectedTrade.position_size?.toLocaleString() || 0} units.
                   </p>
                 </div>
               </div>
@@ -635,17 +591,23 @@ export const TradingSupervisorDashboard: React.FC = () => {
               <AlertOctagon size={16} className="text-yellow-400" /> Operational Incidents & Anomalies
             </span>
             <div className="flex flex-col gap-1.5 text-xs">
-              {incidents.map((inc, idx) => (
-                <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                  <div>
-                    <span className="font-bold text-nexus-white block text-[11px]">[{inc.timestamp}] {inc.type}</span>
-                    <span className="text-[10px] text-nexus-muted">{inc.description}</span>
-                  </div>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-400">
-                    {inc.severity}
-                  </span>
+              {incidents.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">
+                  No operational incidents recorded.
                 </div>
-              ))}
+              ) : (
+                incidents.map((inc, idx) => (
+                  <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-nexus-white block text-[11px]">[{inc.timestamp}] {inc.type}</span>
+                      <span className="text-[10px] text-nexus-muted">{inc.description}</span>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/15 text-yellow-400">
+                      {inc.severity}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

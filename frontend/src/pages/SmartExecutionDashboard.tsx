@@ -257,35 +257,35 @@ export const SmartExecutionDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Success Rate</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.execution_success_rate ?? '99.8%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.execution_success_rate ?? '0.0%'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Avg Fill Time</span>
-          <div className="text-lg font-black text-nexus-pur mt-1">{kpis?.avg_fill_time_ms ?? '12.4ms'}</div>
+          <div className="text-lg font-black text-nexus-pur mt-1">{kpis?.avg_fill_time_ms ?? '0.0ms'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Avg Slippage</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.avg_slippage_bps ?? '-0.8 bps'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.avg_slippage_bps ?? '0.0 bps'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Price Improvement</span>
-          <div className="text-lg font-black text-yellow-400 mt-1">{kpis?.price_improvement_usd ?? '$14,280.50'}</div>
+          <div className="text-lg font-black text-yellow-400 mt-1">{kpis?.price_improvement_usd ?? '$0.00'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Orders Today</span>
-          <div className="text-lg font-black text-blue-400 mt-1">{kpis?.orders_executed_today ?? 1482}</div>
+          <div className="text-lg font-black text-blue-400 mt-1">{kpis?.orders_executed_today ?? 0}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Route Efficiency</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.smart_route_efficiency ?? '98.6%'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.smart_route_efficiency ?? '0.0%'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Active Brokers</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{kpis?.active_broker_connections ?? '5 / 5 Healthy'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{kpis?.active_broker_connections ?? '0 Connected'}</div>
         </div>
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Execution Latency</span>
-          <div className="text-lg font-black text-purple-400 mt-1">{kpis?.execution_latency_ms ?? '4.2ms'}</div>
+          <div className="text-lg font-black text-purple-400 mt-1">{kpis?.execution_latency_ms ?? '0.0ms'}</div>
         </div>
       </div>
 
@@ -431,68 +431,76 @@ export const SmartExecutionDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                    {filteredOrders.map(ord => {
-                      const isSelected = selectedOrderId === ord.order_id;
-                      return (
-                        <tr 
-                          key={ord.order_id}
-                          onClick={() => setSelectedSignalId(ord.order_id)}
-                          className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
-                            isSelected ? 'bg-nexus-pur/10 font-medium' : ''
-                          }`}
-                        >
-                          <td className="p-3 font-mono font-bold text-nexus-pur whitespace-nowrap">{ord.order_id}</td>
-                          <td className="p-3 font-bold text-nexus-white whitespace-nowrap">{ord.symbol}</td>
-                          <td className="p-3 whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                              ord.side === 'BUY' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-                            }`}>
-                              {ord.side}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right font-mono text-nexus-white whitespace-nowrap">{ord.quantity.toLocaleString()}</td>
-                          <td className="p-3 text-nexus-text whitespace-nowrap">{ord.order_type}</td>
-                          <td className="p-3 text-nexus-muted whitespace-nowrap max-w-[120px] truncate" title={ord.broker}>{ord.broker}</td>
-                          <td className="p-3 text-center whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                              ord.status === 'FILLED' ? 'bg-emerald-500/15 text-emerald-400' :
-                              ord.status === 'PARTIAL_FILL' ? 'bg-yellow-500/15 text-yellow-400 animate-pulse' :
-                              ord.status === 'ROUTED' ? 'bg-blue-500/15 text-blue-400' :
-                              ord.status === 'REJECTED' ? 'bg-rose-500/15 text-rose-400' :
-                              'bg-gray-500/15 text-nexus-muted'
-                            }`}>
-                              {ord.status}
-                            </span>
-                          </td>
-                          <td className="p-3 text-right font-mono text-nexus-white whitespace-nowrap">
-                            {ord.filled_qty} / {ord.quantity}
-                          </td>
-                          <td className={`p-3 text-right font-bold whitespace-nowrap ${ord.slippage_bps < 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {ord.slippage_bps} bps
-                          </td>
-                          <td className="p-3 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              {ord.status !== 'FILLED' && ord.status !== 'REJECTED' && (
+                    {filteredOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={10} className="p-6 text-center text-nexus-muted">
+                          No live orders in execution queue.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredOrders.map(ord => {
+                        const isSelected = selectedOrderId === ord.order_id;
+                        return (
+                          <tr 
+                            key={ord.order_id}
+                            onClick={() => setSelectedSignalId(ord.order_id)}
+                            className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
+                              isSelected ? 'bg-nexus-pur/10 font-medium' : ''
+                            }`}
+                          >
+                            <td className="p-3 font-mono font-bold text-nexus-pur whitespace-nowrap">{ord.order_id}</td>
+                            <td className="p-3 font-bold text-nexus-white whitespace-nowrap">{ord.symbol}</td>
+                            <td className="p-3 whitespace-nowrap">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                ord.side === 'BUY' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+                              }`}>
+                                {ord.side}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right font-mono text-nexus-white whitespace-nowrap">{ord.quantity.toLocaleString()}</td>
+                            <td className="p-3 text-nexus-text whitespace-nowrap">{ord.order_type}</td>
+                            <td className="p-3 text-nexus-muted whitespace-nowrap max-w-[120px] truncate" title={ord.broker}>{ord.broker}</td>
+                            <td className="p-3 text-center whitespace-nowrap">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                ord.status === 'FILLED' ? 'bg-emerald-500/15 text-emerald-400' :
+                                ord.status === 'PARTIAL_FILL' ? 'bg-yellow-500/15 text-yellow-400 animate-pulse' :
+                                ord.status === 'ROUTED' ? 'bg-blue-500/15 text-blue-400' :
+                                ord.status === 'REJECTED' ? 'bg-rose-500/15 text-rose-400' :
+                                'bg-gray-500/15 text-nexus-muted'
+                              }`}>
+                                {ord.status}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right font-mono text-nexus-white whitespace-nowrap">
+                              {ord.filled_qty} / {ord.quantity}
+                            </td>
+                            <td className={`p-3 text-right font-bold whitespace-nowrap ${ord.slippage_bps < 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {ord.slippage_bps} bps
+                            </td>
+                            <td className="p-3 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                {ord.status !== 'FILLED' && ord.status !== 'REJECTED' && (
+                                  <button 
+                                    onClick={() => handleCancelOrder(ord.order_id)}
+                                    title="Cancel Order"
+                                    className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                )}
                                 <button 
-                                  onClick={() => handleCancelOrder(ord.order_id)}
-                                  title="Cancel Order"
-                                  className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
+                                  onClick={() => handleRetryOrder(ord.order_id)}
+                                  title="Re-route Order"
+                                  className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
                                 >
-                                  <Trash2 size={12} />
+                                  <RotateCcw size={12} />
                                 </button>
-                              )}
-                              <button 
-                                onClick={() => handleRetryOrder(ord.order_id)}
-                                title="Re-route Order"
-                                className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
-                              >
-                                <RotateCcw size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -505,7 +513,9 @@ export const SmartExecutionDashboard: React.FC = () => {
               <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center gap-2">
                 <ShieldCheck size={16} className="text-emerald-400" /> Multi-Broker Connection Health & SLA Audit
               </span>
-              <span className="text-[10px] font-mono text-emerald-400">ALL BROKERS ONLINE</span>
+              <span className="text-[10px] font-mono text-emerald-400">
+                {brokers.filter(b => b.health_status === 'ONLINE').length} / {brokers.length} ONLINE
+              </span>
             </div>
 
             <div className="overflow-x-auto">
@@ -522,28 +532,36 @@ export const SmartExecutionDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-nexus-border/30">
-                  {brokers.map((b, i) => (
-                    <tr key={i} className="hover:bg-nexus-bg2/40 transition">
-                      <td className="p-2.5 font-bold text-nexus-white">{b.broker}</td>
-                      <td className="p-2.5 text-right font-mono text-purple-400 font-bold">{b.latency_ms}</td>
-                      <td className="p-2.5 text-right font-bold text-emerald-400">{b.fill_rate}</td>
-                      <td className="p-2.5 text-right font-mono text-nexus-muted">{b.rejections}</td>
-                      <td className="p-2.5 text-right font-mono text-nexus-white">{b.avg_spread}</td>
-                      <td className="p-2.5 text-center">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                          {b.health_status}
-                        </span>
-                      </td>
-                      <td className="p-2.5 text-right">
-                        <button 
-                          onClick={() => handleRouteTest(b.broker)}
-                          className="px-2 py-1 bg-nexus-bg hover:bg-nexus-bg2 text-[10px] font-bold text-nexus-pur rounded border border-nexus-border transition cursor-pointer"
-                        >
-                          Ping Test
-                        </button>
+                  {brokers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-4 text-center text-nexus-muted">
+                        No broker gateways registered.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    brokers.map((b, i) => (
+                      <tr key={i} className="hover:bg-nexus-bg2/40 transition">
+                        <td className="p-2.5 font-bold text-nexus-white">{b.broker}</td>
+                        <td className="p-2.5 text-right font-mono text-purple-400 font-bold">{b.latency_ms}</td>
+                        <td className="p-2.5 text-right font-bold text-emerald-400">{b.fill_rate}</td>
+                        <td className="p-2.5 text-right font-mono text-nexus-muted">{b.rejections}</td>
+                        <td className="p-2.5 text-right font-mono text-nexus-white">{b.avg_spread}</td>
+                        <td className="p-2.5 text-center">
+                          <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            {b.health_status}
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-right">
+                          <button 
+                            onClick={() => handleRouteTest(b.broker)}
+                            className="px-2 py-1 bg-nexus-bg hover:bg-nexus-bg2 text-[10px] font-bold text-nexus-pur rounded border border-nexus-border transition cursor-pointer"
+                          >
+                            Ping Test
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -561,35 +579,39 @@ export const SmartExecutionDashboard: React.FC = () => {
                 <Layers size={16} className="text-nexus-pur" /> Smart Order Router (SOR) Analytics
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-nexus-pur/20 text-nexus-pur border border-nexus-pur/30">
-                SCORE: {smartRouter?.best_execution_score ?? '99.2'}
+                SCORE: {smartRouter?.best_execution_score ?? '0.0'}
               </span>
             </div>
 
             <div className="p-3 rounded-lg bg-nexus-bg/80 border border-nexus-border flex flex-col gap-2 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-nexus-muted font-bold text-[10px] uppercase">Primary Active Route</span>
-                <span className="text-emerald-400 font-bold">{smartRouter?.current_route ?? 'Interactive Brokers VWAP'}</span>
+                <span className="text-emerald-400 font-bold">{smartRouter?.current_route ?? 'Primary Institutional Gateway'}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-nexus-muted font-bold text-[10px] uppercase">Routing Confidence</span>
-                <span className="text-nexus-white font-bold">{smartRouter?.routing_confidence ?? '98.6%'}</span>
+                <span className="text-nexus-white font-bold">{smartRouter?.routing_confidence ?? '0.0%'}</span>
               </div>
             </div>
 
             <span className="text-[10px] font-bold uppercase text-nexus-muted mt-1 block">Alternative Route Comparison</span>
             <div className="flex flex-col gap-2 text-xs">
-              {smartRouter?.alternative_routes?.map((rt: RouteOption, idx: number) => (
-                <div key={idx} className="p-2.5 rounded bg-nexus-bg2/40 border border-nexus-border/40 flex items-center justify-between">
-                  <div>
-                    <div className="font-bold text-nexus-white">{rt.venue}</div>
-                    <div className="text-[10px] text-nexus-muted">Latency: {rt.latency_ms} | Est. Cost: {rt.cost_usd}</div>
+              {!smartRouter?.alternative_routes || smartRouter.alternative_routes.length === 0 ? (
+                <div className="p-3 text-center text-nexus-muted text-xs">No alternative routes available.</div>
+              ) : (
+                smartRouter.alternative_routes.map((rt: RouteOption, idx: number) => (
+                  <div key={idx} className="p-2.5 rounded bg-nexus-bg2/40 border border-nexus-border/40 flex items-center justify-between">
+                    <div>
+                      <div className="font-bold text-nexus-white">{rt.venue}</div>
+                      <div className="text-[10px] text-nexus-muted">Latency: {rt.latency_ms} | Est. Cost: {rt.cost_usd}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-emerald-400">{rt.fill_probability} Fill</div>
+                      <div className="text-[10px] text-yellow-400">{rt.expected_slippage}</div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-emerald-400">{rt.fill_probability} Fill</div>
-                    <div className="text-[10px] text-yellow-400">{rt.expected_slippage}</div>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -600,7 +622,7 @@ export const SmartExecutionDashboard: React.FC = () => {
                 <span className="text-xs font-bold text-nexus-white uppercase tracking-wider flex items-center gap-2">
                   <Clock size={16} className="text-nexus-pur" /> Execution Audit & Timeline ({selectedOrderId})
                 </span>
-                <span className="text-[10px] text-emerald-400 font-bold">{orderDetails?.total_latency_ms ?? '12.4ms'} Total</span>
+                <span className="text-[10px] text-emerald-400 font-bold">{orderDetails?.total_latency_ms ?? '0.0ms'} Total</span>
               </div>
 
               {detailsLoading ? (
@@ -664,20 +686,24 @@ export const SmartExecutionDashboard: React.FC = () => {
                 <ShieldCheck size={16} className="text-emerald-400" /> Pre-Trade Risk Safety Circuit
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-400">
-                ALL 7 CHECKS PASSED
+                {riskValidations.length} CHECKS EVALUATED
               </span>
             </div>
 
             <div className="flex flex-col gap-1.5 text-xs">
-              {riskValidations.map((rv, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                    <span className="font-bold text-nexus-white">{rv.check}</span>
+              {riskValidations.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No risk safety checks performed.</div>
+              ) : (
+                riskValidations.map((rv, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                      <span className="font-bold text-nexus-white">{rv.check}</span>
+                    </div>
+                    <span className="text-[10px] text-nexus-muted">{rv.detail}</span>
                   </div>
-                  <span className="text-[10px] text-nexus-muted">{rv.detail}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -692,7 +718,7 @@ export const SmartExecutionDashboard: React.FC = () => {
 
             <div className="flex flex-wrap gap-1.5 text-xs">
               <button 
-                onClick={() => handleAiAsk("Why was Interactive Brokers selected for this order?")}
+                onClick={() => handleAiAsk("Why was this broker selected for this order?")}
                 className="px-2.5 py-1 bg-nexus-bg hover:bg-nexus-bg2 text-[10px] font-bold text-nexus-pur rounded-lg border border-nexus-pur/30 transition cursor-pointer"
               >
                 🤖 Why this broker?

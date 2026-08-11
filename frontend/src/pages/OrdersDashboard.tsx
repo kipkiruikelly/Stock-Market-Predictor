@@ -290,43 +290,43 @@ export const OrdersDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Orders Today</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.total_orders_today ?? 2480}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.total_orders_today ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-yellow-400">Open Orders</span>
-          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.open_orders ?? 14}</div>
+          <div className="text-base font-black text-yellow-400 mt-1">{kpis?.open_orders ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Filled</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.filled_orders ?? 2310}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.filled_orders ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-blue-400">Partial Fill</span>
-          <div className="text-base font-black text-blue-400 mt-1">{kpis?.partially_filled ?? 42}</div>
+          <div className="text-base font-black text-blue-400 mt-1">{kpis?.partially_filled ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Cancelled</span>
-          <div className="text-base font-black text-nexus-muted mt-1">{kpis?.cancelled_orders ?? 86}</div>
+          <div className="text-base font-black text-nexus-muted mt-1">{kpis?.cancelled_orders ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-rose-400">Rejected</span>
-          <div className="text-base font-black text-rose-400 mt-1">{kpis?.rejected_orders ?? 28}</div>
+          <div className="text-base font-black text-rose-400 mt-1">{kpis?.rejected_orders ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Pending</span>
-          <div className="text-base font-black text-purple-400 mt-1">{kpis?.pending_orders ?? 8}</div>
+          <div className="text-base font-black text-purple-400 mt-1">{kpis?.pending_orders ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Avg Time</span>
-          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.avg_execution_time_ms ?? '14.2ms'}</div>
+          <div className="text-base font-black text-nexus-pur mt-1">{kpis?.avg_execution_time_ms ?? '0.0ms'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Avg Fill Price</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.avg_fill_price ?? '$224.85'}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.avg_fill_price ?? '$0.00'}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Success Rate</span>
-          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.order_success_rate ?? '98.8%'}</div>
+          <div className="text-base font-black text-emerald-400 mt-1">{kpis?.order_success_rate ?? '0.0%'}</div>
         </div>
       </div>
 
@@ -409,79 +409,87 @@ export const OrdersDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                    {paginatedOrders.map(ord => {
-                      const isSelected = selectedOrderId === ord.order_id;
-                      return (
-                        <tr 
-                          key={ord.order_id}
-                          onClick={() => setSelectedOrderId(ord.order_id)}
-                          className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
-                            isSelected ? 'bg-nexus-pur/10 font-medium' : ''
-                          }`}
-                        >
-                          <td className="p-2.5 font-mono font-bold text-nexus-pur whitespace-nowrap">{ord.order_id}</td>
-                          <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">{ord.symbol}</td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
-                              ord.side === 'BUY' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-                            }`}>
-                              {ord.side}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{ord.quantity.toLocaleString()}</td>
-                          <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">{ord.filled_qty}</td>
-                          <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${ord.avg_price}</td>
-                          <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">${ord.limit_price}</td>
-                          <td className="p-2.5 text-nexus-muted whitespace-nowrap max-w-[110px] truncate" title={ord.broker}>{ord.broker}</td>
-                          <td className="p-2.5 text-center whitespace-nowrap">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
-                              ord.status === 'FILLED' ? 'bg-emerald-500/15 text-emerald-400' :
-                              ord.status === 'WORKING' ? 'bg-yellow-500/15 text-yellow-400 animate-pulse' :
-                              ord.status === 'PARTIAL_FILL' ? 'bg-blue-500/15 text-blue-400' :
-                              ord.status === 'REJECTED' ? 'bg-rose-500/15 text-rose-400' :
-                              'bg-gray-500/15 text-nexus-muted'
-                            }`}>
-                              {ord.status}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              {ord.status === 'WORKING' || ord.status === 'PARTIAL_FILL' ? (
-                                <>
+                    {paginatedOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={10} className="p-6 text-center text-nexus-muted">
+                          No orders found.
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedOrders.map(ord => {
+                        const isSelected = selectedOrderId === ord.order_id;
+                        return (
+                          <tr 
+                            key={ord.order_id}
+                            onClick={() => setSelectedOrderId(ord.order_id)}
+                            className={`hover:bg-nexus-bg2/60 transition cursor-pointer ${
+                              isSelected ? 'bg-nexus-pur/10 font-medium' : ''
+                            }`}
+                          >
+                            <td className="p-2.5 font-mono font-bold text-nexus-pur whitespace-nowrap">{ord.order_id}</td>
+                            <td className="p-2.5 font-bold text-nexus-white whitespace-nowrap">{ord.symbol}</td>
+                            <td className="p-2.5 whitespace-nowrap">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                                ord.side === 'BUY' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+                              }`}>
+                                {ord.side}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">{ord.quantity.toLocaleString()}</td>
+                            <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">{ord.filled_qty}</td>
+                            <td className="p-2.5 text-right font-mono text-nexus-white whitespace-nowrap">${ord.avg_price}</td>
+                            <td className="p-2.5 text-right font-mono text-nexus-muted whitespace-nowrap">${ord.limit_price}</td>
+                            <td className="p-2.5 text-nexus-muted whitespace-nowrap max-w-[110px] truncate" title={ord.broker}>{ord.broker}</td>
+                            <td className="p-2.5 text-center whitespace-nowrap">
+                              <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
+                                ord.status === 'FILLED' ? 'bg-emerald-500/15 text-emerald-400' :
+                                ord.status === 'WORKING' ? 'bg-yellow-500/15 text-yellow-400 animate-pulse' :
+                                ord.status === 'PARTIAL_FILL' ? 'bg-blue-500/15 text-blue-400' :
+                                ord.status === 'REJECTED' ? 'bg-rose-500/15 text-rose-400' :
+                                'bg-gray-500/15 text-nexus-muted'
+                              }`}>
+                                {ord.status}
+                              </span>
+                            </td>
+                            <td className="p-2.5 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                {ord.status === 'WORKING' || ord.status === 'PARTIAL_FILL' ? (
+                                  <>
+                                    <button 
+                                      onClick={() => {
+                                        setModifyingOrder(ord);
+                                        setEditQty(ord.quantity.toString());
+                                        setEditLimitPrice(ord.limit_price.toString());
+                                        setEditStopPrice(ord.stop_price.toString());
+                                      }}
+                                      title="Modify Order"
+                                      className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
+                                    >
+                                      <Edit3 size={12} />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleCancelOrder(ord.order_id)}
+                                      title="Cancel Order"
+                                      className="p-1 rounded bg-rose-500/20 text-rose-400 transition cursor-pointer"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </>
+                                ) : (
                                   <button 
-                                    onClick={() => {
-                                      setModifyingOrder(ord);
-                                      setEditQty(ord.quantity.toString());
-                                      setEditLimitPrice(ord.limit_price.toString());
-                                      setEditStopPrice(ord.stop_price.toString());
-                                    }}
-                                    title="Modify Order"
+                                    onClick={() => handleRerouteOrder(ord.order_id)}
+                                    title="Re-route Order"
                                     className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
                                   >
-                                    <Edit3 size={12} />
+                                    <RotateCcw size={12} />
                                   </button>
-                                  <button 
-                                    onClick={() => handleCancelOrder(ord.order_id)}
-                                    title="Cancel Order"
-                                    className="p-1 rounded bg-nexus-bg hover:bg-rose-500/20 text-rose-400 transition cursor-pointer"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
-                                </>
-                              ) : (
-                                <button 
-                                  onClick={() => handleRerouteOrder(ord.order_id)}
-                                  title="Re-route Order"
-                                  className="p-1 rounded bg-nexus-bg hover:bg-nexus-pur/20 text-nexus-pur transition cursor-pointer"
-                                >
-                                  <RotateCcw size={12} />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -531,15 +539,15 @@ export const OrdersDashboard: React.FC = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
                 <span className="text-[10px] text-nexus-muted uppercase font-bold block">Waiting for Broker</span>
-                <span className="text-sm font-bold text-yellow-400">{monitors?.waiting_broker ?? 4} Orders</span>
+                <span className="text-sm font-bold text-yellow-400">{monitors?.waiting_broker ?? 0} Orders</span>
               </div>
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
                 <span className="text-[10px] text-nexus-muted uppercase font-bold block">Waiting for Exchange</span>
-                <span className="text-sm font-bold text-nexus-white">{monitors?.waiting_exchange ?? 3} Orders</span>
+                <span className="text-sm font-bold text-nexus-white">{monitors?.waiting_exchange ?? 0} Orders</span>
               </div>
               <div className="p-2.5 rounded-lg bg-nexus-bg/60 border border-nexus-border/40">
                 <span className="text-[10px] text-nexus-muted uppercase font-bold block">Partial Executions</span>
-                <span className="text-sm font-bold text-blue-400">{monitors?.partial_executions ?? 5} Trades</span>
+                <span className="text-sm font-bold text-blue-400">{monitors?.partial_executions ?? 0} Trades</span>
               </div>
             </div>
           </div>
@@ -622,15 +630,19 @@ export const OrdersDashboard: React.FC = () => {
             </div>
 
             <div className="flex flex-col gap-1.5 text-xs">
-              {riskValidations.map((rv, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
-                    <span className="font-bold text-nexus-white">{rv.check}</span>
+              {riskValidations.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No OMS risk validations performed.</div>
+              ) : (
+                riskValidations.map((rv, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 rounded bg-nexus-bg/50 border border-nexus-border/30">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 size={14} className="text-emerald-400 shrink-0" />
+                      <span className="font-bold text-nexus-white">{rv.check}</span>
+                    </div>
+                    <span className="text-[10px] text-nexus-muted">{rv.detail}</span>
                   </div>
-                  <span className="text-[10px] text-nexus-muted">{rv.detail}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -640,16 +652,20 @@ export const OrdersDashboard: React.FC = () => {
               <Cpu size={16} className="text-purple-400" /> Immutable FIX Audit Trail Log
             </span>
             <div className="flex flex-col gap-1.5 font-mono text-[11px]">
-              {auditTrail.map((ad, idx) => (
-                <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
-                  <div>
-                    <span className="text-nexus-muted mr-2">[{ad.timestamp}]</span>
-                    <span className="text-nexus-pur font-bold">{ad.action}</span>
-                    <span className="text-nexus-white block text-[10px]">{ad.detail}</span>
+              {auditTrail.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No FIX audit trail events logged.</div>
+              ) : (
+                auditTrail.map((ad, idx) => (
+                  <div key={idx} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
+                    <div>
+                      <span className="text-nexus-muted mr-2">[{ad.timestamp}]</span>
+                      <span className="text-nexus-pur font-bold">{ad.action}</span>
+                      <span className="text-nexus-white block text-[10px]">{ad.detail}</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-nexus-bg2 text-nexus-muted">{ad.user}</span>
                   </div>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-nexus-bg2 text-nexus-muted">{ad.user}</span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 

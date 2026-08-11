@@ -109,7 +109,7 @@ export const TradingTerminalDashboard: React.FC = () => {
             <Terminal className="text-nexus-pur" size={26} />
             Institutional Bloomberg Trading Terminal
             <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-              <CheckCircle size={10} /> {account?.broker ?? 'MetaTrader 5 ECN'}
+              <CheckCircle size={10} /> {account?.broker ?? 'Primary FIX Gateway'}
             </span>
           </h1>
           <p className="text-xs text-nexus-muted mt-1">
@@ -138,37 +138,37 @@ export const TradingTerminalDashboard: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Account Balance</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{account?.balance ?? '$250,000.00'}</div>
+          <div className="text-lg font-black text-nexus-white mt-1">{account?.balance ?? '$0.00'}</div>
           <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Broker Equity Ledger</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Net Equity</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{account?.equity ?? '$268,420.50'}</div>
+          <div className="text-lg font-black text-emerald-400 mt-1">{account?.equity ?? '$0.00'}</div>
           <span className="text-[10px] font-bold text-nexus-muted mt-1 block">Unrealized P&L Included</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Free Margin</span>
-          <div className="text-lg font-black text-nexus-white mt-1">{account?.free_margin ?? '$250,020.50'}</div>
-          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Margin Level: {account?.margin_level ?? '1,458%'}</span>
+          <div className="text-lg font-black text-nexus-white mt-1">{account?.free_margin ?? '$0.00'}</div>
+          <span className="text-[10px] font-bold text-nexus-pur mt-1 block">Margin Level: {account?.margin_level ?? '0.0%'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Smart Latency</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{smartRouting?.execution_latency_ms ?? '1.8ms'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Fill Quality: {smartRouting?.fill_quality_score ?? '99.4%'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{smartRouting?.execution_latency_ms ?? '0.0ms'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Fill Quality: {smartRouting?.fill_quality_score ?? '0.0%'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Daily P&L</span>
-          <div className="text-lg font-black text-emerald-400 mt-1">{performance?.today_pnl ?? '+$11,190.00'}</div>
-          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Win Rate: {performance?.win_rate ?? '68.4%'}</span>
+          <div className="text-lg font-black text-emerald-400 mt-1">{performance?.today_pnl ?? '$0.00'}</div>
+          <span className="text-[10px] font-bold text-emerald-400 mt-1 block">Win Rate: {performance?.win_rate ?? '0.0%'}</span>
         </div>
 
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Trading Session</span>
-          <div className="text-xs font-bold text-nexus-white mt-2 truncate">{account?.trading_session ?? 'US Session Active'}</div>
+          <div className="text-xs font-bold text-nexus-white mt-2 truncate">{account?.trading_session ?? 'Active Session'}</div>
           <span className="text-[10px] font-bold text-emerald-400 mt-1 block">FIX Gateway Connected</span>
         </div>
       </div>
@@ -187,28 +187,32 @@ export const TradingTerminalDashboard: React.FC = () => {
             </span>
 
             <div className="flex flex-col gap-2">
-              {watchlist.map((item, i) => (
-                <div 
-                  key={i} 
-                  onClick={() => setSymbol(item.symbol)}
-                  className={`p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between ${
-                    symbol === item.symbol 
-                      ? 'bg-nexus-pur/10 border-nexus-pur text-nexus-white' 
-                      : 'bg-nexus-bg/50 border-nexus-border/30 hover:bg-nexus-bg'
-                  }`}
-                >
-                  <div>
-                    <span className="font-bold text-xs block">{item.symbol}</span>
-                    <span className="text-[10px] text-nexus-muted">Sprd: {item.spread}</span>
+              {watchlist.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No items in watchlist.</div>
+              ) : (
+                watchlist.map((item, i) => (
+                  <div 
+                    key={i} 
+                    onClick={() => setSymbol(item.symbol)}
+                    className={`p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between ${
+                      symbol === item.symbol 
+                        ? 'bg-nexus-pur/10 border-nexus-pur text-nexus-white' 
+                        : 'bg-nexus-bg/50 border-nexus-border/30 hover:bg-nexus-bg'
+                    }`}
+                  >
+                    <div>
+                      <span className="font-bold text-xs block">{item.symbol}</span>
+                      <span className="text-[10px] text-nexus-muted">Sprd: {item.spread}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono text-xs font-bold block">{item.ask}</span>
+                      <span className={`text-[10px] font-bold ${item.positive ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {item.change}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="font-mono text-xs font-bold block">{item.ask}</span>
-                    <span className={`text-[10px] font-bold ${item.positive ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {item.change}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -219,23 +223,27 @@ export const TradingTerminalDashboard: React.FC = () => {
             </span>
 
             <div className="flex flex-col gap-2.5">
-              {signals.map((sig, i) => (
-                <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-nexus-white">{sig.symbol}</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      {sig.direction} ({sig.confidence})
-                    </span>
+              {signals.length === 0 ? (
+                <div className="p-4 text-center text-nexus-muted text-xs">No quantitative signals available.</div>
+              ) : (
+                signals.map((sig, i) => (
+                  <div key={i} className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30 flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-nexus-white">{sig.symbol}</span>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {sig.direction} ({sig.confidence})
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-nexus-muted line-clamp-2">{sig.explanation}</p>
+                    <button 
+                      onClick={() => { setSymbol(sig.symbol); setOrderTypeSide('BUY'); }}
+                      className="self-end text-[10px] font-bold text-nexus-pur hover:underline flex items-center gap-1 cursor-pointer mt-1"
+                    >
+                      Load Signal Order <ArrowUpRight size={10} />
+                    </button>
                   </div>
-                  <p className="text-[10px] text-nexus-muted line-clamp-2">{sig.explanation}</p>
-                  <button 
-                    onClick={() => { setSymbol(sig.symbol); setOrderTypeSide('BUY'); }}
-                    className="self-end text-[10px] font-bold text-nexus-pur hover:underline flex items-center gap-1 cursor-pointer mt-1"
-                  >
-                    Load Signal Order <ArrowUpRight size={10} />
-                  </button>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -405,15 +413,15 @@ export const TradingTerminalDashboard: React.FC = () => {
             <div className="space-y-2 text-xs">
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
                 <span className="text-[10px] text-nexus-muted">Daily $VaR$ 95%</span>
-                <span className="font-mono font-bold text-nexus-white">{riskSummary?.daily_var_95 ?? '$4,250.00'}</span>
+                <span className="font-mono font-bold text-nexus-white">{riskSummary?.daily_var_95 ?? '$0.00'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
                 <span className="text-[10px] text-nexus-muted">Expected Shortfall</span>
-                <span className="font-mono font-bold text-rose-400">{riskSummary?.expected_shortfall ?? '$6,120.00'}</span>
+                <span className="font-mono font-bold text-rose-400">{riskSummary?.expected_shortfall ?? '$0.00'}</span>
               </div>
               <div className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between">
                 <span className="text-[10px] text-nexus-muted">Margin Utilization</span>
-                <span className="font-mono font-bold text-emerald-400">{riskSummary?.margin_utilization ?? '7.36%'}</span>
+                <span className="font-mono font-bold text-emerald-400">{riskSummary?.margin_utilization ?? '0.0%'}</span>
               </div>
             </div>
           </div>
@@ -424,12 +432,16 @@ export const TradingTerminalDashboard: React.FC = () => {
               <span>Active Orders ({activeOrders.length})</span>
             </span>
             <div className="space-y-1.5 text-xs">
-              {activeOrders.map((ord, i) => (
-                <div key={i} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between font-mono">
-                  <span className="font-bold text-nexus-white">{ord.symbol} ({ord.type})</span>
-                  <span className="text-emerald-400 font-bold">{ord.status}</span>
-                </div>
-              ))}
+              {activeOrders.length === 0 ? (
+                <div className="p-2 text-center text-nexus-muted text-xs">No active working orders.</div>
+              ) : (
+                activeOrders.map((ord, i) => (
+                  <div key={i} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex items-center justify-between font-mono">
+                    <span className="font-bold text-nexus-white">{ord.symbol} ({ord.type})</span>
+                    <span className="text-emerald-400 font-bold">{ord.status}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -438,12 +450,16 @@ export const TradingTerminalDashboard: React.FC = () => {
               <span>Terminal Execution Stream</span>
             </span>
             <div className="space-y-1.5 text-[11px]">
-              {activityStream.map((act, i) => (
-                <div key={i} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex flex-col gap-0.5">
-                  <span className="text-nexus-muted text-[10px] font-bold">{act.time} — {act.event}</span>
-                  <span className="text-nexus-white">{act.details}</span>
-                </div>
-              ))}
+              {activityStream.length === 0 ? (
+                <div className="p-2 text-center text-nexus-muted text-xs">No terminal activity logged.</div>
+              ) : (
+                activityStream.map((act, i) => (
+                  <div key={i} className="p-2 rounded bg-nexus-bg/50 border border-nexus-border/30 flex flex-col gap-0.5">
+                    <span className="text-nexus-muted text-[10px] font-bold">{act.time} — {act.event}</span>
+                    <span className="text-nexus-white">{act.details}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
