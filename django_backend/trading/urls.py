@@ -27,6 +27,7 @@ from . import ai_governance_views
 from . import collaboration_views
 from . import report_views
 from . import webhook_views
+from . import tradingview_webhook_views
 from . import signals_views
 from . import smartexecution_views
 from . import oms_views
@@ -41,6 +42,8 @@ from . import admin_suite_views
 from . import knowledge_suite_views
 
 urlpatterns = [
+    # ── TradingView Inbound Webhook ────────────────────────────────
+    path('integrations/tradingview/webhook', tradingview_webhook_views.TradingViewWebhookView.as_view(), name='api-tradingview-webhook'),
     # ── Executive Suite Endpoints ────────────────────────────────
     path('executive/dashboard/dashboard', executive_suite_views.ExecutiveDashboardView.as_view(), name='api-executive-dashboard'),
     path('executive/business-analytics/dashboard', executive_suite_views.BusinessAnalyticsView.as_view(), name='api-executive-analytics'),
