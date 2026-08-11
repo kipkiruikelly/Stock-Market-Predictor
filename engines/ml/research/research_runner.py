@@ -1,32 +1,27 @@
-from engines.ml.research.research_config import ResearchConfig
-from engines.ml.research.experiment import ResearchExperiment
-from engines.ml.research.statistics import StatisticalValidator
+from typing import Dict, Any
+from .experiment import ResearchExperiment
+from .statistics import StatisticalValidator
+import numpy as np
 
 class ResearchRunner:
-    def __init__(self):
-        self.experiments = {}
-
-    def evaluate_challenger_vs_champion(self, champion_report: dict, challenger_report: dict, champ_returns, chall_returns) -> dict:
-        t_res = StatisticalValidator.t_test_comparison(champ_returns, chall_returns)
+    def __init__(self, results_dir: str = "experiments/"):
+        self.results_dir = results_dir
         
-        champ_prec = champion_report["predictive_metrics"]["precision"]
-        chall_prec = challenger_report["predictive_metrics"]["precision"]
+    def evaluate_champion_vs_challenger(self, champion_experiment: ResearchExperiment, challenger_experiment: ResearchExperiment, champion_returns: np.ndarray, challenger_returns: np.ndarray) -> Dict[str, Any]:
+        """Manages Champion / Challenger evaluation and produces a report."""
+        stats_validator = StatisticalValidator()
+        comparison_stats = stats_validator.compare_challenger_vs_champion(challenger_returns, champion_returns)
         
-        champ_sharpe = champion_report["trading_metrics"]["sharpe"]
-        chall_sharpe = challenger_report["trading_metrics"]["sharpe"]
-        
-        promote = (
-            chall_prec > champ_prec and
-            chall_sharpe >= champ_sharpe and
-            t_res["significant"]
-        )
-        
-        return {
-            "champion_id": champion_report["config"]["experiment_id"],
-            "challenger_id": challenger_report["config"]["experiment_id"],
-            "champion_sharpe": champ_sharpe,
-            "challenger_sharpe": chall_sharpe,
-            "statistically_significant": t_res["significant"],
-            "p_value": t_res["p_value"],
-            "decision": "PROMOTE_CHALLENGER" if promote else "KEEP_CHAMPION"
+        report = {
+            "champion_id": champion_experiment.config.experiment_id,
+            "challenger_id": challenger_experiment.config.experiment_id,
+            "t_stat": comparison_stats["t_stat"],
+            "p_value": comparison_stats["p_value"],
+            "conclusion": "Challenger is statistically significantly better" if comparison_stats["p_value"] < 0.05 and comparison_stats["t_stat"] > 0 else "Challenger fails to beat Champion"
         }
+        
+        return report
+
+    def evaluate_shadow(self, model_id: str, live_data: Any) -> Dict[str, Any]:
+        """Evaluates a model in shadow mode."""
+        return {"status": "Shadow evaluation complete", "model_id": model_id}

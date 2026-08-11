@@ -1,34 +1,46 @@
-import numpy as np
 import pandas as pd
-from typing import Dict, List, Any
+from typing import Dict, List, Callable, Any
 
 class FeatureAblator:
-    FEATURE_GROUPS = {
-        "price_action": ["returns_1", "returns_5", "gk_vol", "atr_ratio"],
-        "technical": ["rsi_z_score", "vwap_dist", "macd_hist_slope"],
-        "market_structure": ["fvg_distance", "order_block_proximity"],
-        "volume_flow": ["rvol", "obv_slope"],
-        "macro": ["vix_chg", "dxy_chg"],
-        "cross_asset": ["spy_corr", "qqq_corr"],
-        "news_sentiment": ["sentiment_score"],
-        "microstructure": ["effective_spread", "tick_intensity"],
-        "all": []
-    }
+    def __init__(self, model_trainer_func: Callable = None, evaluation_func: Callable = None):
+        self.model_trainer_func = model_trainer_func
+        self.evaluation_func = evaluation_func
+        self.feature_groups = [
+            "Price Action", "Technical", "ICT/Market Structure", 
+            "Volatility", "Volume/Flow", "Macro", 
+            "Cross-Asset", "News/Sentiment", "Microstructure", "All"
+        ]
 
-    def run_ablation_suite(self, X: pd.DataFrame, y: np.ndarray, trainer_fn) -> Dict[str, Any]:
+    def evaluate_incremental_contribution(self, X: pd.DataFrame, y: pd.Series, feature_mapping: Dict[str, List[str]]) -> Dict[str, float]:
         results = {}
-        for group_name, cols in self.FEATURE_GROUPS.items():
-            if group_name == "all":
-                eval_cols = [c for c in X.columns if c in cols or len(cols) == 0]
-            else:
-                eval_cols = [c for c in cols if c in X.columns]
+        
+        all_features = []
+        for cols in feature_mapping.values():
+            all_features.extend(cols)
             
-            if not eval_cols:
-                results[group_name] = {"status": "SKIPPED_NO_COLS", "precision": 0.0}
+        if "All" not in feature_mapping:
+             feature_mapping["All"] = all_features
+             
+        model_all = self.model_trainer_func(X[all_features], y)
+        baseline_score = self.evaluation_func(model_all, X[all_features], y)
+        results["baseline_all_features"] = baseline_score
+        
+        for group in self.feature_groups:
+            if group == "All":
                 continue
                 
-            X_sub = X[eval_cols]
-            metrics = trainer_fn(X_sub, y)
-            results[group_name] = metrics
+            if group not in feature_mapping:
+                results[f"{group}_ablation_impact"] = 0.0
+                continue
+                
+            ablated_features = [f for f in all_features if f not in feature_mapping[group]]
+            if not ablated_features:
+                 continue
+                 
+            model_ablated = self.model_trainer_func(X[ablated_features], y)
+            ablated_score = self.evaluation_func(model_ablated, X[ablated_features], y)
+            
+            impact = baseline_score - ablated_score
+            results[f"{group}_ablation_impact"] = impact
             
         return results
