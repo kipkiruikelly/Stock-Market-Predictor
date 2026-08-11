@@ -16,6 +16,15 @@ from users.models import (
     WatchlistItem,
     PortfolioPosition,
 )
+from trading.trading_models import (
+    TradingSignal,
+    RiskDecision,
+    PipelineRun,
+    ReconciliationEvent,
+    TradeOutcome,
+    ModelVersion,
+    EmergencyStop,
+)
 
 __all__ = [
     'PaperTrade',
@@ -28,4 +37,11 @@ __all__ = [
     'UserBotSubscription',
     'WatchlistItem',
     'PortfolioPosition',
+    'TradingSignal',
+    'RiskDecision',
+    'PipelineRun',
+    'ReconciliationEvent',
+    'TradeOutcome',
+    'ModelVersion',
+    'EmergencyStop',
 ]

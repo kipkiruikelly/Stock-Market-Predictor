@@ -13,6 +13,7 @@ without pre-trained model files, so the FSM always runs all stages.
 import logging
 import hashlib
 import math
+import pathlib
 from enum import Enum
 from datetime import datetime, timezone
 
@@ -36,72 +37,7 @@ class WorkflowState(Enum):
 # pre-trained model files. Cycles through BUY/SELL/HOLD over time so
 # the audit trail shows variety across all FSM states.
 
-_ASSET_REF_PRICES = {
-    "SPY": 540.0, "QQQ": 470.0, "AAPL": 185.5, "NVDA": 475.0,
-    "MSFT": 415.0, "TSLA": 180.0, "META": 520.0, "GOOGL": 165.0,
-    "AMZN": 185.0, "EURUSD": 1.0850, "GBPUSD": 1.2650, "USDJPY": 157.5,
-    "BTC": 65000.0, "ETH": 3450.0, "SOL": 155.0,
-    "GOLD": 2380.0, "SILVER": 31.5, "OIL": 78.5,
-}
 
-
-def _run_lightweight_inference(ticker: str, interval: str = "1d") -> dict:
-    """
-    Self-contained ML inference that runs without model files.
-    Uses deterministic logic seeded by ticker + current hour so results
-    rotate realistically over time and show all FSM states.
-    """
-    ref_price  = _ASSET_REF_PRICES.get(ticker.upper(), 100.0)
-
-    # Seed changes every 15 min so each scan cycle can produce different results
-    now_slot   = datetime.now(timezone.utc)
-    seed_str   = f"{ticker}_{now_slot.year}{now_slot.month}{now_slot.day}{now_slot.hour}{now_slot.minute // 15}"
-    seed_int   = int(hashlib.md5(seed_str.encode()).hexdigest(), 16) % 10000
-
-    # Simulate multi-model ensemble: LR + RF + XGB + LGB votes
-    votes = [(seed_int + i * 2731) % 2 for i in range(4)]  # 0=SELL, 1=BUY
-    buy_votes  = sum(votes)
-    sell_votes = 4 - buy_votes
-
-    if buy_votes >= 3:
-        direction  = "BUY"
-        confidence = 62.0 + (seed_int % 25)          # 62–87%
-    elif sell_votes >= 3:
-        direction  = "SELL"
-        confidence = 62.0 + (seed_int % 25)
-    else:
-        direction  = "HOLD"
-        confidence = 38.0 + (seed_int % 18)          # 38–56% (below gate)
-
-    # Price levels
-    atr_pct    = 0.012 + (seed_int % 8) / 1000.0     # 1.2–1.9% ATR
-    atr        = ref_price * atr_pct
-    noise      = (seed_int % 100 - 50) / 10000.0 * ref_price
-
-    current_price = round(ref_price + noise, 4)
-
-    if direction == "BUY":
-        target_price = round(current_price + atr * 2.2, 4)
-        stop_loss    = round(current_price - atr * 1.0, 4)
-    elif direction == "SELL":
-        target_price = round(current_price - atr * 2.2, 4)
-        stop_loss    = round(current_price + atr * 1.0, 4)
-    else:
-        target_price = current_price
-        stop_loss    = round(current_price - atr, 4)
-
-    return {
-        "ticker":        ticker,
-        "interval":      interval,
-        "direction":     direction,
-        "confidence":    round(confidence, 1),
-        "current_price": current_price,
-        "target_price":  target_price,
-        "stop_loss":     stop_loss,
-        "model_votes":   {"LR": votes[0], "RF": votes[1], "XGB": votes[2], "LGB": votes[3]},
-        "ensemble_buy":  buy_votes,
-        "ensemble_sell": sell_votes,
-    }
 
 
 # ── TradingWorkflow FSM ───────────────────────────────────────────────────────
@@ -146,11 +82,23 @@ class TradingWorkflow:
                 "Running quantitative ML model inference"
             )
 
-            prediction = _run_lightweight_inference(self.ticker, self.interval)
-            self.context.update(prediction)
+            try:
+                import sys
+                sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+                from engines.prediction import ml_signal
+                prediction = ml_signal(self.ticker, self.interval)
+            except ImportError as e:
+                self._transition_to(WorkflowState.FAILED, f"Prediction engine unavailable: {e}")
+                return self.context
+            except Exception as e:
+                self._transition_to(WorkflowState.FAILED, f"Prediction engine error: {e}")
+                return self.context
 
-            confidence = prediction["confidence"]
-            direction  = prediction["direction"]
+            self.context.update(prediction)
+            self.context["model_version"] = prediction.get("model_version", "unknown")
+
+            confidence = prediction.get("confidence", 0) * 100
+            direction  = prediction.get("direction", "HOLD").upper()
 
             # Gate 1: Confidence threshold
             MIN_CONFIDENCE = 60.0
@@ -164,11 +112,11 @@ class TradingWorkflow:
             # ── 2. RISK_EVALUATION ────────────────────────────────────────
             self._transition_to(
                 WorkflowState.RISK_EVALUATION,
-                f"Evaluating sub-1ms portfolio risk & position sizing | {direction} {self.ticker} @ {prediction['current_price']}"
+                f"Evaluating sub-1ms portfolio risk & position sizing | {direction} {self.ticker} @ {prediction.get('current_price', 0)}"
             )
 
-            current_price = prediction["current_price"]
-            stop_loss     = prediction["stop_loss"]
+            current_price = prediction.get("current_price", 0)
+            stop_loss     = prediction.get("stop_loss", 0)
 
             if current_price <= 0:
                 self._transition_to(WorkflowState.FAILED, "Invalid zero/negative current price.")
@@ -200,7 +148,7 @@ class TradingWorkflow:
             self._transition_to(
                 WorkflowState.APPROVED,
                 f"Risk approved. {direction} {position_shares} shares @ ${current_price:.4f} | "
-                f"SL ${stop_loss:.4f} | TP ${prediction['target_price']:.4f} | Risk ${max_risk_amt:.2f}"
+                f"SL ${stop_loss:.4f} | TP ${prediction.get('target_price', 0):.4f} | Risk ${max_risk_amt:.2f}"
             )
 
             # ── 4. EXECUTED ───────────────────────────────────────────────
@@ -216,7 +164,7 @@ class TradingWorkflow:
                         "entry_price": current_price,
                         "note": (
                             f"FSM Auto Trade | {direction} | "
-                            f"Target: ${prediction['target_price']:.4f} | "
+                            f"Target: ${prediction.get('target_price', 0):.4f} | "
                             f"SL: ${stop_loss:.4f} | "
                             f"Conf: {confidence:.1f}%"
                         ),

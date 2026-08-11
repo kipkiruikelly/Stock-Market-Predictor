@@ -16,6 +16,13 @@ Usage:
 import threading
 import time
 from datetime import datetime
+from enum import Enum
+
+class DataFreshness(Enum):
+    LIVE = "live"
+    STALE = "stale"
+    SYNTHETIC = "synthetic"
+    UNAVAILABLE = "unavailable"
 
 _lock = threading.Lock()
 _hist_cache = {}      # (symbol, period, interval) -> (fetched_at, df)
@@ -301,7 +308,7 @@ def get_history(symbol, period="1y", interval="1d"):
     with _lock:
         hit = _hist_cache.get(key)
     if hit and now - hit[0] < ttl:
-        return hit[1], {"stale": False, "source": "cache",
+        return hit[1], {"stale": False, "source": "cache", "freshness": DataFreshness.LIVE.value,
                         "as_of": datetime.fromtimestamp(hit[0]).isoformat()}
 
     if not _rate_limited_now():
@@ -313,20 +320,20 @@ def get_history(symbol, period="1y", interval="1d"):
             if df is not None and not df.empty:
                 with _lock:
                     _hist_cache[key] = (now, df)
-                return df, {"stale": False, "source": "live",
+                return df, {"stale": False, "source": "live", "freshness": DataFreshness.LIVE.value,
                             "as_of": datetime.fromtimestamp(now).isoformat()}
         except Exception as e:
             if _is_rate_limit_error(e):
                 _trip_breaker()
 
     if hit:   # stale fallback, old data beats no data, say so honestly
-        return hit[1], {"stale": True, "source": "cache",
+        return hit[1], {"stale": True, "source": "cache", "freshness": DataFreshness.STALE.value,
                         "as_of": datetime.fromtimestamp(hit[0]).isoformat()}
 
     # Generate synthetic mock data to prevent system crashes
     try:
         df = _generate_synthetic_ohlcv(symbol, period, interval)
-        return df, {"stale": True, "source": "synthetic", "as_of": datetime.now().isoformat()}
+        return df, {"stale": True, "source": "synthetic", "synthetic": True, "freshness": DataFreshness.SYNTHETIC.value, "as_of": datetime.now().isoformat()}
     except Exception as mock_err:
         raise ValueError(f"No market data available for {symbol} and synthetic fallback failed: {mock_err}")
 
@@ -372,7 +379,9 @@ def get_quote(symbol):
         pc = base_price
         payload = {"price": round(lp, 4), "prev": round(pc, 4),
                    "chg": round(lp - pc, 4),
-                   "pct": round((lp - pc) / pc * 100 if pc else 0, 2)}
+                   "pct": round((lp - pc) / pc * 100 if pc else 0, 2),
+                   "synthetic": True,
+                   "freshness": DataFreshness.SYNTHETIC.value}
     with _lock:
         _quote_cache[symbol] = (now, payload)
     return payload

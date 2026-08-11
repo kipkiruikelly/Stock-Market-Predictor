@@ -89,9 +89,26 @@ def execute_smart_order(user: User, ticker: str, side: str, total_quantity: floa
 
     slices = router.calculate_child_slices(total_quantity, execution_style=execution_style)
     
-    # Simulate passive execution fill with slight price improvement
-    price_improvement = benchmark_price * 0.0008 # 8 bps price improvement via limit order placement
-    avg_fill_price = round(benchmark_price - price_improvement if side == "BUY" else benchmark_price + price_improvement, 4)
+    try:
+        import sys, pathlib
+        sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[3]))
+        from engines.paper_trading import try_open, load_config
+        paper_cfg = load_config()
+        paper_result = try_open(
+            user_id=str(user.id) if user else "system",
+            ticker=ticker,
+            side=side.lower(),
+            qty=total_quantity,
+            price=benchmark_price,
+            strategy="smart_execution",
+            cfg=paper_cfg,
+        )
+        avg_fill_price = paper_result.get("fill_price", benchmark_price) if paper_result else benchmark_price
+        execution_confirmed = paper_result is not None
+    except Exception as exec_err:
+        logger.warning("Paper execution failed: %s \u2014 using benchmark price", exec_err)
+        avg_fill_price = benchmark_price
+        execution_confirmed = False
 
     feedback = feedback_engine.compute_feedback(side, benchmark_price, avg_fill_price, total_quantity)
 
@@ -107,7 +124,7 @@ def execute_smart_order(user: User, ticker: str, side: str, total_quantity: floa
         benchmark_price=benchmark_price,
         avg_fill_price=avg_fill_price,
         slippage_saved_usd=feedback["slippage_saved_usd"],
-        status="completed",
+        status="completed" if execution_confirmed else "paper_failed",
         completed_at=datetime.utcnow()
     )
 

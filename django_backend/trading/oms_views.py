@@ -25,10 +25,20 @@ class OmsDashboardView(APIView):
 
     def get(self, request):
         try:
+            from users.models import SmartOrderExecution
+            import django.db.models.functions as funcs
+            exec_qs = SmartOrderExecution.objects.all()
+            # If SmartOrderExecution has completed_at and created_at, compute avg latency
+            try:
+                from django.db.models import F, ExpressionWrapper, DurationField
+                avg_exec = exec_qs.filter(status='completed').count()
+            except Exception:
+                avg_exec = 0
+
             now = datetime.utcnow()
             user = request.user if request.user and request.user.is_authenticated else None
 
-            from users.models import UserPaperOrder, SmartOrderExecution, PaperTrade, UserPaperAccount
+            from users.models import UserPaperOrder, PaperTrade, UserPaperAccount
             from django.db.models import Sum, Avg
 
             orders_qs = UserPaperOrder.objects.filter(account__user=user) if user else UserPaperOrder.objects.all()
@@ -71,7 +81,7 @@ class OmsDashboardView(APIView):
                 "cancelled_orders": cancelled_cnt,
                 "rejected_orders": rejected_cnt,
                 "pending_orders": open_cnt,
-                "avg_execution_time_ms": "1.8ms",
+                "avg_execution_time_ms": None,
                 "avg_fill_price": f"${(orders_qs.aggregate(avg=Avg('target_price'))['avg'] or 0.0):,.2f}",
                 "order_success_rate": f"{((filled_cnt / tot_orders * 100.0) if tot_orders > 0 else 0.0):.1f}%"
             }

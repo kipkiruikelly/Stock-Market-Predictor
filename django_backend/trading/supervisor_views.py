@@ -60,12 +60,11 @@ class SupervisorDashboardView(APIView):
                     "direction": t.side,
                     "position_size": t.qty,
                     "risk_score": 1.2,
-                    "signal_confidence": "95.0%",
+                    "signal_confidence": f"{round((getattr(t, 'confidence', 0) or 0) * 100, 1)}%" if getattr(t, 'confidence', None) is not None else None,
                     "execution_status": "FILLED" if t.status == 'closed' else "ACTIVE",
-                    "supervisor_decision": "APPROVED",
+                    "supervisor_decision": "AUTO_APPROVED",
                     "approval_status": "AUTO_APPROVED",
-                    "broker": "Interactive Brokers",
-                    "execution_latency": "2.1ms",
+                    "broker": None,
                     "current_pnl": f"{'+' if (t.pnl or 0)>=0 else ''}${t.pnl or 0.0:,.2f}",
                     "last_updated": t.entry_time.strftime("%H:%M:%S UTC") if t.entry_time else now.strftime("%H:%M:%S UTC")
                 })

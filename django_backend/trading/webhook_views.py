@@ -15,18 +15,28 @@ class WebhookManagementView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        from users.models import User
-        _orm_check = User.objects.count()
-        webhooks = [
-            {
-                'id': 'wh_8001',
-                'target_url': 'https://api.partner-broker.com/v1/hooks/trade-signal',
-                'events': ['order.filled', 'signal.generated', 'model.drift_alert'],
-                'status': 'ACTIVE',
-                'secret_preview': 'whsec_...e946',
-                'created_at': '2026-07-28T10:00:00Z'
-            }
-        ]
+        # Outbound webhook subscriptions (developer platform feature)
+        # Returns real registered webhooks from the database when available,
+        # otherwise returns an empty list \u2014 never fabricates webhook entries.
+        webhooks = []
+        try:
+            from users.models import WebhookSubscription
+            qs = WebhookSubscription.objects.all()
+            if request.user and request.user.is_authenticated:
+                qs = qs.filter(user=request.user)
+            webhooks = [
+                {
+                     'id': f'wh_{w.id}',
+                     'target_url': w.target_url,
+                     'events': w.events if isinstance(w.events, list) else [],
+                     'status': w.status,
+                     'created_at': w.created_at.isoformat() if w.created_at else None,
+                }
+                for w in qs.order_by('-created_at')[:50]
+            ]
+        except Exception:
+            # WebhookSubscription model may not exist yet \u2014 return empty list
+            webhooks = []
         return Response({'ok': True, 'webhooks': webhooks})
 
     def post(self, request):
