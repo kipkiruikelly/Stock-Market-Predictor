@@ -395,8 +395,59 @@ export const TradingSupervisorDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-nexus-border/30">
-                      );
-                    })}
+                    {paginatedTrades.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-6 text-center text-nexus-muted">No supervised trades matching filter criteria.</td>
+                      </tr>
+                    ) : (
+                      paginatedTrades.map(trade => (
+                        <tr 
+                          key={trade.trade_id}
+                          onClick={() => setSelectedTradeId(trade.trade_id)}
+                          className={`hover:bg-nexus-bg2/50 cursor-pointer transition ${selectedTradeId === trade.trade_id ? 'bg-nexus-bg2/80 border-l-2 border-nexus-pur' : ''}`}
+                        >
+                          <td className="p-2.5 font-bold text-nexus-white font-mono">{trade.trade_id}</td>
+                          <td className="p-2.5">
+                            <span className="font-bold text-nexus-white block">{trade.symbol}</span>
+                            <span className="text-[10px] text-nexus-muted">{trade.strategy}</span>
+                          </td>
+                          <td className="p-2.5">
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.direction === 'BUY' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                              {trade.direction}
+                            </span>
+                          </td>
+                          <td className="p-2.5 font-mono text-right font-bold text-nexus-white">{trade.position_size}</td>
+                          <td className="p-2.5 text-center">
+                            <span className="font-bold text-nexus-pur">{trade.signal_confidence}</span>
+                          </td>
+                          <td className="p-2.5 text-center">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              trade.supervisor_decision === 'APPROVED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                              trade.supervisor_decision === 'REQUIRES_REVIEW' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 animate-pulse' :
+                              'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                            }`}>
+                              {trade.supervisor_decision}
+                            </span>
+                          </td>
+                          <td className={`p-2.5 text-right font-mono font-bold ${trade.current_pnl.startsWith('+') ? 'text-emerald-400' : trade.current_pnl.startsWith('-') ? 'text-rose-400' : 'text-nexus-muted'}`}>
+                            {trade.current_pnl}
+                          </td>
+                          <td className="p-2.5 text-right">
+                            <div className="flex items-center justify-end gap-1" onClick={e => e.stopPropagation()}>
+                              {trade.supervisor_decision === 'REQUIRES_REVIEW' && (
+                                <>
+                                  <button onClick={() => handleApproveTrade(trade.trade_id)} className="p-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30 text-[10px] font-bold">Approve</button>
+                                  <button onClick={() => handleRejectTrade(trade.trade_id)} className="p-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded border border-rose-500/30 text-[10px] font-bold">Reject</button>
+                                </>
+                              )}
+                              <button onClick={() => setSelectedTradeId(trade.trade_id)} className="p-1 bg-nexus-bg hover:bg-nexus-bg2 text-nexus-muted hover:text-nexus-white rounded border border-nexus-border">
+                                <Eye size={12} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
