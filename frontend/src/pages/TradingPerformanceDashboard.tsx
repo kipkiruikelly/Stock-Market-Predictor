@@ -90,8 +90,6 @@ export const TradingPerformanceDashboard: React.FC = () => {
 
       {/* ── Executive KPI Cards ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      {/* ── Executive KPI Cards ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-3.5 rounded-xl bg-nexus-sf border border-nexus-border/60">
           <span className="text-[10px] font-bold uppercase tracking-wider text-nexus-muted">Net P&L</span>
           <div className="text-lg font-black text-emerald-400 mt-1">{kpis?.net_pnl ?? '$0.00'}</div>
