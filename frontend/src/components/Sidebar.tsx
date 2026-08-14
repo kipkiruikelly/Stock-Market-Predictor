@@ -102,14 +102,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ]
   };
 
-  // Expand parent section automatically when route changes
+  // Auto-collapse non-active dropdown sections when route changes
   useEffect(() => {
+    const newExpandedState: Record<string, boolean> = {};
+
     Object.keys(sidebarStructure).forEach(section => {
       const items = sidebarStructure[section];
-      if (items.some(item => location.pathname === item.route)) {
-        setExpandedSections(prev => ({ ...prev, [section]: true }));
-      }
+      const isActive = items.some(item => 
+        location.pathname === item.route || location.pathname.startsWith(item.route)
+      );
+      newExpandedState[section] = isActive;
     });
+
+    setExpandedSections(newExpandedState);
   }, [location.pathname]);
 
   const toggleSection = (section: string) => {
