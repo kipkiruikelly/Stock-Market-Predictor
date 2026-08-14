@@ -98,7 +98,7 @@ class TradingSignal(models.Model):
     )
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['symbol', 'status']),
@@ -130,7 +130,7 @@ class RiskDecision(models.Model):
     latency_ms = models.FloatField(null=True, blank=True)
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
 
     def __str__(self):
         return f"RiskDecision for {self.signal_id} | {'APPROVED' if self.approved else 'REJECTED'}"
@@ -180,7 +180,7 @@ class PipelineRun(models.Model):
     )
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
         ordering = ['-started_at']
 
     def __str__(self):
@@ -217,7 +217,7 @@ class ReconciliationEvent(models.Model):
     notes = models.TextField(null=True, blank=True)
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
         ordering = ['-reconciled_at']
 
     def __str__(self):
@@ -231,7 +231,7 @@ class TradeOutcome(models.Model):
         TradingSignal, on_delete=models.CASCADE, related_name='outcome'
     )
     paper_trade = models.ForeignKey(
-        'PaperTrade', null=True, blank=True,
+        'users.PaperTrade', null=True, blank=True,
         on_delete=models.SET_NULL, related_name='outcome'
     )
 
@@ -265,14 +265,14 @@ class TradeOutcome(models.Model):
     recorded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
         ordering = ['-recorded_at']
 
     def __str__(self):
         return f"TradeOutcome {self.signal_id} | PnL {self.net_pnl}"
 
 
-class ModelVersion(models.Model):
+class PipelineModelVersion(models.Model):
     """Model governance registry. One record per deployed model version."""
 
     class Status(models.TextChoices):
@@ -301,7 +301,7 @@ class ModelVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        app_label = 'users'
+        app_label = 'trading'
         unique_together = [('model_name', 'version')]
         ordering = ['-created_at']
 

@@ -22,7 +22,7 @@ from trading.trading_models import (
     PipelineRun,
     ReconciliationEvent,
     TradeOutcome,
-    ModelVersion,
+    PipelineModelVersion,
     EmergencyStop,
 )
 
@@ -42,6 +42,6 @@ __all__ = [
     'PipelineRun',
     'ReconciliationEvent',
     'TradeOutcome',
-    'ModelVersion',
+    'PipelineModelVersion',
     'EmergencyStop',
 ]
