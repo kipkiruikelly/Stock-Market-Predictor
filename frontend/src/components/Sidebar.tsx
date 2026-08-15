@@ -27,101 +27,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [enterpriseMode, setEnterpriseMode] = useState<boolean>(true);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
 
-  // Initialize expanded sections based on current route
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    'Dashboard': location.pathname.startsWith('/dashboard'),
-    'Trading': location.pathname.startsWith('/trading') || location.pathname === '/live' || location.pathname === '/markets' || location.pathname === '/bots' || location.pathname === '/tools',
-    'Portfolio': location.pathname.startsWith('/portfolio'),
-    'Research Lab': location.pathname.startsWith('/researchlab') || location.pathname === '/research',
-    'Machine Learning': location.pathname.includes('models') || location.pathname.includes('experiments'),
-    'Operations': location.pathname === '/screener' || location.pathname === '/settings',
-    'Executive': location.pathname.startsWith('/executive'),
-    'Administration': location.pathname.startsWith('/admin'),
-    'Knowledge Center': location.pathname.startsWith('/knowledge')
-  });
-
-  const sidebarStructure: Record<string, any[]> = {
-    "Dashboard": [
-      {"name": "Market Overview", "route": "/dashboard/market-overview"}
-    ],
-    "Trading": [
-      {"name": "Trading Strategies", "route": "/trading/strategies"},
-      {"name": "Trading Supervisor", "route": "/trading/supervisor"},
-      {"name": "Positions PMS", "route": "/trading/positions"},
-      {"name": "Orders OMS", "route": "/trading/orders"},
-      {"name": "Smart Execution", "route": "/trading/smartexecution"},
-      {"name": "Trading Signals", "route": "/trading/signals"},
-      {"name": "Trading Performance", "route": "/trading/performance"},
-      {"name": "Trading Terminal", "route": "/trading/tradingterminal"},
-      {"name": "Markets Analytics", "route": "/trading/marketanalytics"},
-      {"name": "AI Robots", "route": "/trading/airobots"},
-      {"name": "Strategy Tools", "route": "/trading/strategytools"}
-    ],
-    "Portfolio": [
-      {"name": "Holdings", "route": "/portfolio/holdings"},
-      {"name": "Analytics", "route": "/portfolio/analytics"},
-      {"name": "Allocation", "route": "/portfolio/allocation"},
-      {"name": "Performance", "route": "/portfolio/performance"},
-      {"name": "Risk Analysis", "route": "/portfolio/risk"}
-    ],
-    "Research Lab": [
-      {"name": "Research Projects", "route": "/researchlab/projects"},
-      {"name": "Data Catalog", "route": "/researchlab/datasets"},
-      {"name": "ETL Pipelines", "route": "/researchlab/datapipeline"}
-    ],
-    "Machine Learning": [
-      {"name": "Experiment Tracker", "route": "/researchlab/experiments"},
-      {"name": "AI Model Inventory", "route": "/researchlab/models"},
-      {"name": "Model Governance Registry", "route": "/researchlab/modelregistry"}
-    ],
-    "Operations": [
-      {"name": "Screener Monitor", "route": "/operations/screener"},
-      {"name": "Settings Controls", "route": "/operations/settingscontrol"}
-    ],
-    "Executive": [
-      {"name": "Executive Command Center", "route": "/executive/dashboard"},
-      {"name": "Business Analytics", "route": "/executive/business-analytics"},
-      {"name": "Growth Planning", "route": "/executive/growth"},
-      {"name": "Cloud FinOps", "route": "/executive/cloud-costs"}
-    ],
-    "Administration": [
-      {"name": "User Management", "route": "/admin/users"},
-      {"name": "RBAC Roles", "route": "/admin/roles"},
-      {"name": "Tenant Organizations", "route": "/admin/organizations"},
-      {"name": "Feature Flags", "route": "/admin/feature-flags"},
-      {"name": "API Key Manager", "route": "/admin/api-keys"},
-      {"name": "Billing Console", "route": "/admin/billing"},
-      {"name": "System Settings", "route": "/admin/settings"}
-    ],
-    "Knowledge Center": [
-      {"name": "Documentation Portal", "route": "/knowledge/documentation"},
-      {"name": "API Explorer", "route": "/knowledge/api-explorer"},
-      {"name": "SRE Runbooks", "route": "/knowledge/runbooks"},
-      {"name": "User Guide", "route": "/knowledge/user-guide"},
-      {"name": "Admin Guide", "route": "/knowledge/admin-guide"}
-    ]
+  // Initialize single open section based on current route
+  const getActiveSectionForPath = (pathname: string): string | null => {
+    for (const section of Object.keys(sidebarStructure)) {
+      const items = sidebarStructure[section];
+      if (items.some(item => pathname === item.route || pathname.startsWith(item.route))) {
+        return section;
+      }
+    }
+    return null;
   };
+
+  const [openSection, setOpenSection] = useState<string | null>(() => getActiveSectionForPath(location.pathname));
 
   // Auto-collapse non-active dropdown sections when route changes
   useEffect(() => {
-    const newExpandedState: Record<string, boolean> = {};
-
-    Object.keys(sidebarStructure).forEach(section => {
-      const items = sidebarStructure[section];
-      const isActive = items.some(item => 
-        location.pathname === item.route || location.pathname.startsWith(item.route)
-      );
-      newExpandedState[section] = isActive;
-    });
-
-    setExpandedSections(newExpandedState);
+    const activeSection = getActiveSectionForPath(location.pathname);
+    setOpenSection(activeSection);
   }, [location.pathname]);
 
   const toggleSection = (section: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
+    setOpenSection(prev => (prev === section ? null : section));
   };
 
   const getSectionIcon = (section: string) => {
@@ -237,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {enterpriseMode && !isAdminView ? (
           <div className="flex flex-col gap-2">
             {Object.keys(sidebarStructure).map((section) => {
-              const isExpanded = !!expandedSections[section];
+              const isExpanded = openSection === section;
               const items = sidebarStructure[section] || [];
               const hasActiveChild = items.some((item: any) => location.pathname === item.route);
 
