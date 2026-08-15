@@ -7,6 +7,80 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+// ─── Module-level constant – defined once, never undefined ─────────────────────
+const SIDEBAR_STRUCTURE: Record<string, { name: string; route: string }[]> = {
+  "Dashboard": [
+    { name: "Market Overview", route: "/dashboard/market-overview" }
+  ],
+  "Trading": [
+    { name: "Trading Strategies",  route: "/trading/strategies" },
+    { name: "Trading Supervisor",  route: "/trading/supervisor" },
+    { name: "Positions PMS",       route: "/trading/positions" },
+    { name: "Orders OMS",          route: "/trading/orders" },
+    { name: "Smart Execution",     route: "/trading/smartexecution" },
+    { name: "Trading Signals",     route: "/trading/signals" },
+    { name: "Trading Performance", route: "/trading/performance" },
+    { name: "Trading Terminal",    route: "/trading/tradingterminal" },
+    { name: "Markets Analytics",   route: "/trading/marketanalytics" },
+    { name: "AI Robots",           route: "/trading/airobots" },
+    { name: "Strategy Tools",      route: "/trading/strategytools" }
+  ],
+  "Portfolio": [
+    { name: "Holdings",     route: "/portfolio/holdings" },
+    { name: "Analytics",   route: "/portfolio/analytics" },
+    { name: "Allocation",  route: "/portfolio/allocation" },
+    { name: "Performance", route: "/portfolio/performance" },
+    { name: "Risk Analysis", route: "/portfolio/risk" }
+  ],
+  "Research Lab": [
+    { name: "Research Projects", route: "/researchlab/projects" },
+    { name: "Data Catalog",      route: "/researchlab/datasets" },
+    { name: "ETL Pipelines",     route: "/researchlab/datapipeline" }
+  ],
+  "Machine Learning": [
+    { name: "Experiment Tracker",        route: "/researchlab/experiments" },
+    { name: "AI Model Inventory",         route: "/researchlab/models" },
+    { name: "Model Governance Registry", route: "/researchlab/modelregistry" }
+  ],
+  "Operations": [
+    { name: "Screener Monitor",    route: "/operations/screener" },
+    { name: "Settings Controls",   route: "/operations/settingscontrol" }
+  ],
+  "Executive": [
+    { name: "Executive Command Center", route: "/executive/dashboard" },
+    { name: "Business Analytics",       route: "/executive/business-analytics" },
+    { name: "Growth Planning",          route: "/executive/growth" },
+    { name: "Cloud FinOps",             route: "/executive/cloud-costs" }
+  ],
+  "Administration": [
+    { name: "User Management",       route: "/admin/users" },
+    { name: "RBAC Roles",            route: "/admin/roles" },
+    { name: "Tenant Organizations",  route: "/admin/organizations" },
+    { name: "Feature Flags",         route: "/admin/feature-flags" },
+    { name: "API Key Manager",       route: "/admin/api-keys" },
+    { name: "Billing Console",       route: "/admin/billing" },
+    { name: "System Settings",       route: "/admin/settings" }
+  ],
+  "Knowledge Center": [
+    { name: "Documentation Portal", route: "/knowledge/documentation" },
+    { name: "API Explorer",         route: "/knowledge/api-explorer" },
+    { name: "SRE Runbooks",         route: "/knowledge/runbooks" },
+    { name: "User Guide",           route: "/knowledge/user-guide" },
+    { name: "Admin Guide",          route: "/knowledge/admin-guide" }
+  ]
+};
+
+/** Returns the section key whose routes include the given pathname, or null. */
+function getActiveSectionForPath(pathname: string): string | null {
+  for (const section of Object.keys(SIDEBAR_STRUCTURE)) {
+    const items = SIDEBAR_STRUCTURE[section];
+    if (items.some(item => pathname === item.route || pathname.startsWith(item.route))) {
+      return section;
+    }
+  }
+  return null;
+}
+
 interface SidebarProps {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
@@ -27,23 +101,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [enterpriseMode, setEnterpriseMode] = useState<boolean>(true);
   const [hoveredSection, setHoveredSection] = useState<string | null>(null);
 
-  // Initialize single open section based on current route
-  const getActiveSectionForPath = (pathname: string): string | null => {
-    for (const section of Object.keys(sidebarStructure)) {
-      const items = sidebarStructure[section];
-      if (items.some(item => pathname === item.route || pathname.startsWith(item.route))) {
-        return section;
-      }
-    }
-    return null;
-  };
+  // Single-open accordion: one section open at a time
+  const [openSection, setOpenSection] = useState<string | null>(
+    () => getActiveSectionForPath(location.pathname)
+  );
 
-  const [openSection, setOpenSection] = useState<string | null>(() => getActiveSectionForPath(location.pathname));
-
-  // Auto-collapse non-active dropdown sections when route changes
+  // Auto-sync open section when the route changes
   useEffect(() => {
-    const activeSection = getActiveSectionForPath(location.pathname);
-    setOpenSection(activeSection);
+    setOpenSection(getActiveSectionForPath(location.pathname));
   }, [location.pathname]);
 
   const toggleSection = (section: string) => {
@@ -162,9 +227,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="flex-1 overflow-y-auto py-3 px-2 space-y-2 custom-scrollbar">
         {enterpriseMode && !isAdminView ? (
           <div className="flex flex-col gap-2">
-            {Object.keys(sidebarStructure).map((section) => {
+            {Object.keys(SIDEBAR_STRUCTURE).map((section) => {
               const isExpanded = openSection === section;
-              const items = sidebarStructure[section] || [];
+              const items = SIDEBAR_STRUCTURE[section] || [];
               const hasActiveChild = items.some((item: any) => location.pathname === item.route);
 
               if (collapsed) {
