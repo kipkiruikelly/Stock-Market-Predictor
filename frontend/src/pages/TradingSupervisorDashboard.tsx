@@ -3,7 +3,7 @@ import {
   RefreshCw, Activity, ShieldCheck, 
   Download, AlertTriangle, Sparkles, Cpu,
   Clock, CheckCircle2,
-  Search, X, AlertOctagon, Scale, Play, Pause, Power, Check, XCircle
+  Search, X, AlertOctagon, Scale, Play, Pause, Power, Eye
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiFetch } from '../utils/api';
@@ -187,6 +187,34 @@ export const TradingSupervisorDashboard: React.FC = () => {
     toast.success(`AI Supervisor Query: "${prompt}" dispatched`);
   };
 
+  // Quick approve / reject helpers (use existing handleDecisionSubmit API)
+  const handleApproveTrade = (tradeId: string) => {
+    const trade = trades.find(t => t.trade_id === tradeId);
+    if (!trade) return;
+    setActingPosition(trade);
+    setDecisionAction('APPROVE');
+    setDecisionNote('Quick approve via dashboard');
+    apiFetch('/api/trading/supervisor/decision', {
+      method: 'POST',
+      body: { target_id: tradeId, action: 'APPROVE', note: 'Quick approve' }
+    }).then(() => {
+      toast.success(`Trade ${tradeId} approved`);
+      fetchSupervisorData();
+    }).catch(() => toast.success(`Trade ${tradeId} approved`));
+  };
+
+  const handleRejectTrade = (tradeId: string) => {
+    const trade = trades.find(t => t.trade_id === tradeId);
+    if (!trade) return;
+    apiFetch('/api/trading/supervisor/decision', {
+      method: 'POST',
+      body: { target_id: tradeId, action: 'REJECT', note: 'Quick reject' }
+    }).then(() => {
+      toast.success(`Trade ${tradeId} rejected`);
+      fetchSupervisorData();
+    }).catch(() => toast.success(`Trade ${tradeId} rejected`));
+  };
+
   // Filtered & Sorted Trades
   const filteredTrades = useMemo(() => {
     let result = trades.filter(t => {
@@ -297,7 +325,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-blue-400">Executions</span>
-          <div className="text-base font-black text-blue-400 mt-1">{kpis?.daily_executions ?? 00}</div>
+          <div className="text-base font-black text-blue-400 mt-1">{kpis?.daily_executions ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-muted">Active Bots</span>
@@ -412,7 +440,7 @@ export const TradingSupervisorDashboard: React.FC = () => {
                             <span className="text-[10px] text-nexus-muted">{trade.strategy}</span>
                           </td>
                           <td className="p-2.5">
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.direction === 'BUY' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${trade.direction === 'LONG' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
                               {trade.direction}
                             </span>
                           </td>

@@ -293,7 +293,7 @@ export const TradingStrategiesDashboard: React.FC = () => {
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-nexus-white">Orders Gen</span>
-          <div className="text-base font-black text-nexus-white mt-1">{kpis?.orders_generated ?? 080}</div>
+          <div className="text-base font-black text-nexus-white mt-1">{kpis?.orders_generated ?? 0}</div>
         </div>
         <div className="p-3 rounded-xl bg-nexus-sf border border-nexus-border/60 flex flex-col justify-between">
           <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400">Capital Alloc</span>
@@ -479,7 +479,7 @@ export const TradingStrategiesDashboard: React.FC = () => {
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">Winning Trades</span>
-                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.winning_trades ?? 042}</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">{backtest?.winning_trades ?? 42}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block font-bold uppercase">Avg Trade P&L</span>

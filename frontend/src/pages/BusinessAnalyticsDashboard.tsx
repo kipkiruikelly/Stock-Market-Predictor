@@ -220,7 +220,7 @@ export const BusinessAnalyticsDashboard: React.FC = () => {
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Daily Active Users (DAU)</span>
-                  <span className="font-bold text-emerald-400 text-sm">{customerIntel?.dau ?? 080}</span>
+                  <span className="font-bold text-emerald-400 text-sm">{customerIntel?.dau ?? 0}</span>
                 </div>
                 <div className="p-3 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                   <span className="text-[10px] text-nexus-muted block font-sans">Monthly Active (MAU)</span>
@@ -265,7 +265,7 @@ export const BusinessAnalyticsDashboard: React.FC = () => {
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">Orders Executed</span>
-                    <span className="font-bold text-nexus-white">{tradingBusiness?.orders_executed ?? 00}</span>
+                    <span className="font-bold text-nexus-white">{tradingBusiness?.orders_executed ?? 0}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-nexus-bg/50 border border-nexus-border/30">
                     <span className="text-[9px] text-nexus-muted block font-sans">Win Rate</span>

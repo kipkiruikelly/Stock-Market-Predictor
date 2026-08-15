@@ -192,7 +192,7 @@ export const PortfolioPerformanceDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Total Trades</span>
-                <span className="font-mono font-bold text-nexus-white text-sm">{tradeAnalytics?.total_trades ?? 00}</span>
+                <span className="font-mono font-bold text-nexus-white text-sm">{tradeAnalytics?.total_trades ?? 0}</span>
               </div>
               <div className="p-2.5 rounded bg-nexus-bg/50 border border-nexus-border/30">
                 <span className="text-[10px] text-nexus-muted block uppercase font-bold">Winning Trades</span>
